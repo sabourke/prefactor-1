@@ -14,18 +14,21 @@
 ##########################################
 
 ## information about the calibrator data
-! cal_input_path           =  /data/scratch/drabent                  ## specify the directory where your calibrator data is stored
-! cal_input_pattern        =  L228161*.MS                            ## regular expression pattern of all your calibrator files
+! cal_input_filenames      =  []                                     ## list of input MS filenames (full path)
+
+## information about the output
+! cal_output_filenames     =  []                                     ## list of output MS filenames (full path)
+! h5parm_output_filenames  =  []                                     ## list of output solution table filenames (full path)
 
 ## location of the software
-! prefactor_directory      =  /home/drabent/prefactor/               ## path to your prefactor copy
-! losoto_directory         =  /home/drabent/losoto                   ## path to your local LoSoTo installation
+! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor copy
+! losoto_directory         =  $LOSOTO_PATH                           ## path to your local LoSoTo installation
 
 ##########################################
 ### parameters you may need to adjust   ##
 ##########################################
 
-! refant                   = 'CS001HBA0'                             ## name of the station that will be used as a reference for the phase-plots
+! refant                   =  CS001HBA0                              ## name of the station that will be used as a reference for the phase-plots
 ! flag_baselines           =  []                                     ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault                             ## strategy to be applied with the statistical flagger (AOFlagger)
@@ -64,6 +67,9 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! results_directory        =  {{ job_directory }}/results            ## location of the results
 ! inspection_directory     =  {{ results_directory }}/inspection     ## directory where the inspection plots will be stored
 ! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm solution set will be stored
+! msfiles_metadata_file    =  input.output.working_directory/input.output.job_name/msfiles.metadata
+! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
+! parset_prefix            =  none
 
 ## calibrator solutions
 ! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
@@ -79,17 +85,17 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ########################################################
 
 # which steps to run
-pipeline.steps             =  [prep, PA, FR, bandpass, ion]
+pipeline.steps             =  [prep, PA, FR, bandpass, ion, feedback]
 
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_cal_values_dir, createmap_cal, ndppp_prep_cal, combine_data_cal_map, ms_concat, ndppp_flag, sky_cal, make_sourcedb, expand_sourcedb, predict_cal, calib_cal_parmmap, h5imp_cal_map]
+pipeline.steps.prep        =  [mk_cal_values_dir, createmap_cal, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, ms_concat, ndppp_flag, sky_cal, make_sourcedb, expand_sourcedb, predict_cal, calib_cal_parmmap, h5imp_cal_map]
 
 pipeline.steps.PA          =  [smooth_data, calib_cal, h5imp_cal_PA, prepare_losoto_PA, process_losoto_PA, h5exp_cal_PA, apply_PA, apply_beam]
 pipeline.steps.FR          =  [smooth_corrected, calib_cal, h5imp_cal_FR, prepare_losoto_FR, process_losoto_FR, h5exp_cal_FR, apply_FR]
 pipeline.steps.bandpass    =  [smooth_corrected, calib_cal, h5imp_cal_bandpass, prepare_losoto_bandpass, process_losoto_bandpass, h5exp_cal_bandpass, apply_PA, apply_bandpass, apply_beam, apply_FR]
 pipeline.steps.ion         =  [smooth_corrected, calib_cal, h5imp_cal_ion, prepare_losoto_ion, process_losoto_ion, h5exp_cal_ion]
-
+pipeline.steps.feedback    =  [copy_output_h5parmfiles, make_msfiles_metadata, make_h5parm_metadata]
 
 #############################
 ## Prepare calibrator part ##
@@ -101,19 +107,30 @@ mk_cal_values_dir.control.directory                         =   {{ cal_values_di
 
 # generate a mapfile of all the calibrator data
 createmap_cal.control.kind                                  =   plugin
-createmap_cal.control.type                                  =   createMapfile
-createmap_cal.control.method                                =   mapfile_from_folder
+createmap_cal.control.type                                  =   addListMapfile
+createmap_cal.control.hosts                                 =   [localhost]
+createmap_cal.control.files                                 =   {{ cal_input_filenames }}
 createmap_cal.control.mapfile_dir                           =   input.output.mapfile_dir
 createmap_cal.control.filename                              =   createmap_cal.mapfile
-createmap_cal.control.folder                                =   {{ cal_input_path }}
-createmap_cal.control.pattern                               =   {{ cal_input_pattern }}
+
+# generate a mapfile of the output MS files
+create_output_msfiles_map.control.kind                      =   plugin
+create_output_msfiles_map.control.type                      =   addListMapfile
+create_output_msfiles_map.control.hosts                     =   [localhost]
+create_output_msfiles_map.control.files                     =   {{ cal_output_filenames }}
+create_output_msfiles_map.control.mapfile_dir               =   input.output.mapfile_dir
+create_output_msfiles_map.control.filename                  =   output_msfiles.mapfile
 
 # run NDPPP on the calibrator data
 ndppp_prep_cal.control.type                                 =   dppp
 ndppp_prep_cal.control.max_per_node                         =   {{ num_proc_per_node_limit }}
 ndppp_prep_cal.control.error_tolerance                      =   {{ error_tolerance }}
+ndppp_prep_cal.control.mapfile_in                           =   createmap_cal.output.mapfile
+ndppp_prep_cal.control.inputkey                             =   msfile
+ndppp_prep_cal.control.mapfile_out                          =   create_output_msfiles_map.output.mapfile
+ndppp_prep_cal.control.outputkey                            =   msout
 ndppp_prep_cal.argument.numthreads                          =   {{ max_dppp_threads }}
-ndppp_prep_cal.argument.msin                                =   createmap_cal.output.mapfile    # The input data.
+ndppp_prep_cal.argument.msin                                =   msfile
 ndppp_prep_cal.argument.msin.datacolumn                     =   DATA
 ndppp_prep_cal.argument.msin.baseline                       =   CS*&; RS*&; CS*&RS*
 ndppp_prep_cal.argument.msout.datacolumn                    =   DATA
@@ -132,7 +149,7 @@ ndppp_prep_cal.argument.elev.type                           =   preflagger
 ndppp_prep_cal.argument.elev.elevation                      =   0deg..20deg
 ndppp_prep_cal.argument.filter.type                         =   filter
 ndppp_prep_cal.argument.filter.baseline                     =   CS*, RS*&&
-ndppp_prep_cal.argument.filter.remove                       =   true                     # fully kick out the international stations.
+ndppp_prep_cal.argument.filter.remove                       =   true
 ndppp_prep_cal.argument.avg.type                            =   average
 ndppp_prep_cal.argument.avg.timeresolution                  =   {{ avg_timeresolution }}
 ndppp_prep_cal.argument.avg.freqresolution                  =   {{ avg_freqresolution }}
@@ -208,8 +225,10 @@ predict_cal.control.type                                    =   dppp
 predict_cal.control.inplace                                 =   True
 predict_cal.control.max_per_node                            =   {{ num_proc_per_node_limit }}
 predict_cal.control.error_tolerance                         =   {{ error_tolerance }}
+predict_cal.control.mapfiles_in                             =   [ndppp_prep_cal.output.mapfile,expand_sourcedb.output.mapfile]
+predict_cal.control.inputkeys                               =   [msfile,sourcedb]
 predict_cal.argument.numthreads                             =   {{ max_dppp_threads }}
-predict_cal.argument.msin                                   =   ndppp_prep_cal.output.mapfile    # The input data.
+predict_cal.argument.msin                                   =   msfile
 predict_cal.argument.msin.datacolumn                        =   DATA
 predict_cal.argument.msin.baseline                          =   [CR]S*&
 predict_cal.argument.msout.datacolumn                       =   MODEL_DATA
@@ -221,7 +240,7 @@ predict_cal.argument.msout.datacolumn                       =   MODEL_DATA
 # predict_cal.argument.msout.storagemanager.normalization     =   "AF"
 predict_cal.argument.steps                                  =   [predict]
 predict_cal.argument.predict.type                           =   predict
-predict_cal.argument.predict.sourcedb                       =   expand_sourcedb.output.mapfile
+predict_cal.argument.predict.sourcedb                       =   sourcedb
 predict_cal.argument.predict.sources                        =   []
 predict_cal.argument.predict.usebeammodel                   =   False # TODO: put to true for large sky
 predict_cal.argument.predict.usechannelfreq                 =   False
@@ -243,14 +262,14 @@ h5imp_cal_map.control.mapfile_in                            =   calib_cal_parmma
 h5imp_cal_map.control.mapfile_dir                           =   input.output.mapfile_dir
 h5imp_cal_map.control.filename                              =   h5imp_cal_map.mapfile
 
-# baseline-dependent smooting
+# baseline-dependent smoothing
 smooth_data.control.type                                    =   executable_args
 smooth_data.control.max_per_node                            =   {{ num_proc_per_node }}
 smooth_data.control.error_tolerance                         =   {{ error_tolerance }}
 smooth_data.control.executable                              =   {{ scripts }}/BLsmooth.py
 smooth_data.argument.flags                                  =   [-S,{{ do_smooth }},-r,-i,DATA,-o,SMOOTHED_DATA,ndppp_prep_cal.output.mapfile]
 
-# baseline-dependent smooting
+# baseline-dependent smoothing
 smooth_corrected.control.type                               =   executable_args
 smooth_corrected.control.max_per_node                       =   {{ num_proc_per_node }}
 smooth_corrected.control.error_tolerance                    =   {{ error_tolerance }}
@@ -262,15 +281,17 @@ calib_cal.control.type                                      =   dppp
 calib_cal.control.inplace                                   =   True
 calib_cal.control.max_per_node                              =   {{ num_proc_per_node_limit }}
 calib_cal.control.error_tolerance                           =   {{ error_tolerance }}
+calib_cal.control.mapfiles_in                               =   [ndppp_prep_cal.output.mapfile,expand_sourcedb.output.mapfile,calib_cal_parmmap.output.mapfile]
+calib_cal.control.inputkeys                                 =   [msfile,sourcedb,h5parm]
 calib_cal.argument.numthreads                               =   {{ max_dppp_threads }}
-calib_cal.argument.msin                                     =   ndppp_prep_cal.output.mapfile    # The input data.
+calib_cal.argument.msin                                     =   msfile
 calib_cal.argument.msin.datacolumn                          =   SMOOTHED_DATA
 calib_cal.argument.msin.baseline                            =   [CR]S*&
 calib_cal.argument.steps                                    =   [solve]
 calib_cal.argument.solve.type                               =   ddecal
 calib_cal.argument.solve.mode                               =   rotation+diagonal
-calib_cal.argument.solve.h5parm                             =   calib_cal_parmmap.output.mapfile
-calib_cal.argument.solve.sourcedb                           =   expand_sourcedb.output.mapfile
+calib_cal.argument.solve.h5parm                             =   h5parm
+calib_cal.argument.solve.sourcedb                           =   sourcedb
 calib_cal.argument.solve.uvlambdamin                        =   300
 calib_cal.argument.solve.maxiter                            =   50
 calib_cal.argument.solve.nchan                              =   1
@@ -488,7 +509,7 @@ prepare_losoto_bandpass.control.plotA1.prefix               =   {{ inspection_di
 prepare_losoto_bandpass.control.flag.operation              =   FLAG
 prepare_losoto_bandpass.control.flag.soltab                 =   sol000/amplitude000
 prepare_losoto_bandpass.control.flag.axesToFlag             =   [time]
-prepare_losoto_bandpass.control.flag.order                  =   [100] 
+prepare_losoto_bandpass.control.flag.order                  =   [100]
 prepare_losoto_bandpass.control.flag.maxCycles              =   1
 prepare_losoto_bandpass.control.flag.maxRms                 =   5
 prepare_losoto_bandpass.control.flag.replce                 =   False
@@ -596,7 +617,7 @@ prepare_losoto_ion.control.plotA1.prefix                    =   {{ inspection_di
 prepare_losoto_ion.control.flag.operation                   =   FLAG
 prepare_losoto_ion.control.flag.soltab                      =   sol000/amplitude000
 prepare_losoto_ion.control.flag.axesToFlag                  =   [time]
-prepare_losoto_ion.control.flag.order                       =   [100] 
+prepare_losoto_ion.control.flag.order                       =   [100]
 prepare_losoto_ion.control.flag.maxCycles                   =   1
 prepare_losoto_ion.control.flag.maxRms                      =   5
 prepare_losoto_ion.control.flag.replce                      =   False
@@ -726,8 +747,10 @@ apply_PA.control.type                                       =   dppp
 apply_PA.control.error_tolerance                            =   {{ error_tolerance }}
 apply_PA.control.inplace                                    =   True
 apply_PA.control.max_per_node                               =   {{ num_proc_per_node_limit }}
+apply_PA.control.mapfile_in                                 =   ndppp_prep_cal.output.mapfile
+apply_PA.control.inputkeys                                  =   msfile
 apply_PA.argument.numthreads                                =   {{ max_dppp_threads }}
-apply_PA.argument.msin                                      =   ndppp_prep_cal.output.mapfile
+apply_PA.argument.msin                                      =   msfile
 apply_PA.argument.msin.datacolumn                           =   DATA
 apply_PA.argument.msout.datacolumn                          =   CORRECTED_DATA
 # apply_PA.argument.msout.storagemanager                      =   "Dysco"
@@ -746,8 +769,10 @@ apply_bandpass.control.type                                 =   dppp
 apply_bandpass.control.error_tolerance                      =   {{ error_tolerance }}
 apply_bandpass.control.inplace                              =   True
 apply_bandpass.control.max_per_node                         =   {{ num_proc_per_node_limit }}
+apply_bandpass.control.mapfile_in                           =   ndppp_prep_cal.output.mapfile
+apply_bandpass.control.inputkeys                            =   msfile
 apply_bandpass.argument.numthreads                          =   {{ max_dppp_threads }}
-apply_bandpass.argument.msin                                =   ndppp_prep_cal.output.mapfile
+apply_bandpass.argument.msin                                =   msfile
 apply_bandpass.argument.msin.datacolumn                     =   CORRECTED_DATA
 apply_bandpass.argument.msout.datacolumn                    =   CORRECTED_DATA
 # apply_bandpass.argument.msout.storagemanager                =   "Dysco"
@@ -767,8 +792,10 @@ apply_beam.control.type                                     =   dppp
 apply_beam.control.error_tolerance                          =   {{ error_tolerance }}
 apply_beam.control.inplace                                  =   True
 apply_beam.control.max_per_node                             =   {{ num_proc_per_node_limit }}
+apply_beam.control.mapfile_in                               =   ndppp_prep_cal.output.mapfile
+apply_beam.control.inputkeys                                =   msfile
 apply_beam.argument.numthreads                              =   {{ max_dppp_threads }}
-apply_beam.argument.msin                                    =   ndppp_prep_cal.output.mapfile
+apply_beam.argument.msin                                    =   msfile
 apply_beam.argument.msin.datacolumn                         =   CORRECTED_DATA
 apply_beam.argument.msout.datacolumn                        =   CORRECTED_DATA
 # apply_beam.argument.msout.storagemanager                    =   "Dysco"
@@ -789,8 +816,10 @@ apply_FR.control.type                                       =   dppp
 apply_FR.control.error_tolerance                            =   {{ error_tolerance }}
 apply_FR.control.inplace                                    =   True
 apply_FR.control.max_per_node                               =   {{ num_proc_per_node_limit }}
+apply_FR.control.mapfile_in                                 =   ndppp_prep_cal.output.mapfile
+apply_FR.control.inputkeys                                  =   msfile
 apply_FR.argument.numthreads                                =   {{ max_dppp_threads }}
-apply_FR.argument.msin                                      =   ndppp_prep_cal.output.mapfile
+apply_FR.argument.msin                                      =   msfile
 apply_FR.argument.msin.datacolumn                           =   CORRECTED_DATA
 apply_FR.argument.msout.datacolumn                          =   CORRECTED_DATA
 # apply_FR.argument.msout.storagemanager                      =   "Dysco"
@@ -803,6 +832,32 @@ apply_FR.argument.steps                                     =   [applyFR]
 apply_FR.argument.applyFR.type                              =   applycal
 apply_FR.argument.applyFR.correction                        =   rotationmeasure000
 apply_FR.argument.applyFR.parmdb                            =   {{ cal_solutions }}
+
+################################
+## feed back the results      ##
+################################
+# copy h5parm to output files
+copy_output_h5parmfiles.control.kind                        =   plugin
+copy_output_h5parmfiles.control.type                        =   copyFiles
+copy_output_h5parmfiles.control.hosts                       =   [localhost]
+copy_output_h5parmfiles.control.input_mapfile               =   h5imp_cal.output.mapfile
+copy_output_h5parmfiles.control.output_files                =   {{ h5parm_output_filenames }}
+copy_output_h5parmfiles.control.mapfile_dir                 =   input.output.mapfile_dir
+copy_output_h5parmfiles.control.filename                    =   output_h5parmfiles.mapfile
+
+# make the metadata for the output MS files
+make_msfiles_metadata.control.kind                          =   feedback
+make_msfiles_metadata.control.mapfile_in                    =   ndppp_prep_cal.output.mapfile
+make_msfiles_metadata.control.metadata_file                 =   {{ msfiles_metadata_file }}
+make_msfiles_metadata.control.product_type                  =   Correlated
+make_msfiles_metadata.control.parset_prefix                 =   {{ parset_prefix }}
+
+# make the metadata for the output solutions
+make_h5parm_metadata.control.kind                           =   feedback
+make_h5parm_metadata.control.mapfile_in                     =   copy_output_h5parmfiles.output.mapfile
+make_h5parm_metadata.control.metadata_file                  =   {{ h5parm_metadata_file }}
+make_h5parm_metadata.control.product_type                   =   InstrumentModel
+make_h5parm_metadata.control.parset_prefix                  =   {{ parset_prefix }}
 
 ########################################################
 ##                                                    ##

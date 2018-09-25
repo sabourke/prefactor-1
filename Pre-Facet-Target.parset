@@ -14,18 +14,22 @@
 ##########################################
 
 ## information about the target data
-! target_input_path        =  /data/scratch/drabent                  ## specify the directory where your calibrator data is stored
-! target_input_pattern     =  L228163*.MS                            ## regular expression pattern of all your calibrator files
+! target_input_filenames   =  []                                     ## list of input MS filenames (full path)
+! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the calibration values from the calibrator pipeline
+
+## information about the output
+! target_output_filenames  =  []                                     ## list of output MS filenames (full path)
+#! h5parm_output_filenames  =  []                                     ## list of output solution table filenames (full path) (note: this is disabled until MOM can support feedback of solutions from target pipeline)
 
 ## location of the software
-! prefactor_directory      =  /home/drabent/prefactor                ## path to your prefactor copy
-! losoto_directory         =  /home/drabent/losoto                   ## path to your local LoSoTo installation
+! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor copy
+! losoto_directory         =  $LOSOTO_PATH                           ## path to your local LoSoTo installation
 
 ##########################################
 ### parameters you may need to adjust   ##
 ##########################################
 
-! refant                   = 'CS001HBA0'                             ## name of the station that will be used as a reference for the phase-plots
+! refant                   =  CS001HBA0                              ## name of the station that will be used as a reference for the phase-plots
 ! flag_baselines           =  []                                     ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault                             ## strategy to be applied with the statistical flagger (AOFlagger)
@@ -63,9 +67,9 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! results_directory        =  {{ job_directory }}/results            ## location of the results
 ! inspection_directory     =  {{ results_directory }}/inspection     ## directory where the inspection plots will be stored
 ! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm solution set will be stored
-
-## calibrator solutions
-! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
+! msfiles_metadata_file    =  input.output.working_directory/input.output.job_name/msfiles.metadata
+! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
+! parset_prefix            =  none
 
 ## averaging for the target data
 ! avg_timeresolution       =  4.                                     ## average to 4 sec/timeslot
@@ -87,14 +91,14 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ########################################################
 
 # which steps to run
-pipeline.steps             =  [prep, {{ substep }} concat, gsmcal]
+pipeline.steps             =  [prep, {{ substep }} concat, gsmcal, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, combine_data_target_map, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
+pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, ms_concat_target, ms_concat_target_map, ndppp_flag_target, sortmap_target, do_sortmap_maps, dpppconcat]
 pipeline.steps.gsmcal      =  [check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, gsmcal_solve, h5imp_gsmcal, prepare_losoto_gsmcal, process_losoto_gsmcal, h5exp_gsmcal, gsmcal_apply]
-
+pipeline.steps.feedback    =  [make_msfiles_metadata]
 
 #############################
 ## Prepare target part     ##
@@ -106,12 +110,19 @@ mk_targ_values_dir.control.directory                           =   {{ cal_values
 
 # generate a mapfile of all the target data
 createmap_target.control.kind                                  =   plugin
-createmap_target.control.type                                  =   createMapfile
-createmap_target.control.method                                =   mapfile_from_folder
+createmap_target.control.type                                  =   addListMapfile
+createmap_target.control.hosts                                 =   [localhost]
+createmap_target.control.files                                 =   {{ target_input_filenames }}
 createmap_target.control.mapfile_dir                           =   input.output.mapfile_dir
 createmap_target.control.filename                              =   createmap_target.mapfile
-createmap_target.control.folder                                =   {{ target_input_path }}
-createmap_target.control.pattern                               =   {{ target_input_pattern }}
+
+# generate a mapfile of the output MS files
+create_output_msfiles_map.control.kind                         =   plugin
+create_output_msfiles_map.control.type                         =   addListMapfile
+create_output_msfiles_map.control.hosts                        =   [localhost]
+create_output_msfiles_map.control.files                        =   {{ target_output_filenames }}
+create_output_msfiles_map.control.mapfile_dir                  =   input.output.mapfile_dir
+create_output_msfiles_map.control.filename                     =   output_msfiles.mapfile
 
 # combine all entries into one mapfile, for the sortmap script
 combine_data_target_map.control.kind                           =   plugin
@@ -187,7 +198,7 @@ ndppp_prep_target.argument.elev.type                           =   preflagger
 ndppp_prep_target.argument.elev.elevation                      =   0deg..20deg
 ndppp_prep_target.argument.filter.type                         =   filter
 ndppp_prep_target.argument.filter.baseline                     =   CS*, RS*&&
-ndppp_prep_target.argument.filter.remove                       =   true                     # fully kick out the international stations.
+ndppp_prep_target.argument.filter.remove                       =   true
 ndppp_prep_target.argument.flagamp.type                        =   preflagger
 ndppp_prep_target.argument.flagamp.amplmin                     =   1e-30
 ndppp_prep_target.argument.applyclock.type                     =   applycal
@@ -312,8 +323,10 @@ ndppp_flag_target.control.type                                 =   dppp
 ndppp_flag_target.control.max_per_node                         =   1
 ndppp_flag_target.control.inplace                              =   True
 ndppp_flag_target.control.error_tolerance                      =   {{ error_tolerance }}
+ndppp_flag_target.control.mapfile_in                           =   ms_concat_target.output.mapfile
+ndppp_flag_target.control.inputkey                             =   msin
 ndppp_flag_target.argument.numthreads                          =   {{ num_proc_per_node }}
-ndppp_flag_target.argument.msin                                =   ms_concat_target.output.mapfile    # The input data.
+ndppp_flag_target.argument.msin                                =   msin
 ndppp_flag_target.argument.msin.datacolumn                     =   DATA
 ndppp_flag_target.argument.steps                               =   [flag]
 ndppp_flag_target.argument.flag.type                           =   aoflagger
@@ -345,7 +358,7 @@ dpppconcat.control.type                                        =   dppp
 dpppconcat.control.max_per_node                                =   {{ num_proc_per_node_limit }}
 dpppconcat.control.error_tolerance                             =   {{ error_tolerance }}
 dpppconcat.control.mapfile_out                                 =   do_sortmap_maps.output.groupmap # tell the pipeline to give the output useful names
-dpppconcat.control.mapfiles_in                                 =   [do_sortmap_maps.output.datamap]
+dpppconcat.control.mapfile_in                                  =   do_sortmap_maps.output.datamap
 dpppconcat.control.inputkey                                    =   msin
 dpppconcat.argument.msin.datacolumn                            =   DATA
 dpppconcat.argument.msin.missingdata                           =   True    #\ these two lines will make NDPPP generate dummy data when
@@ -437,8 +450,10 @@ gsmcal_solve.control.type                                      =   dppp
 gsmcal_solve.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_solve.control.inplace                                   =   True
 gsmcal_solve.control.max_per_node                              =   {{ num_proc_per_node_limit }}
+gsmcal_solve.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
+gsmcal_solve.control.inputkeys                                 =   [input_file,sourcedb,parmdb]
 gsmcal_solve.argument.numthreads                               =   {{ max_dppp_threads }}
-gsmcal_solve.argument.msin                                     =   check_unflagged_map.output.mapfile
+gsmcal_solve.argument.msin                                     =   input_file
 gsmcal_solve.argument.msin.datacolumn                          =   DATA
 gsmcal_solve.argument.msin.baseline                            =   CS*&; RS*&; CS*&RS*
 gsmcal_solve.argument.msout.datacolumn                         =   CORRECTED_DATA
@@ -450,8 +465,8 @@ gsmcal_solve.argument.gaincal.maxiter                          =   50
 gsmcal_solve.argument.gaincal.caltype                          =   phaseonly
 gsmcal_solve.argument.gaincal.nchan                            =   0
 gsmcal_solve.argument.gaincal.solint                           =   1
-gsmcal_solve.argument.gaincal.sourcedb                         =   expand_sourcedb_target.output.mapfile
-gsmcal_solve.argument.gaincal.parmdb                           =   gsmcal_parmmap.output.mapfile
+gsmcal_solve.argument.gaincal.sourcedb                         =   sourcedb
+gsmcal_solve.argument.gaincal.parmdb                           =   parmdb
 gsmcal_solve.argument.gaincal.usebeammodel                     =   True
 gsmcal_solve.argument.gaincal.usechannelfreq                   =   True
 gsmcal_solve.argument.gaincal.beammode                         =   array_factor
@@ -536,8 +551,10 @@ gsmcal_apply.control.type                                      =   dppp
 gsmcal_apply.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_apply.control.inplace                                   =   True
 gsmcal_apply.control.max_per_node                              =   {{ num_proc_per_node_limit }}
+gsmcal_apply.control.mapfile_in                                =   check_unflagged_map.output.mapfile
+gsmcal_apply.control.inputkey                                  =   input_file
 gsmcal_apply.argument.numthreads                               =   {{ max_dppp_threads }}
-gsmcal_apply.argument.msin                                     =   check_unflagged_map.output.mapfile
+gsmcal_apply.argument.msin                                     =   input_file
 gsmcal_apply.argument.msin.datacolumn                          =   DATA
 gsmcal_apply.argument.msout.datacolumn                         =   CORRECTED_DATA
 gsmcal_apply.argument.msout.writefullresflag                   =   False
@@ -553,6 +570,31 @@ gsmcal_apply.argument.applycal.correction                      =   phase000
 gsmcal_apply.argument.applycal.parmdb                          =   {{ cal_solutions }}
 gsmcal_apply.argument.applycal.solset                          =   target
 
+################################
+## feed back the results      ##
+################################
+# copy h5parm to output files (note: this is disabled until MOM can support feedback of solutions from target pipeline)
+# copy_output_h5parmfiles.control.kind             =   plugin
+# copy_output_h5parmfiles.control.type             =   copyFiles
+# copy_output_h5parmfiles.control.hosts            =   [localhost]
+# copy_output_h5parmfiles.control.input_file       =   input.output.working_directory/h5imp_gsmsol_losoto.h5
+# copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
+# copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
+# copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
+
+# make the metadata for the output MS files
+make_msfiles_metadata.control.kind                   =   feedback
+make_msfiles_metadata.control.mapfile_in             =   ndppp_prep_target.output.mapfile
+make_msfiles_metadata.control.metadata_file          =   {{ msfiles_metadata_file }}
+make_msfiles_metadata.control.product_type           =   Correlated
+make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
+
+# make the metadata for the output solutions (note: this is disabled until MOM can support feedback of solutions from target pipeline)
+# make_h5parm_metadata.control.kind                    =   feedback
+# make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles.output.mapfile
+# make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
+# make_h5parm_metadata.control.product_type            =   InstrumentModel
+# make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
 
 ########################################################
 ##                                                    ##

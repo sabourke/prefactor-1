@@ -1,9 +1,11 @@
-# prefactor
+# prefactor (production version)
 ## The LOFAR pre-facet calibration pipeline.
 
 Parsets for the genericpipeline that do the first calibration of LOFAR data. Originally in order
 to prepare said data for the Factor facet calibration (https://github.com/lofar-astron/factor), but
 also useful if you don't plan to run Factor.
+
+Note: this is the production version for use in automated processing on CEP4/LTA sites.
 
 It includes:
 * applying Ionospheric RM corrections
@@ -20,10 +22,7 @@ The documentation can be found on the GitHub wiki pages: https://github.com/lofa
 There are several pipeline parsets in this repository:
 * Pre-Facet-Calibrator.parset : The calibrator part of the "standard" pre-facet calibration pipeline.
 * Pre-Facet-Target.parset : The target part of the "standard" pre-facet calibration pipeline.
-* Initial-Subtract-Fast.parset : A pipeline that generates full FoV images and subtracts the sky-models from the visibilities. (Needed for facet-calibration.)
-* Initial-Subtract-IDG.parset : Same as Initial-Subtract.parset, but uses the image domain gridder (IDG) in WSClean
-* Initial-Subtract-IDG-LowMemory.parset : Same as Initial-Subtract.parset, but uses the image domain gridder (IDG) in WSClean for high-res imaging
-* Initial-Subtract-Deep.parset : Same as Initial-Subtract.parset, but it does only one image of the full bandwidth instead of imaging the bands separately.
+* Pre-Facet-Image.parset : The imageing part of the "standard" pre-facet calibration pipeline.
 
 Software requirements:
 * the full "offline" LOFAR software installation (version >= 3.1)
