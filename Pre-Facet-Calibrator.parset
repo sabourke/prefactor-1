@@ -2,6 +2,7 @@
 # Pre-Facet Calibrator Calibration Pipeline                              #
 #                                                                        #
 # Calibrator part of the basic Pre-Facet calibration pipeline:           #
+# - intended for use in production runs                                  #
 # - requires LOFAR software version  >= 3.1.0                            #
 # - requires losoto software version >= 2.0.0                            #
 # - expects shared filesystem, that all nodes can reach all files!       #

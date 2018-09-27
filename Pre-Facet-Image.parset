@@ -1,50 +1,42 @@
-##################################################################################
-# Pre-Facet-Image Production Pipeline                                            #
-#                                                                                #
-# Pipeline to do the imaging of the target data:                                 #
-# - intended for use in production runs on CEP                                   #
-# - requires LOFAR software version  >= 2.17                                     #
-# - requires WSClean software version >= 2.5                                     #
-# - expects shared filesystem, that all nodes can reach all files!               #
-#                                                                                #
-# For this pipeline to work the data must have:                                  #
-# - in the DATA column:                                                          #
-#   - the average amplitude scale set                                            #
-#   - the average clock offsets removed                                          #
-#   - the LOFAR beam towards the phase center corrected                          #
-# - in the CORRECTED_DATA column:                                                #
-#   - the DATA calibrated with the gains in supplied the                         #
-#     direction-indepndent parmDB                                                #
-# The Pre-Facet pipelines will supply exactly this kind of data.                 #
-##################################################################################
+##########################################################################
+# Pre-Facet-Image Production Pipeline                                    #
+#                                                                        #
+# Pipeline to do the imaging of the target data:                         #
+# - intended for use in production runs                                  #
+# - requires LOFAR software version >= 3.1.0                             #
+# - requires WSClean software version >= 2.5                             #
+# - expects shared filesystem, that all nodes can reach all files!       #
+#   (E.g. a single workstation or compute cluster with shared filesystem #
+#   doesn't work on multiple nodes on CEP3.)                             #
+##########################################################################
 
 ## information about the input data
-! data_input_filenames     =  []  ## list of input MS filenames (full path)
+! data_input_filenames     =  []                                  ## list of input MS filenames (full path)
 
 ## information about the output
-! image_output_filenames   =  []  ## list of output image filenames (full path)
+! image_output_filenames   =  []                                  ## list of output image filenames (full path)
 
 ## location of the software
-! prefactor_directory      =  $PREFACTOR_PATH      ## path to your prefactor copy
-! wsclean_executable       =  $WSCLEAN_EXECUTABLE  ## path to your local WSClean executable
+! prefactor_directory      =  $PREFACTOR_PATH                     ## path to your prefactor copy
+! wsclean_executable       =  $WSCLEAN_EXECUTABLE                 ## path to your local WSClean executable
 
 ## imaging parameters
-! cellsize_highres_deg     =  0.00208  ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
-! fieldsize_highres        =  2.5      ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
-! maxlambda_highres        =  7000     ## maximum uv-distance in lambda that will be used for imaging
-! image_padding            =  1.4      ## how much padding shall we add during the imaging?
-! axis_stretch             =  1.0      ## how much shall the y-axis be stretched or compressed?
-! idg_mode                 =  hybrid   ## IDG mode to use: cpu or hybrid (= CPU + GPU)
+! cellsize_highres_deg     =  0.00208                             ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
+! fieldsize_highres        =  2.5                                 ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
+! maxlambda_highres        =  7000                                ## maximum uv-distance in lambda that will be used for imaging
+! image_padding            =  1.4                                 ## how much padding shall we add during the imaging?
+! axis_stretch             =  1.0                                 ## how much shall the y-axis be stretched or compressed?
+! idg_mode                 =  hybrid                              ## IDG mode to use: cpu or hybrid (= CPU + GPU)
 
 ## pipeline performance
-! max_imagers_per_node     =  2      ## number of simultaneous imager process per node
-! max_percent_mem_per_img  =  45     ## max memory (as % of total) per imager process
-! max_cpus_per_img         =  20     ## number of cpus per imager process
-! error_tolerance          =  False  ## set this to True if you want the pipeline run to continue if single bands fail
+! max_imagers_per_node     =  2                                   ## number of simultaneous imager process per node
+! max_percent_mem_per_img  =  45                                  ## max memory (as % of total) per imager process
+! max_cpus_per_img         =  20                                  ## number of cpus per imager process
+! error_tolerance          =  False                               ## set this to True if you want the pipeline run to continue if single bands fail
 
 ## main directories
-! lofar_directory          =  $LOFARROOT                  ## base directory of your LOFAR installation
-! job_directory            =  input.output.job_directory  ## directory of the prefactor outputs
+! lofar_directory          =  $LOFARROOT                          ## base directory of your LOFAR installation
+! job_directory            =  input.output.job_directory          ## directory of the prefactor outputs
 
 ## script and plugin directories
 ! scripts                  =  {{ prefactor_directory }}/scripts
