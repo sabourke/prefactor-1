@@ -241,10 +241,10 @@ predict_cal.argument.predict.beammode                       =   array_factor
 
 # generate mapfile with the h5parm names to be used in the calib_cal steps
 calib_cal_parmmap.control.kind                              =   plugin
-calib_cal_parmmap.control.type                              =   createMapfile
-calib_cal_parmmap.control.method                            =   add_suffix_to_file
+calib_cal_parmmap.control.type                              =   changeDirectory
 calib_cal_parmmap.control.mapfile_in                        =   ndppp_prep_cal.output.mapfile
-calib_cal_parmmap.control.add_suffix_to_file                =   .h5
+calib_cal_parmmap.control.new_dir                           =   input.output.working_directory
+calib_cal_parmmap.control.append                            =   .h5
 calib_cal_parmmap.control.mapfile_dir                       =   input.output.mapfile_dir
 calib_cal_parmmap.control.filename                          =   calib_cal_h5parms.mapfile
 
@@ -505,7 +505,7 @@ prepare_losoto_bandpass.control.flag.axesToFlag             =   [time]
 prepare_losoto_bandpass.control.flag.order                  =   [100]
 prepare_losoto_bandpass.control.flag.maxCycles              =   1
 prepare_losoto_bandpass.control.flag.maxRms                 =   5
-prepare_losoto_bandpass.control.flag.replce                 =   False
+prepare_losoto_bandpass.control.flag.replace                =   False
 prepare_losoto_bandpass.control.flag.preFlagZeros           =   False
 prepare_losoto_bandpass.control.flag.mode                   =   smooth
 prepare_losoto_bandpass.control.flagextend.operation        =   FLAGEXTEND
