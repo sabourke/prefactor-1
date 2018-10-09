@@ -23,6 +23,10 @@ def plugin_main(args, **kwargs):
     hosts : list or str
         List of hosts/nodes. May be given as a list or as a string (e.g.,
         '[host1, host2]'
+    use_symlinks : bool
+        If True, use sym links instead of copying. The input_file will be copied to the
+        output directory and the output mapfile will be populated with the copy's path
+        in every entry
     mapfile_dir : str
         Directory for output mapfile
     filename: str
@@ -51,6 +55,10 @@ def plugin_main(args, **kwargs):
         hosts = [h.strip() for h in hosts]
     mapfile_dir = kwargs['mapfile_dir']
     filename = kwargs['filename']
+    if 'use_symlinks' in kwargs:
+        use_symlinks = string2bool(use_symlinks)
+    else:
+        use_symlinks = False
 
     for i in range(len(files)-len(hosts)):
         hosts.append(hosts[i])
@@ -60,22 +68,55 @@ def plugin_main(args, **kwargs):
     else:
         map_in = DataMap.load(kwargs['input_mapfile'])
         file_in = map_in[0].file
+
+    # If symlinks are used, copy file_in so that it is present in the output path. Then,
+    # use this copy in the output mapfile
+    if use_symlinks:
+        file_in_copy = os.path.join(os.path.dirname(files[0]), os.path.basename(file_in))
+        if os.path.isdir(file_in):
+            if os.path.exists(file_in_copy):
+                delete_directory(file_in_copy)
+            shutil.copytree(file_in, file_in_copy)
+        else:
+            if os.path.exists(file_in_copy):
+                os.remove(file_in_copy)
+            shutil.copyfile(file_in, file_in_copy)
+        file_in = file_in_copy
+
     map_out = DataMap([])
     for h, f in zip(hosts, files):
         # Copy file to output, deleting exiting file if needed
-        # Note: should we use rsync here instead?
         if os.path.isdir(file_in):
             if os.path.exists(f):
                 delete_directory(f)
-            shutil.copytree(file_in, f)
+            if use_symlinks:
+                os.symlink(file_in, f)
+            else:
+                shutil.copytree(file_in, f)
         else:
             if os.path.exists(f):
                 os.remove(f)
-            shutil.copyfile(file_in, f)
-        map_out.data.append(DataProduct(h, f, False))
+            if use_symlinks:
+                os.symlink(file_in, f)
+            else:
+                shutil.copyfile(file_in, f)
+        if use_symlinks:
+            map_out.data.append(DataProduct(h, file_in, False))
+        else:
+            map_out.data.append(DataProduct(h, f, False))
 
     fileid = os.path.join(mapfile_dir, filename)
     map_out.save(fileid)
     result = {'mapfile': fileid}
 
     return result
+
+def string2bool(instring):
+    if not isinstance(instring, basestring):
+        raise ValueError('string2bool: Input is not a basic string!')
+    if instring.upper() == 'TRUE' or instring == '1':
+        return True
+    elif instring.upper() == 'FALSE' or instring == '0':
+        return False
+    else:
+        raise ValueError('string2bool: Cannot convert string "'+instring+'" to boolean!')

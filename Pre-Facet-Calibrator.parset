@@ -817,8 +817,9 @@ apply_FR.argument.applyFR.parmdb                            =   {{ cal_solutions
 copy_output_h5parmfiles.control.kind                        =   plugin
 copy_output_h5parmfiles.control.type                        =   copyFiles
 copy_output_h5parmfiles.control.hosts                       =   [localhost]
-copy_output_h5parmfiles.control.input_mapfile               =   h5imp_cal.output.mapfile
+copy_output_h5parmfiles.control.input_file                  =   {{ cal_solutions }}
 copy_output_h5parmfiles.control.output_files                =   {{ h5parm_output_filenames }}
+copy_output_h5parmfiles.control.use_symlinks                =   True
 copy_output_h5parmfiles.control.mapfile_dir                 =   input.output.mapfile_dir
 copy_output_h5parmfiles.control.filename                    =   output_h5parmfiles.mapfile
 
