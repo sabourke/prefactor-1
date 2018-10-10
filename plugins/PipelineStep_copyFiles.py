@@ -56,7 +56,7 @@ def plugin_main(args, **kwargs):
     mapfile_dir = kwargs['mapfile_dir']
     filename = kwargs['filename']
     if 'use_symlinks' in kwargs:
-        use_symlinks = string2bool(use_symlinks)
+        use_symlinks = string2bool(kwargs['use_symlinks'])
     else:
         use_symlinks = False
 
