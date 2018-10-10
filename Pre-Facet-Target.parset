@@ -145,12 +145,13 @@ combine_data_target_map.control.mapfile_in                     =   createmap_tar
 h5imp_RMextract.control.type                                   =   pythonplugin
 h5imp_RMextract.control.executable                             =   {{ scripts }}/createRMh5parm.py
 h5imp_RMextract.control.error_tolerance                        =   {{ error_tolerance }}
-h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ cal_solutions }}]
+h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ h5parm_input_filename }}]
 h5imp_RMextract.argument.ionex_server                          =   {{ ionex_server }}
 h5imp_RMextract.argument.ionex_prefix                          =   {{ ionex_prefix }}
 h5imp_RMextract.argument.ionexPath                             =   {{ ionex_path }}
 h5imp_RMextract.argument.solset_name                           =   target
 h5imp_RMextract.argument.all_stations                          =   True
+h5imp_RMextract.argument.output_h5parmdb                       =   {{ cal_solutions }}
 
 # create losoto v2 parset file
 prepare_losoto_RMextract.control.kind                          =   plugin
