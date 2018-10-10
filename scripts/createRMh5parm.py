@@ -101,11 +101,10 @@ def main(MSfiles, h5parmdb, solset_name = "sol000", all_stations=False, timestep
             raise ValueError("Couldn't get RM information from RMextract! (But I don't know why.)")
 
     if output_h5parmdb is not None:
-        if not os.path.samefile(h5parmdb, output_h5parmdb):
-            if os.path.exists(output_h5parmdb):
-                os.remove(output_h5parmdb)
-            shutil.copyfile(h5parmdb, output_h5parmdb)
-            h5parmdb = output_h5parmdb
+        if os.path.exists(output_h5parmdb):
+            os.remove(output_h5parmdb)
+        shutil.copyfile(h5parmdb, output_h5parmdb)
+        h5parmdb = output_h5parmdb
     data = h5parm(h5parmdb, readonly=False)
     if not solset_name in data.getSolsetNames():
         makesolset(MS,data,solset_name)
