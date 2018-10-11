@@ -14,7 +14,7 @@
 ! data_input_filenames     =  []                                  ## list of input MS filenames (full path)
 
 ## information about the output
-! image_output_filenames   =  []                                  ## list of output image filenames (full path)
+! image_output_filenames   =  []                                  ## list of output image filenames for feedback (full path)
 
 ## location of the software
 ! prefactor_directory      =  $PREFACTOR_PATH                     ## path to your prefactor copy
@@ -43,14 +43,15 @@
 pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 
 ## result and scratch directories
-! results_directory        =  {{ job_directory }}/results         ## location of the results
-! inspection_directory     =  {{ results_directory }}/inspection  ## directory where the images will be stored
 ! local_scratch_dir        =  /tmp                                ## scratch directory for wsclean (can be local to the processing nodes!)
 ! images_metadata_file     =  input.output.working_directory/input.output.job_name/images.metadata
 ! parset_prefix            =  none
 
+## image root name
+! image_rootname = {{ job_directory }}/fullband                   ## image root name
+
 # which steps to run
-pipeline.steps = [create_ms_map, create_output_images_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep,  wsclean_high_deep, createmap_high_deep_image, make_source_list, move_high_deep, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep, wsclean_high_deep, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -60,33 +61,25 @@ create_ms_map.control.files                          =   {{ data_input_filenames
 create_ms_map.control.mapfile_dir                    =   input.output.mapfile_dir
 create_ms_map.control.filename                       =   create_ms_map.mapfile
 
-# generate a mapfile of the output images
-create_output_images_map.control.kind               =   plugin
-create_output_images_map.control.type               =   addListMapfile
-create_output_images_map.control.hosts              =   [localhost]
-create_output_images_map.control.files              =   {{ image_output_filenames }}
-create_output_images_map.control.mapfile_dir        =   input.output.mapfile_dir
-create_output_images_map.control.filename           =   output_images.mapfile
-
 # generate a mapfile with all files in a single entry, length = 1
-combine_mapfile.control.kind                    =  plugin
-combine_mapfile.control.type                    =  createMapfile
-combine_mapfile.control.method                  =  mapfile_all_to_one
-combine_mapfile.control.mapfile_in              =  create_ms_map.output.mapfile
-combine_mapfile.control.mapfile_dir             =  input.output.mapfile_dir
-combine_mapfile.control.filename                =  combine_mapfile.mapfile
+combine_mapfile.control.kind                         =  plugin
+combine_mapfile.control.type                         =  createMapfile
+combine_mapfile.control.method                       =  mapfile_all_to_one
+combine_mapfile.control.mapfile_in                   =  create_ms_map.output.mapfile
+combine_mapfile.control.mapfile_dir                  =  input.output.mapfile_dir
+combine_mapfile.control.filename                     =  combine_mapfile.mapfile
 
 # compute frequency groupings, image sizes, averaging values, etc., len = different
 # the deep version of the do_magic_script should return mapfiles sorted by increasing frequency
-do_magic.control.type                           =  pythonplugin
-do_magic.control.executable                     =  {{ scripts }}/InitSubtract_deep_sort_and_compute.py
-do_magic.argument.flags                         =  [combine_mapfile.output.mapfile]
-do_magic.argument.outmapname                    =  do_magic.datamap
-do_magic.argument.mapfile_dir                   =  input.output.mapfile_dir
-do_magic.argument.cellsize_highres_deg          =  {{ cellsize_highres_deg }}
-do_magic.argument.fieldsize_highres             =  {{ fieldsize_highres }}
-do_magic.argument.image_padding                 =  {{ image_padding }}
-do_magic.argument.y_axis_stretch                =  {{ axis_stretch }}
+do_magic.control.type                                =  pythonplugin
+do_magic.control.executable                          =  {{ scripts }}/InitSubtract_deep_sort_and_compute.py
+do_magic.argument.flags                              =  [combine_mapfile.output.mapfile]
+do_magic.argument.outmapname                         =  do_magic.datamap
+do_magic.argument.mapfile_dir                        =  input.output.mapfile_dir
+do_magic.argument.cellsize_highres_deg               =  {{ cellsize_highres_deg }}
+do_magic.argument.fieldsize_highres                  =  {{ fieldsize_highres }}
+do_magic.argument.image_padding                      =  {{ image_padding }}
+do_magic.argument.y_axis_stretch                     =  {{ axis_stretch }}
 
 # convert the output of do_magic into usable mapfiles,len = 1 / different
 do_magic_maps.control.kind                           =  plugin
@@ -110,15 +103,14 @@ combine_mapfile_deep.control.filename                =  combine_mapfile_deep.map
 wsclean_high_deep.control.kind                      =   recipe
 wsclean_high_deep.control.type                      =   executable_args
 wsclean_high_deep.control.executable                =   {{ wsclean_executable }}
-wsclean_high_deep.control.mapfile_out               =   create_output_images_map.output.mapfile
-wsclean_high_deep.control.outputsuffixes            =   [-MFS-image.fits,-MFS-model.fits]
-wsclean_high_deep.control.outputkey                 =   name
+wsclean_high_deep.control.inplace                   =   True
 wsclean_high_deep.control.args_format               =   wsclean
 wsclean_high_deep.control.max_per_node              =   1
 wsclean_high_deep.control.error_tolerance           =   {{ error_tolerance }}
 wsclean_high_deep.control.mapfiles_in               =   [combine_mapfile_deep.output.mapfile,do_magic_maps.output.deep_high_size_map,do_magic_maps.output.nchansout_clean1_map]
 wsclean_high_deep.control.inputkeys                 =   [msfile,outputsize,nchansout_clean1]
 wsclean_high_deep.argument.flags                    =   [-no-update-model-required,-reorder,-fit-beam,-join-channels,-use-idg,msfile]
+wsclean_high_deep.argument.name                     =   {{ image_rootname }}
 wsclean_high_deep.argument.size                     =   outputsize
 wsclean_high_deep.argument.padding                  =   {{ image_padding }}
 wsclean_high_deep.argument.channels-out             =   nchansout_clean1
@@ -140,43 +132,44 @@ wsclean_high_deep.argument.local-rms-window         =   50
 wsclean_high_deep.argument.local-rms-method         =   rms-with-min
 wsclean_high_deep.argument.idg-mode                 =   {{ idg_mode }}
 
-# create a map with the wsclean MFS image only, length = 1
-createmap_high_deep_image.control.kind              =   plugin
-createmap_high_deep_image.control.type              =   createMapfile
-createmap_high_deep_image.control.method            =   mapfile_from_folder
-createmap_high_deep_image.control.mapfile_dir       =   input.output.mapfile_dir
-createmap_high_deep_image.control.filename          =   wsclean_high_deep_image.mapfile
-createmap_high_deep_image.control.folder            =   input.output.working_directory/input.output.job_name
-createmap_high_deep_image.control.pattern           =   *wsclean_high_deep-MFS-image.fits
+# create a map with the wsclean MFS image only, length = 1 (note: disabled until source list can be fed back)
+# createmap_high_deep_image.control.kind              =   plugin
+# createmap_high_deep_image.control.type              =   createMapfile
+# createmap_high_deep_image.control.method            =   mapfile_from_folder
+# createmap_high_deep_image.control.mapfile_dir       =   input.output.mapfile_dir
+# createmap_high_deep_image.control.filename          =   wsclean_high_deep_image.mapfile
+# createmap_high_deep_image.control.folder            =   input.output.working_directory/input.output.job_name
+# createmap_high_deep_image.control.pattern           =   *wsclean_high_deep-MFS-image.fits
 
-# make source list for the high-res image, length = 1
+# make source list for the high-res image, length = 1 (note: disabled until source list can be fed back)
 # Note: until image is primary-beam corrected, fluxes will be apparent
-make_source_list.control.type                       =   pythonplugin
-make_source_list.control.executable                 =   {{ scripts }}/make_source_list.py
-make_source_list.control.max_per_node               =   {{ max_imagers_per_node }}
-make_source_list.control.error_tolerance            =   {{ error_tolerance }}
-make_source_list.control.mapfile_in                 =   createmap_high_deep_image.output.mapfile
-make_source_list.control.inputkey                   =   imagefile
-make_source_list.control.outputkey                  =   catalogfile
-make_source_list.argument.flags                     =   [imagefile,catalogfile]
-make_source_list.argument.threshisl                 =   3.0
-make_source_list.argument.threshpix                 =   5.0
-make_source_list.argument.atrous_do                 =   True
-make_source_list.argument.rmsbox                    =   (60,20)
-make_source_list.argument.adaptive_rmsbox           =   True
+# make_source_list.control.type                       =   pythonplugin
+# make_source_list.control.executable                 =   {{ scripts }}/make_source_list.py
+# make_source_list.control.max_per_node               =   {{ max_imagers_per_node }}
+# make_source_list.control.error_tolerance            =   {{ error_tolerance }}
+# make_source_list.control.mapfile_in                 =   createmap_high_deep_image.output.mapfile
+# make_source_list.control.inputkey                   =   imagefile
+# make_source_list.control.outputkey                  =   catalogfile
+# make_source_list.argument.flags                     =   [imagefile,catalogfile]
+# make_source_list.argument.threshisl                 =   3.0
+# make_source_list.argument.threshpix                 =   5.0
+# make_source_list.argument.atrous_do                 =   True
+# make_source_list.argument.rmsbox                    =   (60,20)
+# make_source_list.argument.adaptive_rmsbox           =   True
 
-# copy the high image to where we want it
-move_high_deep.control.kind                         =  recipe
-move_high_deep.control.type                         =  executable_args
-move_high_deep.control.executable                   =  /bin/cp
-move_high_deep.control.max_per_node                 =  1
-move_high_deep.control.mapfile_in                   =  createmap_high_deep_image.output.mapfile
-move_high_deep.control.inputkey                     =  source
-move_high_deep.control.arguments                    =  [source,{{ inspection_directory }}]
+# copy image to output filenames expected for feedback
+copy_output_images.control.kind                     =   plugin
+copy_output_images.control.type                     =   copyFiles
+copy_output_images.control.hosts                    =   [localhost]
+copy_output_images.control.input_file               =   {{ image_rootname }}-MFS-image.fits
+copy_output_images.control.output_files             =   {{ image_output_filenames }}
+copy_output_images.control.use_symlinks             =   True
+copy_output_images.control.mapfile_dir              =   input.output.mapfile_dir
+copy_output_images.control.filename                 =   output_images.mapfile
 
 # make feedback metadata for the output image
 make_image_metadata.control.kind                    =   feedback
-make_image_metadata.control.mapfile_in              =   createmap_high_deep_image.output.mapfile
+make_image_metadata.control.mapfile_in              =   copy_output_images.output.mapfile
 make_image_metadata.control.metadata_file           =   {{ images_metadata_file }}
 make_image_metadata.control.product_type            =   SkyImage
 make_image_metadata.control.parset_prefix           =   {{ parset_prefix }}
