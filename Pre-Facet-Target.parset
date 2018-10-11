@@ -102,7 +102,7 @@ pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_outp
 pipeline.steps.clipATeam   =  [create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, ms_concat_target, ms_concat_target_map, ndppp_flag_target, sortmap_target, do_sortmap_maps, dpppconcat]
 pipeline.steps.gsmcal      =  [check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, gsmcal_solve, h5imp_gsmcal, prepare_losoto_gsmcal, process_losoto_gsmcal, h5exp_gsmcal, gsmcal_apply]
-pipeline.steps.feedback    =  [copy_output_h5parmfiles, make_msfiles_metadata]
+pipeline.steps.feedback    =  [make_msfiles_metadata]
 
 
 #############################
@@ -566,15 +566,15 @@ gsmcal_apply.argument.applycal.solset                          =   target
 ################################
 ## feed back the results      ##
 ################################
-# copy h5parm to output files
-copy_output_h5parmfiles.control.kind             =   plugin
-copy_output_h5parmfiles.control.type             =   copyFiles
-copy_output_h5parmfiles.control.hosts            =   [localhost]
-copy_output_h5parmfiles.control.input_file       =   {{ cal_solutions }}
-copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
-copy_output_h5parmfiles.control.use_symlinks     =   True
-copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
-copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
+# copy h5parm to output files (note: this is disabled until MOM can support feedback of solutions from target pipeline)
+# copy_output_h5parmfiles.control.kind             =   plugin
+# copy_output_h5parmfiles.control.type             =   copyFiles
+# copy_output_h5parmfiles.control.hosts            =   [localhost]
+# copy_output_h5parmfiles.control.input_file       =   {{ cal_solutions }}
+# copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
+# copy_output_h5parmfiles.control.use_symlinks     =   True
+# copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
+# copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                   =   feedback
