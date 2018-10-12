@@ -48,7 +48,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! parset_prefix            =  none
 
 ## image root name
-! image_rootname = {{ job_directory }}/fullband                   ## image root name
+! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
 pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep, wsclean_high_deep, copy_output_images, make_image_metadata]
