@@ -25,6 +25,7 @@
 ## location of the software
 ! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor copy
 ! losoto_directory         =  $LOSOTO_PATH                           ## path to your local LoSoTo installation
+! aoflagger                =  $AOFLAGGER_EXECUTABLE                  ## path to your aoflagger executable
 
 ##########################################
 ### parameters you may need to adjust   ##
@@ -100,7 +101,7 @@ pipeline.steps             =  [prep, {{ substep }} concat, gsmcal, feedback]
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar]
-pipeline.steps.concat      =  [combine_target_map, ms_concat_target, ms_concat_target_map, ndppp_flag_target, sortmap_target, do_sortmap_maps, dpppconcat]
+pipeline.steps.concat      =  [combine_target_map, ms_concat_target, ms_concat_target_map, aoflag, sortmap_target, do_sortmap_maps, dpppconcat]
 pipeline.steps.gsmcal      =  [check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, gsmcal_solve, h5imp_gsmcal, prepare_losoto_gsmcal, process_losoto_gsmcal, h5exp_gsmcal, gsmcal_apply]
 pipeline.steps.feedback    =  [make_msfiles_metadata]
 
@@ -315,25 +316,18 @@ ms_concat_target_map.control.kind                              =   plugin
 ms_concat_target_map.control.type                              =   createMapfile
 ms_concat_target_map.control.method                            =   mapfile_from_folder
 ms_concat_target_map.control.mapfile_dir                       =   input.output.mapfile_dir
-ms_concat_target_map.control.filename                          =   ms_concat_target.mapfile
+ms_concat_target_map.control.filename                          =   ms_concat_target_final.mapfile
 ms_concat_target_map.control.folder                            =   {{ job_directory }}
 ms_concat_target_map.control.pattern                           =   *ms_concat_target_?
 
 # run NDPPP on the target data
-ndppp_flag_target.control.type                                 =   dppp
-ndppp_flag_target.control.max_per_node                         =   1
-ndppp_flag_target.control.inplace                              =   True
-ndppp_flag_target.control.error_tolerance                      =   {{ error_tolerance }}
-ndppp_flag_target.control.mapfile_in                           =   ms_concat_target.output.mapfile
-ndppp_flag_target.control.inputkey                             =   msin
-ndppp_flag_target.argument.numthreads                          =   {{ num_proc_per_node }}
-ndppp_flag_target.argument.msin                                =   msin
-ndppp_flag_target.argument.msin.datacolumn                     =   DATA
-ndppp_flag_target.argument.steps                               =   [flag]
-ndppp_flag_target.argument.flag.type                           =   aoflagger
-ndppp_flag_target.argument.flag.keepstatistics                 =   True
-ndppp_flag_target.argument.flag.strategy                       =   {{ lofar_directory }}/share/rfistrategies/{{ rfistrategy }}
-# ndppp_flag_target.argument.flag.memoryperc                     =   90
+# run aoflagger on the concatenated data
+aoflag.control.kind                                         =   recipe
+aoflag.control.type                                         =   executable_args
+aoflag.control.executable                                   =   {{ aoflagger }}
+aoflag.control.max_per_node                                 =   1
+aoflag.control.error_tolerance                              =   {{ error_tolerance }}
+aoflag.argument.flags                                       =   [-v,-combine-spws,ms_concat_target_map.output.mapfile]
 
 # sort the target data by frequency into groups so that NDPPP can concatenate them
 sortmap_target.control.type                                    =   pythonplugin
