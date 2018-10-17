@@ -486,7 +486,7 @@ h5imp_cal_bandpass.argument.outh5parm                       =   outh5parm
 # create losoto v2 parset file
 prepare_losoto_bandpass.control.kind                        =   plugin
 prepare_losoto_bandpass.control.type                        =   makeLosotoParset
-prepare_losoto_bandpass.control.steps                       =   [plotA1,flag,flagextend,plotA2,merge,bandpass,flagbp,plotB1,plotB2,plotB3,residualA,plotAr3]
+prepare_losoto_bandpass.control.steps                       =   [plotA1,flag,flagextend,plotA2,merge,bandpass,flagbp,plotB1,plotB2,plotB3]
 prepare_losoto_bandpass.control.filename                    =   input.output.job_directory/losoto.parset
 prepare_losoto_bandpass.control.global.ncpu                 =   {{ num_proc_per_node }}
 prepare_losoto_bandpass.control.plotA1.operation            =   PLOT
@@ -530,7 +530,7 @@ prepare_losoto_bandpass.control.bandpass.autoFlag           =   False
 prepare_losoto_bandpass.control.bandpass.chanWidth          =   {{ avg_freqresolution }}
 prepare_losoto_bandpass.control.flagbp.operation            =   FLAG
 prepare_losoto_bandpass.control.flagbp.soltab               =   sol000/bandpass
-prepare_losoto_bandpass.control.flagbp.axesToFlag           =   [time]
+prepare_losoto_bandpass.control.flagbp.axesToFlag           =   [freq]
 prepare_losoto_bandpass.control.flagbp.order                =   [100]
 prepare_losoto_bandpass.control.flagbp.maxFlaggedFraction   =   0.5
 prepare_losoto_bandpass.control.flagbp.mode                 =   bandpass
@@ -555,16 +555,6 @@ prepare_losoto_bandpass.control.plotB3.axisInCol            =   ant
 prepare_losoto_bandpass.control.plotB3.plotFlag             =   True
 prepare_losoto_bandpass.control.plotB3.prefix               =   {{ inspection_directory }}/bandpass_
 prepare_losoto_bandpass.control.plotB3.time.minmaxstep      =   [0,1e20,500000]
-prepare_losoto_bandpass.control.residualA.operation         =   RESIDUALS
-prepare_losoto_bandpass.control.residualA.soltab            =   sol000/amplitude000
-prepare_losoto_bandpass.control.residualA.soltabsToSub      =   bandpass
-prepare_losoto_bandpass.control.residualA.ratio             =   True
-prepare_losoto_bandpass.control.plotAr3.operation           =   PLOT
-prepare_losoto_bandpass.control.plotAr3.soltab              =   sol000/amplitude000
-prepare_losoto_bandpass.control.plotAr3.axesInPlot          =   [time,freq]
-prepare_losoto_bandpass.control.plotAr3.axisInTable         =   ant
-prepare_losoto_bandpass.control.plotAr3.plotFlag            =   True
-prepare_losoto_bandpass.control.plotAr3.prefix              =   {{ inspection_directory }}/ampRes_
 
 # do the processing on the LoSoTo file
 process_losoto_bandpass.control.kind                        =   recipe
