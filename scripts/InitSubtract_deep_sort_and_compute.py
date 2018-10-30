@@ -290,13 +290,15 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
     high_paddedsize_map = DataMap([])
     low_paddedsize_map = DataMap([])
     numfiles = 0
-    nbands = len(bands)
+    nbands = np.int(len(bands)/10)
     if nbands > 8:
         nchansout_clean1 = np.int(nbands/4)
     elif nbands > 4:
         nchansout_clean1 = np.int(nbands/2)
     else:
         nchansout_clean1 = np.int(nbands)
+    if nchansout_clean1 < 2:
+        nchansout_clean1 = 2
 
     (freqstep, timestep) = bands[0].get_averaging_steps()
     int_time_sec = bands[0].timestep_sec * timestep   # timestep_sec gets added to band object in get_averaging_steps()
