@@ -23,8 +23,9 @@
 #! h5parm_output_filenames  =  []                                     ## list of output solution table filenames (full path) (note: this is disabled until MOM can support feedback of solutions from target pipeline)
 
 ## location of the software
-! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor copy
+! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor installation
 ! losoto_directory         =  $LOSOTO_PATH                           ## path to your local LoSoTo installation
+! rmextract_directory      =  $RMEXTRACT_PATH                        ## path to your local RMextract installation
 ! aoflagger                =  $AOFLAGGER_EXECUTABLE                  ## path to your aoflagger executable
 
 ##########################################
@@ -145,7 +146,7 @@ combine_data_target_map.control.mapfile_in                     =   createmap_tar
 
 # get ionex files once for every day that is covered by one of the input MSs
 h5imp_RMextract.control.type                                   =   pythonplugin
-h5imp_RMextract.control.executable                             =   {{ scripts }}/createRMh5parm.py
+h5imp_RMextract.control.executable                             =   {{ rmextract_directory }}/bin/createRMh5parm.py
 h5imp_RMextract.control.error_tolerance                        =   {{ error_tolerance }}
 h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ h5parm_input_filename }}]
 h5imp_RMextract.argument.ionex_server                          =   {{ ionex_server }}
