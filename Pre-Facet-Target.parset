@@ -14,9 +14,9 @@
 ### parameters you will need to adjust. ##
 ##########################################
 
-## information about the target data
+## information about the input
 ! target_input_filenames   =  []                                     ## list of input MS filenames (full path)
-! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the calibration values from the calibrator pipeline
+! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the h5parm file from the calibrator pipeline
 
 ## information about the output
 ! target_output_filenames  =  []                                     ## list of output MS filenames (full path)
@@ -75,7 +75,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
 ! parset_prefix            =  none
 
-## calibration solutions
+## calibration solutions output h5parm file
 ! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
 
 ## averaging for the target data
