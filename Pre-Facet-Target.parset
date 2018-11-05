@@ -75,7 +75,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
 ! parset_prefix            =  none
 
-## calibrator solutions
+## calibration solutions
 ! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
 
 ## averaging for the target data
@@ -101,7 +101,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 pipeline.steps             =  [prep, {{ substep }} concat, gsmcal, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
+pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, copy_input_h5parmfile, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, ms_concat_target, ms_concat_target_map, aoflag, sortmap_target, do_sortmap_maps, dpppconcat]
 pipeline.steps.gsmcal      =  [check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, gsmcal_solve, h5imp_gsmcal, prepare_losoto_gsmcal, process_losoto_gsmcal, h5exp_gsmcal, gsmcal_apply]
@@ -144,17 +144,26 @@ combine_data_target_map.control.mapfile_in                     =   createmap_tar
 ## RM target correction    ##
 #############################
 
+# copy the input calibrator h5parm file
+copy_input_h5parmfile.control.kind                             =   plugin
+copy_input_h5parmfile.control.type                             =   copyFiles
+copy_input_h5parmfile.control.hosts                            =   [localhost]
+copy_input_h5parmfile.control.input_file                       =   {{ h5parm_input_filename }}
+copy_input_h5parmfile.control.output_files                     =   [{{ cal_solutions }}]
+copy_input_h5parmfile.control.use_symlinks                     =   False
+copy_input_h5parmfile.control.mapfile_dir                      =   input.output.mapfile_dir
+copy_input_h5parmfile.control.filename                         =   copy_h5parmfile.mapfile
+
 # get ionex files once for every day that is covered by one of the input MSs
 h5imp_RMextract.control.type                                   =   pythonplugin
 h5imp_RMextract.control.executable                             =   {{ rmextract_directory }}/bin/createRMh5parm.py
 h5imp_RMextract.control.error_tolerance                        =   {{ error_tolerance }}
-h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ h5parm_input_filename }}]
+h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ cal_solutions }}]
 h5imp_RMextract.argument.ionex_server                          =   {{ ionex_server }}
 h5imp_RMextract.argument.ionex_prefix                          =   {{ ionex_prefix }}
 h5imp_RMextract.argument.ionexPath                             =   {{ ionex_path }}
 h5imp_RMextract.argument.solset_name                           =   target
 h5imp_RMextract.argument.all_stations                          =   True
-h5imp_RMextract.argument.output_h5parmdb                       =   {{ cal_solutions }}
 
 # create losoto v2 parset file
 prepare_losoto_RMextract.control.kind                          =   plugin
