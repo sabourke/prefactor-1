@@ -16,7 +16,7 @@
 
 ## information about the input
 ! target_input_filenames   =  []                                     ## list of input MS filenames (full path)
-! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the h5parm file from the calibrator pipeline
+! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the input calibration solutions h5parm file (from the calibrator pipeline)
 
 ## information about the output
 ! target_output_filenames  =  []                                     ## list of output MS filenames (full path)
@@ -70,12 +70,12 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ## result directories
 ! results_directory        =  {{ job_directory }}/results            ## location of the results
 ! inspection_directory     =  {{ results_directory }}/inspection     ## directory where the inspection plots will be stored
-! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm solution set will be stored
+! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm file will be stored
 ! msfiles_metadata_file    =  input.output.working_directory/input.output.job_name/msfiles.metadata
 ! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
 ! parset_prefix            =  none
 
-## calibration solutions output h5parm file
+## output calibration solutions h5parm file
 ! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
 
 ## averaging for the target data

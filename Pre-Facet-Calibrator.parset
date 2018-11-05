@@ -14,7 +14,7 @@
 ### parameters you will need to adjust. ##
 ##########################################
 
-## information about the calibrator data
+## information about the input
 ! cal_input_filenames      =  []                                     ## list of input MS filenames (full path)
 
 ## information about the output
@@ -69,12 +69,12 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ## result directories
 ! results_directory        =  {{ job_directory }}/results            ## location of the results
 ! inspection_directory     =  {{ results_directory }}/inspection     ## directory where the inspection plots will be stored
-! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm solution set will be stored
+! cal_values_directory     =  {{ results_directory }}/cal_values     ## directory where the final h5parm file will be stored
 ! msfiles_metadata_file    =  input.output.working_directory/input.output.job_name/msfiles.metadata
 ! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
 ! parset_prefix            =  none
 
-## calibrator solutions
+## output calibration solutions h5parm file
 ! cal_solutions            =  {{ cal_values_directory }}/cal_solutions.h5
 
 ## averaging for the calibrator data
