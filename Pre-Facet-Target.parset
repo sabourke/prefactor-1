@@ -559,7 +559,7 @@ h5exp_gsmcal.argument.outh5parm                                =   {{ cal_soluti
 ################################
 ## apply the calibration      ##
 ################################
-# # solve and apply are separate to allow to solve on a subset of baselines but apply to all
+# solve and apply are separate to allow to solve on a subset of baselines but apply to all
 gsmcal_apply.control.type                                      =   dppp
 gsmcal_apply.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_apply.control.inplace                                   =   True
@@ -583,28 +583,28 @@ gsmcal_apply.argument.applycal.solset                          =   target
 ## feed back the results      ##
 ################################
 # copy h5parm to output files (note: this is disabled until MOM can support feedback of solutions from target pipeline)
-# copy_output_h5parmfiles.control.kind             =   plugin
-# copy_output_h5parmfiles.control.type             =   copyFiles
-# copy_output_h5parmfiles.control.hosts            =   [localhost]
-# copy_output_h5parmfiles.control.input_file       =   {{ cal_solutions }}
-# copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
-# copy_output_h5parmfiles.control.use_symlinks     =   True
-# copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
-# copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
+# copy_output_h5parmfiles.control.kind                           =   plugin
+# copy_output_h5parmfiles.control.type                           =   copyFiles
+# copy_output_h5parmfiles.control.hosts                          =   [localhost]
+# copy_output_h5parmfiles.control.input_file                     =   {{ cal_solutions }}
+# copy_output_h5parmfiles.control.output_files                   =   {{ h5parm_output_filenames }}
+# copy_output_h5parmfiles.control.use_symlinks                   =   True
+# copy_output_h5parmfiles.control.mapfile_dir                    =   input.output.mapfile_dir
+# copy_output_h5parmfiles.control.filename                       =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
-make_msfiles_metadata.control.kind                   =   feedback
-make_msfiles_metadata.control.mapfile_in             =   ndppp_prep_target.output.mapfile
-make_msfiles_metadata.control.metadata_file          =   {{ msfiles_metadata_file }}
-make_msfiles_metadata.control.product_type           =   Correlated
-make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
+make_msfiles_metadata.control.kind                             =   feedback
+make_msfiles_metadata.control.mapfile_in                       =   ndppp_prep_target.output.mapfile
+make_msfiles_metadata.control.metadata_file                    =   {{ msfiles_metadata_file }}
+make_msfiles_metadata.control.product_type                     =   Correlated
+make_msfiles_metadata.control.parset_prefix                    =   {{ parset_prefix }}
 
 # make the metadata for the output solutions (note: this is disabled until MOM can support feedback of solutions from target pipeline)
-# make_h5parm_metadata.control.kind                    =   feedback
-# make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles.output.mapfile
-# make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
-# make_h5parm_metadata.control.product_type            =   InstrumentModel
-# make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
+# make_h5parm_metadata.control.kind                              =   feedback
+# make_h5parm_metadata.control.mapfile_in                        =   copy_output_h5parmfiles.output.mapfile
+# make_h5parm_metadata.control.metadata_file                     =   {{ h5parm_metadata_file }}
+# make_h5parm_metadata.control.product_type                      =   InstrumentModel
+# make_h5parm_metadata.control.parset_prefix                     =   {{ parset_prefix }}
 
 ########################################################
 ##                                                    ##

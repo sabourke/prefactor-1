@@ -90,10 +90,8 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 # which steps to run
 pipeline.steps             =  [prep, PA, FR, bandpass, ion, feedback]
 
-
 # pipeline substeps
 pipeline.steps.prep        =  [mk_cal_values_dir, createmap_cal, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, ms_concat, ms_concat_map, aoflag, sky_cal, make_sourcedb, expand_sourcedb, predict_cal, calib_cal_parmmap, h5imp_cal_map]
-
 pipeline.steps.PA          =  [smooth_data, calib_cal, h5imp_cal_PA, prepare_losoto_PA, process_losoto_PA, h5exp_cal_PA, apply_PA, apply_beam]
 pipeline.steps.FR          =  [smooth_corrected, calib_cal, h5imp_cal_FR, prepare_losoto_FR, process_losoto_FR, h5exp_cal_FR, apply_FR]
 pipeline.steps.bandpass    =  [smooth_corrected, calib_cal, h5imp_cal_bandpass, prepare_losoto_bandpass, process_losoto_bandpass, h5exp_cal_bandpass, apply_PA, apply_bandpass, apply_beam, apply_FR]
