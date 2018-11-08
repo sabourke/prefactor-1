@@ -1,5 +1,6 @@
 import os
 from lofarpipe.support.data_map import DataMap, DataProduct
+import casacore.tables as ct
 
 
 def plugin_main(args, **kwargs):
@@ -37,7 +38,7 @@ def plugin_main(args, **kwargs):
             files = []
             for f in in_files:
                 files += f.strip('[]').split(',')
-        except:
+        except IOError:
             files = kwargs['files']
             files = files.strip('[]').split(',')
         files = [f.strip() for f in files]
@@ -59,6 +60,16 @@ def plugin_main(args, **kwargs):
     for h, f in zip(hosts, files):
         if check_files_exist:
             skip = not os.path.exists(f)
+
+            # If the file appears to be an MS file, do a further check to be sure that it
+            # is a valid one
+            if not skip and f.lower().endswith('.ms'):
+                try:
+                    t = ct.table(f, ack=False)
+                    t.close()
+                    skip = False
+                except RuntimeError:
+                    skip = True
         else:
             skip = False
         map_out.data.append(DataProduct(h, f, skip))
@@ -68,6 +79,7 @@ def plugin_main(args, **kwargs):
     result = {'mapfile': fileid}
 
     return result
+
 
 def string2bool(instring):
     if not isinstance(instring, basestring):
