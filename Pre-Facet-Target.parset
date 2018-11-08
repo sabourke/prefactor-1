@@ -122,6 +122,7 @@ createmap_target.control.kind                                  =   plugin
 createmap_target.control.type                                  =   addListMapfile
 createmap_target.control.hosts                                 =   [localhost]
 createmap_target.control.files                                 =   {{ target_input_filenames }}
+createmap_target.control.check_files_exist                     =   True
 createmap_target.control.mapfile_dir                           =   input.output.mapfile_dir
 createmap_target.control.filename                              =   createmap_target.mapfile
 

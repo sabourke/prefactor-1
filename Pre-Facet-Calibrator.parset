@@ -114,6 +114,7 @@ createmap_cal.control.kind                                  =   plugin
 createmap_cal.control.type                                  =   addListMapfile
 createmap_cal.control.hosts                                 =   [localhost]
 createmap_cal.control.files                                 =   {{ cal_input_filenames }}
+createmap_cal.control.check_files_exist                     =   True
 createmap_cal.control.mapfile_dir                           =   input.output.mapfile_dir
 createmap_cal.control.filename                              =   createmap_cal.mapfile
 
