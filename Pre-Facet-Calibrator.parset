@@ -884,6 +884,7 @@ copy_output_h5parmfiles.control.filename                    =   output_h5parmfil
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                          =   feedback
+make_msfiles_metadata.control.max_per_node                  =   1
 make_msfiles_metadata.control.mapfile_in                    =   ndppp_prep_cal.output.mapfile
 make_msfiles_metadata.control.metadata_file                 =   {{ msfiles_metadata_file }}
 make_msfiles_metadata.control.product_type                  =   Correlated
@@ -891,6 +892,7 @@ make_msfiles_metadata.control.parset_prefix                 =   {{ parset_prefix
 
 # make the metadata for the output solutions
 make_h5parm_metadata.control.kind                           =   feedback
+make_h5parm_metadata.control.max_per_node                   =   1
 make_h5parm_metadata.control.mapfile_in                     =   copy_output_h5parmfiles.output.mapfile
 make_h5parm_metadata.control.metadata_file                  =   {{ h5parm_metadata_file }}
 make_h5parm_metadata.control.product_type                   =   InstrumentModel

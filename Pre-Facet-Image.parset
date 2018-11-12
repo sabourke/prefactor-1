@@ -171,6 +171,7 @@ copy_output_images.control.filename                 =   output_images.mapfile
 
 # make feedback metadata for the output image
 make_image_metadata.control.kind                    =   feedback
+make_image_metadata.control.max_per_node            =   1
 make_image_metadata.control.mapfile_in              =   copy_output_images.output.mapfile
 make_image_metadata.control.metadata_file           =   {{ images_metadata_file }}
 make_image_metadata.control.product_type            =   SkyImage
