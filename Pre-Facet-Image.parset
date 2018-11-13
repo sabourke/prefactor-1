@@ -22,7 +22,7 @@
 
 ## imaging parameters
 ! cellsize_highres_deg     =  0.00208                             ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
-! fieldsize_highres        =  2.5                                 ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
+! fieldsize_highres        =  1.5                                 ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
 ! maxlambda_highres        =  7000                                ## maximum uv-distance in lambda that will be used for imaging
 ! image_padding            =  1.4                                 ## how much padding shall we add during the imaging?
 ! axis_stretch             =  1.0                                 ## how much shall the y-axis be stretched or compressed?
@@ -32,6 +32,8 @@
 ! max_imagers_per_node     =  2                                   ## number of simultaneous imager process per node
 ! max_percent_mem_per_img  =  45                                  ## max memory (as % of total) per imager process
 ! max_cpus_per_img         =  20                                  ## number of cpus per imager process
+! max_dppp_threads         =  10                                  ## number of threads per process for DPPP
+! num_proc_per_node_limit  =  4                                   ## number of processes to use per step per node for tasks with high i/o (dppp or cp) or memory (eg calibration)
 ! error_tolerance          =  False                               ## set this to True if you want the pipeline run to continue if single bands fail
 
 ## main directories
@@ -51,7 +53,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep, wsclean_high_deep, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, wsclean_high_deep, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -92,16 +94,33 @@ do_magic_maps.control.mapfile_groupmap               =  do_magic.output.groupmap
 do_magic_maps.control.mapfile_single_map             =  do_magic.output.single_mapfile.mapfile
 do_magic_maps.control.mapfile_deep_high_size_map     =  do_magic.output.deep_high_size_mapfile.mapfile
 
+# average the data
+average.control.type                                 =   dppp
+average.control.max_per_node                         =   {{ num_proc_per_node_limit }}
+average.control.error_tolerance                      =   {{ error_tolerance }}
+average.control.mapfile_in                           =   do_magic_maps.output.single_map
+average.control.inputkey                             =   msfile
+average.argument.numthreads                          =   {{ max_dppp_threads }}
+average.argument.msin                                =   msfile
+average.argument.msin.datacolumn                     =   CORRECTED_DATA
+average.argument.msout.writefullresflag              =   False
+average.argument.msout.overwrite                     =   True
+average.argument.msout.storagemanager                =   "Dysco"
+average.argument.msout.storagemanager.databitrate    =   0
+average.argument.steps                               =   [avg]
+average.argument.avg.type                            =   average
+average.argument.avg.timeresolution                  =   16.0
+average.argument.avg.freqresolution                  =   195.3125kHz
+
 # generate a mapfile with all files in a single entry, length = 1
 combine_mapfile_deep.control.kind                    =  plugin
 combine_mapfile_deep.control.type                    =  createMapfile
 combine_mapfile_deep.control.method                  =  mapfile_all_to_one
-combine_mapfile_deep.control.mapfile_in              =  do_magic_maps.output.single_map
+combine_mapfile_deep.control.mapfile_in              =  average.output.mapfile
 combine_mapfile_deep.control.mapfile_dir             =  input.output.mapfile_dir
 combine_mapfile_deep.control.filename                =  combine_mapfile_deep.mapfile
 
 # first high-res imaging, length = 1
-# TODO: enable primary-beam correction for MFS image (add "-grid-with-beam" to inputkeys)
 wsclean_high_deep.control.kind                      =   recipe
 wsclean_high_deep.control.type                      =   executable_args
 wsclean_high_deep.control.executable                =   {{ wsclean_executable }}
@@ -111,7 +130,7 @@ wsclean_high_deep.control.max_per_node              =   1
 wsclean_high_deep.control.error_tolerance           =   {{ error_tolerance }}
 wsclean_high_deep.control.mapfiles_in               =   [combine_mapfile_deep.output.mapfile,do_magic_maps.output.deep_high_size_map,do_magic_maps.output.nchansout_clean1_map]
 wsclean_high_deep.control.inputkeys                 =   [msfile,outputsize,nchansout_clean1]
-wsclean_high_deep.argument.flags                    =   [-no-update-model-required,-reorder,-fit-beam,-join-channels,-use-idg,msfile]
+wsclean_high_deep.argument.flags                    =   [-no-update-model-required,-reorder,-fit-beam,-join-channels,-use-idg,-grid-with-beam,-use-differential-lofar-beam,msfile]
 wsclean_high_deep.argument.name                     =   {{ image_rootname }}
 wsclean_high_deep.argument.size                     =   outputsize
 wsclean_high_deep.argument.padding                  =   {{ image_padding }}
