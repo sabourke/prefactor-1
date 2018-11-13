@@ -305,8 +305,8 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
     nwavelengths_high = bands[0].get_nwavelengths(cellsize_highres_deg, int_time_sec)
     nwavelengths_low = bands[0].get_nwavelengths(cellsize_lowres_deg, int_time_sec)
 
+    print "InitSubtract_deep_sort_and_compute.py: analyzing data..."
     for band in bands:
-        print "InitSubtract_deep_sort_and_compute.py: Working on Band:",band.name
         group_map.append(MultiDataProduct('localhost', band.files, False))
         numfiles += len(band.files)
         for filename in band.files:
@@ -324,11 +324,7 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
         imsize_low_pad_stretch = band.get_optimum_size(int(imsize_low_res*image_padding*y_axis_stretch))
         low_paddedsize_map.append(DataProduct('localhost', str(imsize_low_pad)+" "+str(imsize_low_pad_stretch), False))
 
-        print band.freq/1e6, imsize_high_res, imsize_high_res_stretch, imsize_high_pad, imsize_high_pad_stretch, imsize_low_res, imsize_low_res_stretch, imsize_low_pad, imsize_low_pad_stretch, nwavelengths_high, nwavelengths_low
-
-
-
-        if  band.freq == minfreq:
+        if band.freq == minfreq:
             deep_imsize_high_res = imsize_high_res
             deep_imsize_high_res_stretch = imsize_high_res_stretch
             deep_imsize_high_pad = imsize_high_pad
@@ -338,23 +334,18 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
             deep_imsize_low_pad = imsize_low_pad
             deep_imsize_low_pad_stretch = imsize_low_pad_stretch
 
-            print '*', band.freq/1e6, imsize_high_res, imsize_high_res_stretch, imsize_high_pad, imsize_high_pad_stretch, imsize_low_res, imsize_low_res_stretch, imsize_low_pad, imsize_low_pad_stretch
-
-
     deep_high_size_map = DataMap([DataProduct('localhost', str(deep_imsize_high_res)+" "+str(deep_imsize_high_res_stretch), False)])
     deep_high_paddedsize_map = DataMap([DataProduct('localhost', str(deep_imsize_high_pad)+" "+str(deep_imsize_high_pad_stretch), False)])
     deep_low_size_map = DataMap([DataProduct('localhost', str(deep_imsize_low_res)+" "+str(deep_imsize_low_res_stretch), False)])
     deep_low_paddedsize_map = DataMap([DataProduct('localhost', str(deep_imsize_low_pad)+" "+str(deep_imsize_low_pad_stretch), False)])
     nbands_map = DataMap([DataProduct('localhost', str(nbands), False)])
     nchansout_clean1_map = DataMap([DataProduct('localhost', str(nchansout_clean1), False)])
-    print "InitSubtract_deep_sort_and_compute.py: Computing averaging steps."
 
     # get mapfiles for freqstep and timestep with the length of single_map
     freqstep_map = DataMap([])
     timestep_map = DataMap([])
     nwavelengths_high_map        = DataMap([])
     nwavelengths_low_map         = DataMap([])
-
 
     for index in xrange(numfiles):
         freqstep_map.append(DataProduct('localhost', str(freqstep), False))
