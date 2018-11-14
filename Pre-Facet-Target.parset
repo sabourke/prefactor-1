@@ -10,10 +10,6 @@
 #   doesn't work on multiple nodes on CEP3.)                             #
 ##########################################################################
 
-##########################################
-### parameters you will need to adjust. ##
-##########################################
-
 ## information about the input
 ! target_input_filenames   =  []                                     ## list of input MS filenames (full path)
 ! h5parm_input_filename    =  /data/scratch/h5parm                   ## filename of the input calibration solutions h5parm file (from the calibrator pipeline)
@@ -22,45 +18,24 @@
 ! target_output_filenames  =  []                                     ## list of output MS filenames (full path)
 #! h5parm_output_filenames  =  []                                     ## list of output solution table filenames (full path) (note: this is disabled until MOM can support feedback of solutions from target pipeline)
 
-## location of the software
-! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor installation
-! losoto_directory         =  $LOSOTO_PATH                           ## path to your local LoSoTo installation
-! rmextract_directory      =  $RMEXTRACT_PATH                        ## path to your local RMextract installation
-! aoflagger                =  $AOFLAGGER_EXECUTABLE                  ## path to your aoflagger executable
-
-##########################################
-### parameters you may need to adjust   ##
-##########################################
-
+# definitions for pipeline options
 ! refant                   =  CS001HBA0                              ## name of the station that will be used as a reference for the phase-plots
 ! flag_baselines           =  []                                     ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
 ! filter_baselines         =  [CR]S*&                                ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
-! rfistrategy              =  HBAdefault                             ## strategy to be applied with the statistical flagger (AOFlagger)
+! rfistrategy              =  $LOFARROOT/share/rfistrategies/HBAdefault ## strategy to be applied with the statistical flagger (AOFlagger)
 ! max_length               =  5                                      ## amount of subbands (calibrator) or chunks (target) to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to ~5 chunks for about 128 GB of RAM)
-! min_unflagged_fraction   =  0.5                                    ## minimum fraction of unflagged data after RFI flagging and A-team clipping
-
-# definitions for pipeline options
+! min_unflagged_fraction   =  0.0                                    ## minimum fraction of unflagged data after RFI flagging and A-team clipping
 ! substep                  =  clipATeam,                             ## set empty if you want to skip A-Team clipping
-##########################################
-### parameters for pipeline performance ##
-##########################################
 
-! num_proc_per_node        =  input.output.max_per_node              ## number of processes to use per step per node (usually max_per_node from pipeline.cfg)
-! num_proc_per_node_limit  =  4                                      ## number of processes to use per step per node for tasks with high i/o (dppp or cp) or memory (eg calibration)
-! max_dppp_threads         =  10                                     ## number of threads per process for NDPPP
-
+## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
 
-##########################################
-### parameters you may want to adjust   ##
-##########################################
-
-## main directories
-! lofar_directory          =  $LOFARROOT                             ## base directory of your LOFAR installation
+## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
 
 ## script and plugin directories
+! prefactor_directory      =  $PREFACTOR_PATH                        ## path to your prefactor installation
 ! scripts                  =  {{ prefactor_directory }}/scripts
 pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 
@@ -91,12 +66,6 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! ionex_server             =  "ftp://gnss.oma.be/gnss/products/IONEX/" ## to download from the "standard" server
 ! ionex_prefix             =  ROBR                                   ## the prefix of the IONEX files
 ! ionex_path               =  {{ job_directory }}/IONEX/             ## path where the IONEX files can be stored or are already stored
-
-########################################################
-##                                                    ##
-##    BEGIN PIPELINE: DO NOT UPDATE BELOW THIS LINE!  ##
-##                                                    ##
-########################################################
 
 # which steps to run
 pipeline.steps             =  [prep, {{ substep }} concat, gsmcal, feedback]
@@ -159,7 +128,7 @@ copy_input_h5parmfile.control.filename                         =   copy_h5parmfi
 
 # get ionex files once for every day that is covered by one of the input MSs
 h5imp_RMextract.control.type                                   =   pythonplugin
-h5imp_RMextract.control.executable                             =   {{ rmextract_directory }}/bin/createRMh5parm.py
+h5imp_RMextract.control.executable                             =   {{ scripts }}/createRMh5parm.py
 h5imp_RMextract.control.error_tolerance                        =   {{ error_tolerance }}
 h5imp_RMextract.argument.flags                                 =   [combine_data_target_map.output.mapfile, {{ cal_solutions }}]
 h5imp_RMextract.argument.ionex_server                          =   {{ ionex_server }}
@@ -173,7 +142,6 @@ prepare_losoto_RMextract.control.kind                          =   plugin
 prepare_losoto_RMextract.control.type                          =   makeLosotoParset
 prepare_losoto_RMextract.control.steps                         =   [plotRM]
 prepare_losoto_RMextract.control.filename                      =   input.output.job_directory/losoto.parset
-prepare_losoto_RMextract.control.global.ncpu                   =   {{ num_proc_per_node }}
 prepare_losoto_RMextract.control.plotRM.operation              =   PLOT
 prepare_losoto_RMextract.control.plotRM.soltab                 =   target/RMextract
 prepare_losoto_RMextract.control.plotRM.axesInPlot             =   time
@@ -181,10 +149,7 @@ prepare_losoto_RMextract.control.plotRM.axisInTable            =   ant
 prepare_losoto_RMextract.control.plotRM.prefix                 =   {{ inspection_directory }}/RMextract
 
 # do the processing on the LoSoTo file
-process_losoto_RMextract.control.kind                          =   recipe
-process_losoto_RMextract.control.type                          =   executable_args
-process_losoto_RMextract.control.executable                    =   {{ losoto_directory }}/bin/losoto
-process_losoto_RMextract.control.max_per_node                  =   {{ num_proc_per_node }}
+process_losoto_RMextract.control.type                          =   losoto
 process_losoto_RMextract.control.mapfile_in                    =   combine_data_target_map.output.mapfile
 process_losoto_RMextract.control.inputkey                      =   input
 process_losoto_RMextract.argument.flags                        =   [{{ cal_solutions }}, input.output.job_directory/losoto.parset]
@@ -203,13 +168,11 @@ check_station_mismatch.control.filter                          =   {{ filter_bas
 
 # run NDPPP on the target data to flag, transfer calibrator values, and average
 ndppp_prep_target.control.type                                 =   dppp
-ndppp_prep_target.control.max_per_node                         =   {{ num_proc_per_node_limit }}
 ndppp_prep_target.control.error_tolerance                      =   {{ error_tolerance }}
 ndppp_prep_target.control.mapfile_in                           =   createmap_target.output.mapfile
 ndppp_prep_target.control.inputkey                             =   input_file
 ndppp_prep_target.control.mapfile_out                          =   create_output_msfiles_map.output.mapfile
 ndppp_prep_target.control.outputkey                            =   msout
-ndppp_prep_target.argument.numthreads                          =   {{ max_dppp_threads }}
 ndppp_prep_target.argument.msin                                =   input_file
 ndppp_prep_target.argument.msin.datacolumn                     =   DATA
 ndppp_prep_target.argument.msin.baseline                       =   check_station_mismatch.output.filter
@@ -262,14 +225,9 @@ create_ateam_model_map.control.mapfile_dir                     =   input.output.
 create_ateam_model_map.control.filename                        =   ateam_model_name.mapfile
 
 # make sourcedbs from the A-Team skymodel, length = 1
-make_sourcedb_ateam.control.kind                               =   recipe
-make_sourcedb_ateam.control.type                               =   executable_args
-make_sourcedb_ateam.control.executable                         =   {{ lofar_directory }}/bin/makesourcedb
+make_sourcedb_ateam.control.type                               =   makesourcedb
 make_sourcedb_ateam.control.error_tolerance                    =   {{ error_tolerance }}
-make_sourcedb_ateam.control.args_format                        =   lofar
-make_sourcedb_ateam.control.outputkey                          =   out
 make_sourcedb_ateam.control.mapfile_in                         =   create_ateam_model_map.output.mapfile
-make_sourcedb_ateam.control.inputkey                           =   in
 make_sourcedb_ateam.argument.format                            =   <
 make_sourcedb_ateam.argument.outtype                           =   blob
 
@@ -286,11 +244,8 @@ predict_ateam.control.type                                     =   dppp
 predict_ateam.control.mapfiles_in                              =   [ndppp_prep_target.output.mapfile,expand_sourcedb_ateam.output.mapfile]
 predict_ateam.control.inputkeys                                =   [msin,sourcedb]
 predict_ateam.control.inplace                                  =   True
-predict_ateam.control.max_per_node                             =   {{ num_proc_per_node_limit }}
 predict_ateam.control.error_tolerance                          =   {{ error_tolerance }}
-predict_ateam.argument.numthreads                              =   {{ max_dppp_threads }}
 predict_ateam.argument.msin.datacolumn                         =   DATA
-# predict_ateam.argument.msin.baseline                           =   {{ filter_baselines }}
 predict_ateam.argument.msout.datacolumn                        =   MODEL_DATA
 predict_ateam.argument.msout.storagemanager                    =   "Dysco"
 predict_ateam.argument.msout.storagemanager.databitrate        =   0
@@ -305,7 +260,6 @@ predict_ateam.argument.predict.usechannelfreq                  =   false
 # run the a-team clipper to flag data affected by the a-team
 ateamcliptar.control.kind                                      =   recipe
 ateamcliptar.control.type                                      =   executable_args
-ateamcliptar.control.max_per_node                              =   {{ num_proc_per_node }}
 ateamcliptar.control.executable                                =   {{ scripts }}/Ateamclipper.py
 ateamcliptar.control.error_tolerance                           =   {{ error_tolerance }}
 ateamcliptar.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
@@ -345,7 +299,6 @@ do_sortmap_maps.control.mapfile_datamap                        =   sortmap_targe
 
 # run NDPPP to concatenate the target
 dpppconcat.control.type                                        =   dppp
-dpppconcat.control.max_per_node                                =   {{ num_proc_per_node_limit }}
 dpppconcat.control.error_tolerance                             =   {{ error_tolerance }}
 dpppconcat.control.mapfile_out                                 =   do_sortmap_maps.output.groupmap # tell the pipeline to give the output useful names
 dpppconcat.control.mapfile_in                                  =   do_sortmap_maps.output.datamap
@@ -382,16 +335,12 @@ ms_concat_target_map.control.type                              =   mapfilenamesF
 ms_concat_target_map.control.mapfile_concatmap                 =   ms_concat_target.output.concatmapfile.mapfile
 
 # run aoflagger on the concatenated data
-aoflag.control.kind                                            =   recipe
-aoflag.control.type                                            =   executable_args
-aoflag.control.inplace                                         =   True
-aoflag.control.executable                                      =   {{ aoflagger }}
-aoflag.control.max_per_node                                    =   1
+aoflag.control.type                                            =   aoflagger
 aoflag.control.error_tolerance                                 =   {{ error_tolerance }}
 aoflag.control.mapfile_in                                      =   ms_concat_target_map.output.concatmap
 aoflag.control.inputkey                                        =   msin
 aoflag.control.args_format                                     =   wsclean
-aoflag.argument.strategy                                       =   {{ lofar_directory }}/share/rfistrategies/{{ rfistrategy }}
+aoflag.argument.strategy                                       =   {{ rfistrategy }}
 aoflag.argument.flags                                          =   [-v,-combine-spws,msin]
 
 #############################
@@ -428,14 +377,9 @@ create_target_model_map.control.mapfile_dir                    =   input.output.
 create_target_model_map.control.filename                       =   target_model_name.mapfile
 
 # make sourcedbs from the target skymodel, length = 1
-make_sourcedb_target.control.kind                              =   recipe
-make_sourcedb_target.control.type                              =   executable_args
-make_sourcedb_target.control.executable                        =   {{ lofar_directory }}/bin/makesourcedb
+make_sourcedb_target.control.type                              =   makesourcedb
 make_sourcedb_target.control.error_tolerance                   =   {{ error_tolerance }}
-make_sourcedb_target.control.args_format                       =   lofar
-make_sourcedb_target.control.outputkey                         =   out
 make_sourcedb_target.control.mapfile_in                        =   create_target_model_map.output.mapfile
-make_sourcedb_target.control.inputkey                          =   in
 make_sourcedb_target.argument.format                           =   <
 make_sourcedb_target.argument.outtype                          =   blob
 
@@ -468,13 +412,10 @@ h5_gsmsol_map.control.filename                                 =   h5_imp_gsmsol
 gsmcal_solve.control.type                                      =   dppp
 gsmcal_solve.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_solve.control.inplace                                   =   True
-gsmcal_solve.control.max_per_node                              =   {{ num_proc_per_node_limit }}
 gsmcal_solve.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
 gsmcal_solve.control.inputkeys                                 =   [input_file,sourcedb,parmdb]
-gsmcal_solve.argument.numthreads                               =   {{ max_dppp_threads }}
 gsmcal_solve.argument.msin                                     =   input_file
 gsmcal_solve.argument.msin.datacolumn                          =   DATA
-# gsmcal_solve.argument.msin.baseline                            =   {{ filter_baselines }}
 gsmcal_solve.argument.msout.datacolumn                         =   CORRECTED_DATA
 gsmcal_solve.argument.steps                                    =   [filter,gaincal]
 gsmcal_solve.argument.filter.type                              =   filter
@@ -494,9 +435,7 @@ gsmcal_solve.argument.gaincal.beammode                         =   array_factor
 ## Analyze cal           ##
 ###########################
 # collect all instrument tables into one h5parm
-h5imp_gsmcal.control.kind                                      =   recipe
-h5imp_gsmcal.control.type                                      =   executable_args
-h5imp_gsmcal.control.executable                                =   {{ losoto_directory }}/bin/H5parm_collector.py
+h5imp_gsmcal.control.type                                      =   h5parm_collector
 h5imp_gsmcal.control.error_tolerance                           =   {{ error_tolerance }}
 h5imp_gsmcal.control.mapfile_in                                =   h5_gsmsol_map.output.mapfile
 h5imp_gsmcal.control.inputkey                                  =   h5in
@@ -509,7 +448,6 @@ prepare_losoto_gsmcal.control.kind                             =   plugin
 prepare_losoto_gsmcal.control.type                             =   makeLosotoParset
 prepare_losoto_gsmcal.control.steps                            =   [plotP, plotP2, plotPd, plotPd2]
 prepare_losoto_gsmcal.control.filename                         =   input.output.job_directory/losoto.parset
-prepare_losoto_gsmcal.control.global.ncpu                      =   {{ num_proc_per_node }}
 prepare_losoto_gsmcal.control.plotP.operation                  =   PLOT
 prepare_losoto_gsmcal.control.plotP.soltab                     =   sol000/phase000
 prepare_losoto_gsmcal.control.plotP.axesInPlot                 =   [time,freq]
@@ -547,20 +485,14 @@ prepare_losoto_gsmcal.control.plotPd2.refAnt                   =   {{ refant }}
 prepare_losoto_gsmcal.control.plotPd2.minmax                   =   [-3.14,3.14]
 
 # do the processing on the LoSoTo file
-process_losoto_gsmcal.control.kind                             =   recipe
-process_losoto_gsmcal.control.type                             =   executable_args
-process_losoto_gsmcal.control.inplace                          =   True
-process_losoto_gsmcal.control.executable                       =   {{ losoto_directory }}/bin/losoto
-process_losoto_gsmcal.control.max_per_node                     =   {{ num_proc_per_node }}
+process_losoto_gsmcal.control.type                             =   losoto
 process_losoto_gsmcal.control.mapfile_in                       =   h5imp_gsmcal.output.mapfile
 process_losoto_gsmcal.control.inputkey                         =   h5in
 process_losoto_gsmcal.argument.flags                           =   [h5in,input.output.job_directory/losoto.parset]
 
 # output the final soltab into an external h5parm
-h5exp_gsmcal.control.kind                                      =   recipe
-h5exp_gsmcal.control.type                                      =   executable_args
+h5exp_gsmcal.control.type                                      =   h5parm_collector
 h5exp_gsmcal.control.inplace                                   =   True
-h5exp_gsmcal.control.executable                                =   {{ losoto_directory }}/bin/H5parm_collector.py
 h5exp_gsmcal.control.error_tolerance                           =   {{ error_tolerance }}
 h5exp_gsmcal.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
 h5exp_gsmcal.control.inputkey                                  =   h5in
@@ -569,18 +501,12 @@ h5exp_gsmcal.argument.insoltab                                 =   phase000
 h5exp_gsmcal.argument.outsolset                                =   target
 h5exp_gsmcal.argument.outh5parm                                =   {{ cal_solutions }}
 
-
-################################
-## final step (EXPERIMENTAL)  ##
-################################
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
 gsmcal_apply.control.type                                      =   dppp
 gsmcal_apply.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_apply.control.inplace                                   =   True
-gsmcal_apply.control.max_per_node                              =   {{ num_proc_per_node_limit }}
 gsmcal_apply.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 gsmcal_apply.control.inputkey                                  =   input_file
-gsmcal_apply.argument.numthreads                               =   {{ max_dppp_threads }}
 gsmcal_apply.argument.msin                                     =   input_file
 gsmcal_apply.argument.msin.datacolumn                          =   DATA
 gsmcal_apply.argument.msout.datacolumn                         =   CORRECTED_DATA

@@ -22,7 +22,7 @@ The documentation can be found on the GitHub wiki pages: https://github.com/lofa
 There are several pipeline parsets in this repository:
 * Pre-Facet-Calibrator.parset : The calibrator part of the "standard" pre-facet calibration pipeline.
 * Pre-Facet-Target.parset : The target part of the "standard" pre-facet calibration pipeline.
-* Pre-Facet-Image.parset : The imageing part of the "standard" pre-facet calibration pipeline.
+* Pre-Facet-Image.parset : The imaging part of the "standard" pre-facet calibration pipeline.
 
 Software requirements:
 * the full "offline" LOFAR software installation (version >= 3.1)
