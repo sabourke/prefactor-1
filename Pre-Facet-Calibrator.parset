@@ -247,7 +247,7 @@ calib_cal.argument.solve.uvlambdamin                        =   300
 calib_cal.argument.solve.maxiter                            =   50
 calib_cal.argument.solve.nchan                              =   1
 calib_cal.argument.solve.solint                             =   1
-calib_cal.argument.solve.propagatesolutions                 =   True
+calib_cal.argument.solve.propagatesolutions                 =   False
 calib_cal.argument.solve.tolerance                          =   1e-3
 
 
