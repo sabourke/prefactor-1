@@ -44,7 +44,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, wsclean_high_deep, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -110,11 +110,23 @@ combine_mapfile_deep.control.mapfile_in              =  average.output.mapfile
 combine_mapfile_deep.control.mapfile_dir             =  input.output.mapfile_dir
 combine_mapfile_deep.control.filename                =  combine_mapfile_deep.mapfile
 
+# run DPPP to concatenate the data, length = 1
+dpppconcat.control.type                                 =   dppp
+dpppconcat.control.error_tolerance                      =   {{ error_tolerance }}
+dpppconcat.control.mapfile_in                           =   combine_mapfile_deep.output.mapfile
+dpppconcat.control.inputkey                             =   msin
+dpppconcat.argument.msin.datacolumn                     =   DATA
+dpppconcat.argument.msout.writefullresflag              =   False
+dpppconcat.argument.msout.overwrite                     =   True
+dpppconcat.argument.msout.storagemanager                =   "Dysco"
+dpppconcat.argument.msout.storagemanager.databitrate    =   0
+dpppconcat.argument.steps                               =   []
+
 # first high-res imaging, length = 1
 wsclean_high_deep.control.type                      =   wsclean
 wsclean_high_deep.control.inplace                   =   True
 wsclean_high_deep.control.error_tolerance           =   {{ error_tolerance }}
-wsclean_high_deep.control.mapfiles_in               =   [combine_mapfile_deep.output.mapfile,do_magic_maps.output.deep_high_size_map,do_magic_maps.output.nchansout_clean1_map]
+wsclean_high_deep.control.mapfiles_in               =   [dpppconcat.output.mapfile,do_magic_maps.output.deep_high_size_map,do_magic_maps.output.nchansout_clean1_map]
 wsclean_high_deep.control.inputkeys                 =   [msfile,outputsize,nchansout_clean1]
 wsclean_high_deep.argument.flags                    =   [-no-update-model-required,-reorder,-fit-beam,-join-channels,-use-idg,-grid-with-beam,-use-differential-lofar-beam,msfile]
 wsclean_high_deep.argument.name                     =   {{ image_rootname }}
