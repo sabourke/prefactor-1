@@ -94,7 +94,7 @@ def plugin_main(args, **kwargs):
             else:
                 shutil.copytree(file_in, f)
         else:
-            if os.path.exists(f):
+            if os.path.exists(f) or os.path.islink(f):
                 os.remove(f)
             if use_symlinks:
                 os.symlink(file_in, f)
