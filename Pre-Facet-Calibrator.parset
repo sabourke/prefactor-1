@@ -72,7 +72,7 @@ pipeline.steps.prep        =  [mk_cal_values_dir, createmap_cal, create_output_m
 # pipeline.steps.prep        =  [mk_cal_values_dir, createmap_cal, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, ms_concat, ms_concat_map, aoflag, sky_cal, make_sourcedb, expand_sourcedb, predict_cal, calib_cal_parmmap, h5imp_cal_map]
 pipeline.steps.PA          =  [smooth_data, calib_cal, h5imp_cal_PA, prepare_losoto_PA, process_losoto_PA, h5exp_cal_PA, apply_PA, apply_beam]
 pipeline.steps.FR          =  [smooth_corrected, calib_cal, h5imp_cal_FR, prepare_losoto_FR, process_losoto_FR, h5exp_cal_FR, apply_FR]
-pipeline.steps.bandpass    =  [smooth_corrected, calib_cal, h5imp_cal_bandpass, prepare_losoto_bandpass, process_losoto_bandpass, h5exp_cal_bandpass, apply_PA, apply_bandpass, apply_beam, apply_FR]
+pipeline.steps.bandpass    =  [smooth_corrected, calib_cal, h5imp_cal_bandpass1, split_h5_bandpass, createmap_chunks, prepare_losoto_bandpass1, process_losoto_bandpass1, h5imp_cal_map2, h5imp_cal_bandpass2, h5exp_cal_bandpass, prepare_losoto_bandpass2, process_losoto_bandpass2, apply_PA, apply_bandpass, apply_beam, apply_FR]
 pipeline.steps.ion         =  [smooth_corrected, calib_cal, h5imp_cal_ion, prepare_losoto_ion, process_losoto_ion, h5exp_cal_ion]
 pipeline.steps.feedback    =  [copy_output_h5parmfiles, make_msfiles_metadata, make_h5parm_metadata]
 
@@ -228,12 +228,10 @@ h5imp_cal_map.control.filename                              =   h5imp_cal_map.ma
 # interpolate after flagging but before smoothing
 interp_cal.control.type                                     =   dppp
 interp_cal.control.inplace                                  =   True
-interp_cal.control.max_per_node                             =   {{ num_proc_per_node_limit }}
 interp_cal.control.error_tolerance                          =   {{ error_tolerance }}
 interp_cal.control.mapfile_in                               =   ndppp_prep_cal.output.mapfile
 interp_cal.control.inputkey                                 =   msfile
 interp_cal.argument.msin                                    =   msfile
-interp_cal.argument.numthreads                              =   {{ max_dppp_threads }}
 interp_cal.argument.msin.datacolumn                         =   DATA
 interp_cal.argument.msout.datacolumn                        =   INTERP_DATA
 interp_cal.argument.msout.storagemanager                    =   "Dysco"
@@ -485,116 +483,156 @@ h5exp_cal_FR.argument.outsolset                             =   calibrator
 ## calibrate bandpass         ##
 ################################
 # collect all instrument tables into one h5parm
-h5imp_cal_bandpass.control.type                             =   h5parm_collector
-h5imp_cal_bandpass.control.error_tolerance                  =   {{ error_tolerance }}
-h5imp_cal_bandpass.control.mapfile_in                       =   h5imp_cal_map.output.mapfile
-h5imp_cal_bandpass.control.inputkey                         =   h5parm
-h5imp_cal_bandpass.control.outputkey                        =   outh5parm
-h5imp_cal_bandpass.argument.flags                           =   [-c,h5parm]
-h5imp_cal_bandpass.argument.outh5parm                       =   outh5parm
+h5imp_cal_bandpass1.control.type                             =   h5parm_collector
+h5imp_cal_bandpass1.control.error_tolerance                  =   {{ error_tolerance }}
+h5imp_cal_bandpass1.control.mapfile_in                       =   h5imp_cal_map.output.mapfile
+h5imp_cal_bandpass1.control.inputkey                         =   h5parm
+h5imp_cal_bandpass1.control.outputkey                        =   outh5parm
+h5imp_cal_bandpass1.argument.flags                           =   [-c,h5parm]
+h5imp_cal_bandpass1.argument.outh5parm                       =   outh5parm
 
-# create losoto v2 parset file
-prepare_losoto_bandpass.control.kind                        =   plugin
-prepare_losoto_bandpass.control.type                        =   makeLosotoParset
-prepare_losoto_bandpass.control.steps                       =   [duplicateAbkp,plotA1,flag,flagextend,flagbp,plotA2,merge,bandpass,smooth,interp,plotB1,plotB2,plotB3] # NOTE: you may need to remove the flagbp portion of 'prepare_losoto_bandpass' step if you find that your international stations are being flagged
-prepare_losoto_bandpass.control.filename                    =   input.output.job_directory/losoto.parset
-prepare_losoto_bandpass.control.duplicateAbkp.operation     =   DUPLICATE
-prepare_losoto_bandpass.control.duplicateAbkp.soltab        =   sol000/amplitude000
-prepare_losoto_bandpass.control.duplicateAbkp.soltabOut     =   amplitudeOrig000
-prepare_losoto_bandpass.control.plotA1.operation            =   PLOT
-prepare_losoto_bandpass.control.plotA1.soltab               =   sol000/amplitude000
-prepare_losoto_bandpass.control.plotA1.axesInPlot           =   [time,freq]
-prepare_losoto_bandpass.control.plotA1.axisInTable          =   ant
-prepare_losoto_bandpass.control.plotA1.plotFlag             =   True
-prepare_losoto_bandpass.control.plotA1.prefix               =   {{ inspection_directory }}/ampBFlag_
-prepare_losoto_bandpass.control.flag.operation              =   FLAG
-prepare_losoto_bandpass.control.flag.soltab                 =   sol000/amplitude000
-prepare_losoto_bandpass.control.flag.axesToFlag             =   [time]
-prepare_losoto_bandpass.control.flag.order                  =   [100]
-prepare_losoto_bandpass.control.flag.maxCycles              =   1
-prepare_losoto_bandpass.control.flag.maxRms                 =   5
-prepare_losoto_bandpass.control.flag.replace                =   False
-prepare_losoto_bandpass.control.flag.preFlagZeros           =   False
-prepare_losoto_bandpass.control.flag.mode                   =   smooth
-prepare_losoto_bandpass.control.flagextend.operation        =   FLAGEXTEND
-prepare_losoto_bandpass.control.flagextend.soltab           =   sol000/amplitude000
-prepare_losoto_bandpass.control.flagextend.axesToExt        =   [freq,time]
-prepare_losoto_bandpass.control.flagextend.size             =   [50,100]
-prepare_losoto_bandpass.control.flagextend.percent          =   50
-prepare_losoto_bandpass.control.flagextend.maxCycles        =   3
-prepare_losoto_bandpass.control.flagbp.operation            =   FLAGSTATION
-prepare_losoto_bandpass.control.flagbp.soltab               =   sol000/amplitude000
-prepare_losoto_bandpass.control.flagbp.mode                 =   bandpass
-prepare_losoto_bandpass.control.plotA2.operation            =   PLOT
-prepare_losoto_bandpass.control.plotA2.soltab               =   sol000/amplitude000
-prepare_losoto_bandpass.control.plotA2.axesInPlot           =   [time,freq]
-prepare_losoto_bandpass.control.plotA2.axisInTable          =   ant
-prepare_losoto_bandpass.control.plotA2.plotFlag             =   True
-prepare_losoto_bandpass.control.plotA2.prefix               =   {{ inspection_directory }}/ampAFlag_
-prepare_losoto_bandpass.control.merge.operation             =   REWEIGHT
-prepare_losoto_bandpass.control.merge.mode                  =   copy
-prepare_losoto_bandpass.control.merge.soltab                =   sol000/phase000
-prepare_losoto_bandpass.control.merge.soltabImport          =   amplitude000
-prepare_losoto_bandpass.control.bandpass.operation          =   SMOOTH
-prepare_losoto_bandpass.control.bandpass.soltab             =   sol000/amplitude000
-prepare_losoto_bandpass.control.bandpass.pol                =   XX,YY
-prepare_losoto_bandpass.control.bandpass.axesToSmooth       =   [freq]
-prepare_losoto_bandpass.control.bandpass.mode               =   savitzky-golay
-prepare_losoto_bandpass.control.bandpass.size               =   [17]
-prepare_losoto_bandpass.control.bandpass.degree             =   2
-prepare_losoto_bandpass.control.bandpass.log                =   True
-prepare_losoto_bandpass.control.smooth.operation            =   SMOOTH
-prepare_losoto_bandpass.control.smooth.soltab               =   sol000/amplitude000
-prepare_losoto_bandpass.control.smooth.pol                  =   XX,YY
-prepare_losoto_bandpass.control.smooth.axesToSmooth         =   [time]
-prepare_losoto_bandpass.control.smooth.mode                 =   median
-prepare_losoto_bandpass.control.smooth.log                  =   True
-prepare_losoto_bandpass.control.interp.operation            =   INTERPOLATE
-prepare_losoto_bandpass.control.interp.soltab               =   sol000/amplitude000
-prepare_losoto_bandpass.control.interp.outSoltab            =   bandpass
-prepare_losoto_bandpass.control.interp.axisToRegrid         =   freq
-prepare_losoto_bandpass.control.interp.maxFlaggedWidth      =   {{ max2interpolate }}
-prepare_losoto_bandpass.control.interp.newDelta             =   {{ bandpass_freqresolution }}
-prepare_losoto_bandpass.control.interp.delta                =   {{ avg_freqresolution }}
-prepare_losoto_bandpass.control.interp.log                  =   True
-prepare_losoto_bandpass.control.plotB1.operation            =   PLOT
-prepare_losoto_bandpass.control.plotB1.soltab               =   sol000/bandpass
-prepare_losoto_bandpass.control.plotB1.axesInPlot           =   [time,freq]
-prepare_losoto_bandpass.control.plotB1.axisInTable          =   ant
-prepare_losoto_bandpass.control.plotB1.plotFlag             =   True
-prepare_losoto_bandpass.control.plotB1.prefix               =   {{ inspection_directory }}/bandpass_
-prepare_losoto_bandpass.control.plotB2.operation            =   PLOT
-prepare_losoto_bandpass.control.plotB2.soltab               =   sol000/bandpass
-prepare_losoto_bandpass.control.plotB2.axesInPlot           =   freq
-prepare_losoto_bandpass.control.plotB2.axisInTable          =   ant
-prepare_losoto_bandpass.control.plotB2.axisInCol            =   pol
-prepare_losoto_bandpass.control.plotB2.plotFlag             =   True
-prepare_losoto_bandpass.control.plotB2.prefix               =   {{ inspection_directory }}/bandpass_
-prepare_losoto_bandpass.control.plotB2.time.minmaxstep      =   [0,1e20,500000]
-prepare_losoto_bandpass.control.plotB3.operation            =   PLOT
-prepare_losoto_bandpass.control.plotB3.soltab               =   sol000/bandpass
-prepare_losoto_bandpass.control.plotB3.axesInPlot           =   freq
-prepare_losoto_bandpass.control.plotB3.axisInCol            =   ant
-prepare_losoto_bandpass.control.plotB3.plotFlag             =   True
-prepare_losoto_bandpass.control.plotB3.prefix               =   {{ inspection_directory }}/bandpass_
-prepare_losoto_bandpass.control.plotB3.time.minmaxstep      =   [0,1e20,500000]
+# split into 10-minute chunks for parallel processing
+split_h5_bandpass.control.type                              =   h5parm_split
+split_h5_bandpass.control.inplace                           =   True
+split_h5_bandpass.control.error_tolerance                   =   {{ error_tolerance }}
+split_h5_bandpass.control.mapfile_in                        =   h5imp_cal_bandpass1.output.mapfile
+split_h5_bandpass.control.inputkey                          =   h5parm
+split_h5_bandpass.argument.flags                            =   [-c,h5parm,time,600]
+split_h5_bandpass.argument.root                             =   input.output.job_directory/bandpass
+
+# create mapfile for chunks
+createmap_chunks.control.kind                               =   plugin
+createmap_chunks.control.type                               =   createMapfile
+createmap_chunks.control.method                             =   mapfile_from_folder
+createmap_chunks.control.mapfile_dir                        =   input.output.mapfile_dir
+createmap_chunks.control.filename                           =   createmap_cal.mapfile
+createmap_chunks.control.folder                             =   input.output.job_directory
+createmap_chunks.control.pattern                            =   bandpass_*.h5
+
+# create losoto v2 parset file for processing each time chunk
+prepare_losoto_bandpass1.control.kind                        =   plugin
+prepare_losoto_bandpass1.control.type                        =   makeLosotoParset
+prepare_losoto_bandpass1.control.steps                       =   [duplicateAbkp,flag,flagextend,flagbp,merge,bandpass,smooth,interp]
+prepare_losoto_bandpass1.control.filename                    =   input.output.job_directory/losoto.parset
+prepare_losoto_bandpass1.control.duplicateAbkp.operation     =   DUPLICATE
+prepare_losoto_bandpass1.control.duplicateAbkp.soltab        =   sol000/amplitude000
+prepare_losoto_bandpass1.control.duplicateAbkp.soltabOut     =   amplitudeOrig000
+prepare_losoto_bandpass1.control.flag.operation              =   FLAG
+prepare_losoto_bandpass1.control.flag.soltab                 =   sol000/amplitude000
+prepare_losoto_bandpass1.control.flag.axesToFlag             =   [time]
+prepare_losoto_bandpass1.control.flag.order                  =   [100]
+prepare_losoto_bandpass1.control.flag.maxCycles              =   1
+prepare_losoto_bandpass1.control.flag.maxRms                 =   5
+prepare_losoto_bandpass1.control.flag.replace                =   False
+prepare_losoto_bandpass1.control.flag.preFlagZeros           =   False
+prepare_losoto_bandpass1.control.flag.mode                   =   smooth
+prepare_losoto_bandpass1.control.flagextend.operation        =   FLAGEXTEND
+prepare_losoto_bandpass1.control.flagextend.soltab           =   sol000/amplitude000
+prepare_losoto_bandpass1.control.flagextend.axesToExt        =   [freq,time]
+prepare_losoto_bandpass1.control.flagextend.size             =   [50,100]
+prepare_losoto_bandpass1.control.flagextend.percent          =   50
+prepare_losoto_bandpass1.control.flagextend.maxCycles        =   3
+prepare_losoto_bandpass1.control.flagbp.operation            =   FLAGSTATION
+prepare_losoto_bandpass1.control.flagbp.soltab               =   sol000/amplitude000
+prepare_losoto_bandpass1.control.flagbp.mode                 =   bandpass
+prepare_losoto_bandpass1.control.merge.operation             =   REWEIGHT
+prepare_losoto_bandpass1.control.merge.mode                  =   copy
+prepare_losoto_bandpass1.control.merge.soltab                =   sol000/phase000
+prepare_losoto_bandpass1.control.merge.soltabImport          =   amplitude000
+prepare_losoto_bandpass1.control.bandpass.operation          =   SMOOTH
+prepare_losoto_bandpass1.control.bandpass.soltab             =   sol000/amplitude000
+prepare_losoto_bandpass1.control.bandpass.pol                =   XX,YY
+prepare_losoto_bandpass1.control.bandpass.axesToSmooth       =   [freq]
+prepare_losoto_bandpass1.control.bandpass.mode               =   savitzky-golay
+prepare_losoto_bandpass1.control.bandpass.size               =   [17]
+prepare_losoto_bandpass1.control.bandpass.degree             =   2
+prepare_losoto_bandpass1.control.bandpass.log                =   True
+prepare_losoto_bandpass1.control.smooth.operation            =   SMOOTH
+prepare_losoto_bandpass1.control.smooth.soltab               =   sol000/amplitude000
+prepare_losoto_bandpass1.control.smooth.pol                  =   XX,YY
+prepare_losoto_bandpass1.control.smooth.axesToSmooth         =   [time]
+prepare_losoto_bandpass1.control.smooth.mode                 =   median
+prepare_losoto_bandpass1.control.smooth.log                  =   True
+prepare_losoto_bandpass1.control.interp.operation            =   INTERPOLATE
+prepare_losoto_bandpass1.control.interp.soltab               =   sol000/amplitude000
+prepare_losoto_bandpass1.control.interp.outSoltab            =   bandpass
+prepare_losoto_bandpass1.control.interp.axisToRegrid         =   freq
+prepare_losoto_bandpass1.control.interp.maxFlaggedWidth      =   {{ max2interpolate }}
+prepare_losoto_bandpass1.control.interp.newDelta             =   {{ bandpass_freqresolution }}
+prepare_losoto_bandpass1.control.interp.delta                =   {{ avg_freqresolution }}
+prepare_losoto_bandpass1.control.interp.log                  =   True
 
 # do the processing on the LoSoTo file
-process_losoto_bandpass.control.type                        =   losoto
-process_losoto_bandpass.control.mapfile_in                  =   h5imp_cal_bandpass.output.mapfile
-process_losoto_bandpass.control.inputkey                    =   h5in
-process_losoto_bandpass.argument.flags                      =   [h5in,input.output.job_directory/losoto.parset]
+process_losoto_bandpass1.control.type                        =   losoto
+process_losoto_bandpass1.control.mapfile_in                  =   createmap_chunks.output.mapfile
+process_losoto_bandpass1.control.inputkey                    =   h5in
+process_losoto_bandpass1.argument.flags                      =   [h5in,input.output.job_directory/losoto.parset]
+
+# generate a mapfile with all files in a single entry
+h5imp_cal_map2.control.kind                                  =   plugin
+h5imp_cal_map2.control.type                                  =   compressMapfile
+h5imp_cal_map2.control.mapfile_in                            =   createmap_chunks.output.mapfile
+h5imp_cal_map2.control.mapfile_dir                           =   input.output.mapfile_dir
+h5imp_cal_map2.control.filename                              =   h5imp_cal_map2.mapfile
+
+# collect all instrument tables into one h5parm
+h5imp_cal_bandpass2.control.type                             =   h5parm_collector
+h5imp_cal_bandpass2.control.error_tolerance                  =   {{ error_tolerance }}
+h5imp_cal_bandpass2.control.mapfile_in                       =   h5imp_cal_map2.output.mapfile
+h5imp_cal_bandpass2.control.inputkey                         =   h5parm
+h5imp_cal_bandpass2.control.outputkey                        =   outh5parm
+h5imp_cal_bandpass2.argument.flags                           =   [-c,h5parm]
+h5imp_cal_bandpass2.argument.outh5parm                       =   outh5parm
 
 # output the final soltab into an external h5parm
 h5exp_cal_bandpass.control.type                             =   h5parm_collector
 h5exp_cal_bandpass.control.inplace                          =   True
 h5exp_cal_bandpass.control.error_tolerance                  =   {{ error_tolerance }}
-h5exp_cal_bandpass.control.mapfile_in                       =   h5imp_cal_bandpass.output.mapfile
+h5exp_cal_bandpass.control.mapfile_in                       =   h5imp_cal_bandpass2.output.mapfile
 h5exp_cal_bandpass.control.inputkey                         =   h5in
 h5exp_cal_bandpass.argument.flags                           =   [h5in]
 h5exp_cal_bandpass.argument.insoltab                        =   bandpass
 h5exp_cal_bandpass.argument.outh5parm                       =   {{ cal_solutions }}
 h5exp_cal_bandpass.argument.outsolset                       =   calibrator
+
+# create losoto v2 parset file
+prepare_losoto_bandpass2.control.kind                        =   plugin
+prepare_losoto_bandpass2.control.type                        =   makeLosotoParset
+prepare_losoto_bandpass2.control.steps                       =   [plotA2,plotB1,plotB2,plotB3] # NOTE: you may need to remove the flagbp portion of 'prepare_losoto_bandpass' step if you find that your international stations are being flagged
+prepare_losoto_bandpass2.control.filename                    =   input.output.job_directory/losoto.parset
+prepare_losoto_bandpass2.control.plotA2.operation            =   PLOT
+prepare_losoto_bandpass2.control.plotA2.soltab               =   sol000/amplitude000
+prepare_losoto_bandpass2.control.plotA2.axesInPlot           =   [time,freq]
+prepare_losoto_bandpass2.control.plotA2.axisInTable          =   ant
+prepare_losoto_bandpass2.control.plotA2.plotFlag             =   True
+prepare_losoto_bandpass2.control.plotA2.prefix               =   {{ inspection_directory }}/ampAFlag_
+prepare_losoto_bandpass2.control.plotB1.operation            =   PLOT
+prepare_losoto_bandpass2.control.plotB1.soltab               =   sol000/bandpass
+prepare_losoto_bandpass2.control.plotB1.axesInPlot           =   [time,freq]
+prepare_losoto_bandpass2.control.plotB1.axisInTable          =   ant
+prepare_losoto_bandpass2.control.plotB1.plotFlag             =   True
+prepare_losoto_bandpass2.control.plotB1.prefix               =   {{ inspection_directory }}/bandpass_
+prepare_losoto_bandpass2.control.plotB2.operation            =   PLOT
+prepare_losoto_bandpass2.control.plotB2.soltab               =   sol000/bandpass
+prepare_losoto_bandpass2.control.plotB2.axesInPlot           =   freq
+prepare_losoto_bandpass2.control.plotB2.axisInTable          =   ant
+prepare_losoto_bandpass2.control.plotB2.axisInCol            =   pol
+prepare_losoto_bandpass2.control.plotB2.plotFlag             =   True
+prepare_losoto_bandpass2.control.plotB2.prefix               =   {{ inspection_directory }}/bandpass_
+prepare_losoto_bandpass2.control.plotB2.time.minmaxstep      =   [0,1e20,500000]
+prepare_losoto_bandpass2.control.plotB3.operation            =   PLOT
+prepare_losoto_bandpass2.control.plotB3.soltab               =   sol000/bandpass
+prepare_losoto_bandpass2.control.plotB3.axesInPlot           =   freq
+prepare_losoto_bandpass2.control.plotB3.axisInCol            =   ant
+prepare_losoto_bandpass2.control.plotB3.plotFlag             =   True
+prepare_losoto_bandpass2.control.plotB3.prefix               =   {{ inspection_directory }}/bandpass_
+prepare_losoto_bandpass2.control.plotB3.time.minmaxstep      =   [0,1e20,500000]
+
+# do the processing on the LoSoTo file
+process_losoto_bandpass2.control.type                        =   losoto
+process_losoto_bandpass2.control.mapfile_in                  =   h5imp_cal_bandpass2.output.mapfile
+process_losoto_bandpass2.control.inputkey                    =   h5in
+process_losoto_bandpass2.argument.flags                      =   [h5in,input.output.job_directory/losoto.parset]
 
 
 ################################
