@@ -598,7 +598,7 @@ h5exp_cal_bandpass.argument.outsolset                       =   calibrator
 # create losoto v2 parset file
 prepare_losoto_bandpass2.control.kind                        =   plugin
 prepare_losoto_bandpass2.control.type                        =   makeLosotoParset
-prepare_losoto_bandpass2.control.steps                       =   [plotA2,plotB1,plotB2,plotB3] # NOTE: you may need to remove the flagbp portion of 'prepare_losoto_bandpass' step if you find that your international stations are being flagged
+prepare_losoto_bandpass2.control.steps                       =   [plotA2,plotB1,plotB2,plotB3]
 prepare_losoto_bandpass2.control.filename                    =   input.output.job_directory/losoto.parset
 prepare_losoto_bandpass2.control.plotA2.operation            =   PLOT
 prepare_losoto_bandpass2.control.plotA2.soltab               =   sol000/amplitude000
