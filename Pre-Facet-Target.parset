@@ -504,7 +504,7 @@ prepare_losoto_gsmcal.control.plotPd2.minmax                   =   [-3.14,3.14]
 process_losoto_gsmcal.control.type                             =   losoto
 process_losoto_gsmcal.control.mapfile_in                       =   h5imp_gsmcal.output.mapfile
 process_losoto_gsmcal.control.inputkey                         =   h5in
-process_losoto_gsmcal.argument.flags                           =   [h5in,input.output.job_directory/losoto.parset]
+process_losoto_gsmcal.argument.flags                           =   [h5in,{{ job_directory }}/losoto.parset]
 
 # output the final soltab into an external h5parm
 h5exp_gsmcal.control.type                                      =   h5parm_collector
