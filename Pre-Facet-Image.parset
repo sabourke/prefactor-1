@@ -153,7 +153,7 @@ wsclean_high_deep.argument.idg-mode                 =   {{ idg_mode }}
 createmap_image.control.kind              =   plugin
 createmap_image.control.type              =   addListMapfile
 createmap_image.control.hosts             =   [localhost]
-createmap_image.control.files             =   [{{ image_rootname }}-MFS-image.fits]
+createmap_image.control.files             =   [{{ image_rootname }}-MFS-image-pb.fits]
 createmap_image.control.mapfile_dir       =   input.output.mapfile_dir
 createmap_image.control.filename          =   wsclean_high_deep_image.mapfile
 
@@ -184,7 +184,7 @@ plot_im_high.argument.flags                     =   [imhigh,imname,{{ job_direct
 copy_output_images.control.kind                     =   plugin
 copy_output_images.control.type                     =   copyFiles
 copy_output_images.control.hosts                    =   [localhost]
-copy_output_images.control.input_file               =   {{ image_rootname }}-MFS-image.fits
+copy_output_images.control.input_file               =   {{ image_rootname }}-MFS-image-pb.fits
 copy_output_images.control.output_files             =   {{ image_output_filenames }}
 copy_output_images.control.use_symlinks             =   True
 copy_output_images.control.mapfile_dir              =   input.output.mapfile_dir
