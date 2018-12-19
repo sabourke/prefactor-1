@@ -24,10 +24,33 @@
 ! filter_baselines         =  [CR]S*&                                ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault.rfis                        ## strategy to be applied with the statistical flagger (AOFlagger)
-! max_length               =  5                                      ## amount of subbands (calibrator) or chunks (target) to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to ~5 chunks for about 128 GB of RAM)
+! max_length               =  10                                     ## amount of subbands (calibrator) or chunks (target) to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to ~5 chunks for about 128 GB of RAM)
 ! interp_windowsize        =  15                                     ## Size of the window over which a value is interpolated. Should be odd.
 ! min_unflagged_fraction   =  0.0                                    ## minimum fraction of unflagged data after RFI flagging and A-team clipping
-! substep                  =  clipATeam,                             ## set empty if you want to skip A-Team clipping
+! compression_bitrate      =  16                                     ## defines the bitrate of Dysco compression of the data after the final step, choose 0 if you do NOT want to compress the data
+! raw_data                 =  False                                  ## use autoweight, set to True in case you are using raw data
+! propagatesolutions       =  True                                   ## use already derived solutions as initial guess for the upcoming time slot
+
+# demixing options (only used if demix step is added to the prep_cal_strategy variable)
+! demix_sources            =  [CasA,CygA]                            ## choose sources to demix (provided as list)
+! demix_target             =  ""                                     ## if given, the target source model (its patch in the SourceDB) is taken into account when solving
+! demix_freqstep           =  16                                     ## number of channels to average when demixing.
+! demix_timestep           =  10                                     ## number of time slots to average when demixing
+
+# definitions for pipeline options -- do not change!
+! default_flagging         =  flagbaseline,flagelev,flagamp          ## regular flagging after pre-processing by the observatory pipelines
+! raw_flagging             =  flagedge,aoflag,{{ default_flagging }} ## full flagging (usually only necessary for raw data)
+! demix                    =  demix,                                 ## Do not change! Only demix_step should be edited if needed
+! clipATeam                =  clipATeam,                             ## Do not change! Only clipATeam_step should be edited if needed
+! none                     =                                         ## Do not change!
+
+# pipeline options
+! initial_flagging         =  {{ default_flagging }}                 ## choose {{ raw_flagging }} if you process raw data
+! demix_step               =  {{ none }}                             ## choose {{ demix }} if you want to demix
+! apply_steps              =  applyclock,applyRM                     ## comma-separated list of apply_steps performed in the target preparation (NOTE: only use applyRM if you have performed RMextract before!)
+! clipAteam_step           =  {{ clipATeam }}                        ## choose {{ none }} if you want to skip A-team-clipping
+! gsmcal_step              =  phase                                  ## choose gsmcal_tec if you want to fit TEC instead of self-calibrating for phases
+! updateweights            =  False                                  ## update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations
 
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
@@ -66,18 +89,20 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! reference_stationSB      =  None                                   ## station-subband number to use as reference for grouping, "None" -> use lowest frequency input data as reference
 
 ## RMextract settings
-! ionex_server             =  "ftp://gnss.oma.be/gnss/products/IONEX/" ## to download from the "standard" server
-! ionex_prefix             =  ROBR                                   ## the prefix of the IONEX files
+! ionex_server             =  "ftp://ftp.aiub.unibe.ch/CODE/"        ## to download from the "standard" server
+! ionex_prefix             =  CODG                                   ## the prefix of the IONEX files
 ! ionex_path               =  {{ job_directory }}/IONEX/             ## path where the IONEX files can be stored or are already stored
 
 # which steps to run
-pipeline.steps             =  [prep, {{ substep }} concat, gsmcal, feedback]
+pipeline.steps              =  [prep, {{ clipATeam }} concat, prep_gsmcal, {{ gsmcal_step }}, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, copy_input_h5parmfile, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract,  check_station_mismatch, ndppp_prep_target]
-pipeline.steps.clipATeam   =  [create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar]
+pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, check_station_mismatch, copy_input_h5parmfile, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
+pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, aoflag]
-pipeline.steps.gsmcal      =  [check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, gsmcal_solve, h5imp_gsmcal, prepare_losoto_gsmcal, process_losoto_gsmcal, h5exp_gsmcal, gsmcal_apply]
+pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
+pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, h5exp_phase, apply_phase]
+pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, h5exp_tec,   apply_tec]
 pipeline.steps.feedback    =  [make_msfiles_metadata]
 
 
@@ -115,9 +140,13 @@ combine_data_target_map.control.mapfile_dir                    =   input.output.
 combine_data_target_map.control.filename                       =   combine_data_tar_map.mapfile
 combine_data_target_map.control.mapfile_in                     =   createmap_target.output.mapfile
 
-#############################
-## RM target correction    ##
-#############################
+# check potential station mismatch
+check_station_mismatch.control.kind                            =   plugin
+check_station_mismatch.control.type                            =   compareStationList
+check_station_mismatch.control.mapfile_in                      =   createmap_target.output.mapfile
+check_station_mismatch.control.h5parmdb                        =   {{ solutions }}
+check_station_mismatch.control.solset_name                     =   calibrator
+check_station_mismatch.control.filter                          =   {{ filter_baselines }}
 
 # copy the input calibrator h5parm file
 copy_input_h5parmfile.control.kind                             =   plugin
@@ -129,6 +158,49 @@ copy_input_h5parmfile.control.use_symlinks                     =   False
 copy_input_h5parmfile.control.mapfile_dir                      =   input.output.mapfile_dir
 copy_input_h5parmfile.control.filename                         =   copy_h5parmfile.mapfile
 
+
+###################################
+## Prepare for demixing/clipping ##
+###################################
+# generate a mapfile of all the calibrator data
+createmap_insttarg.control.kind                                =   plugin
+createmap_insttarg.control.type                                =   changeMapfile
+createmap_insttarg.control.mapfile_in                          =   createmap_target.output.mapfile
+createmap_insttarg.control.join_files                          =   instrument
+createmap_insttarg.control.newname                             =   createmap_instcal.mapfile
+
+# create a mapfile with the A-Team skymodel, length = 1
+create_ateam_model_map.control.kind                            =   plugin
+create_ateam_model_map.control.type                            =   addListMapfile
+create_ateam_model_map.control.hosts                           =   ['localhost']
+create_ateam_model_map.control.files                           =   [ {{ prefactor_directory }}/skymodels/Ateam_LBA_CC.skymodel ]
+create_ateam_model_map.control.mapfile_dir                     =   input.output.mapfile_dir
+create_ateam_model_map.control.filename                        =   ateam_model_name.mapfile
+
+# make sourcedbs from the A-Team skymodel, length = 1
+make_sourcedb_ateam.control.kind                               =   recipe
+make_sourcedb_ateam.control.type                               =   executable_args
+make_sourcedb_ateam.control.executable                         =   {{ lofar_directory }}/bin/makesourcedb
+make_sourcedb_ateam.control.error_tolerance                    =   {{ error_tolerance }}
+make_sourcedb_ateam.control.args_format                        =   lofar
+make_sourcedb_ateam.control.outputkey                          =   out
+make_sourcedb_ateam.control.mapfile_in                         =   create_ateam_model_map.output.mapfile
+make_sourcedb_ateam.control.inputkey                           =   in
+make_sourcedb_ateam.argument.format                            =   <
+make_sourcedb_ateam.argument.outtype                           =   blob
+
+# expand the sourcedb mapfile so that there is one entry for every file, length = nfiles
+expand_sourcedb_ateam.control.kind                             =   plugin
+expand_sourcedb_ateam.control.type                             =   expandMapfile
+expand_sourcedb_ateam.control.mapfile_in                       =   make_sourcedb_ateam.output.mapfile
+expand_sourcedb_ateam.control.mapfile_to_match                 =   createmap_target.output.mapfile
+expand_sourcedb_ateam.control.mapfile_dir                      =   input.output.mapfile_dir
+expand_sourcedb_ateam.control.filename                         =   expand_sourcedb_ateam.datamap
+
+
+#############################
+## RM target correction    ##
+#############################
 # get ionex files once for every day that is covered by one of the input MSs
 h5imp_RMextract.control.type                                   =   pythonplugin
 h5imp_RMextract.control.executable                             =   {{ scripts }}/createRMh5parm.py
@@ -161,14 +233,6 @@ process_losoto_RMextract.argument.flags                        =   [{{ cal_solut
 #############################
 ## Apply calibrator sols   ##
 #############################
-# check potential station mismatch
-check_station_mismatch.control.kind                            =   plugin
-check_station_mismatch.control.type                            =   compareStationList
-check_station_mismatch.control.mapfile_in                      =   createmap_target.output.mapfile
-check_station_mismatch.control.h5parmdb                        =   {{ cal_solutions }}
-check_station_mismatch.control.solset_name                     =   calibrator
-check_station_mismatch.control.filter                          =   {{ filter_baselines }}
-
 # run NDPPP on the target data to flag, transfer calibrator values, and average
 ndppp_prep_target.control.type                                 =   dppp
 ndppp_prep_target.control.error_tolerance                      =   {{ error_tolerance }}
@@ -179,22 +243,27 @@ ndppp_prep_target.control.outputkey                            =   msout
 ndppp_prep_target.argument.msin                                =   input_file
 ndppp_prep_target.argument.msin.datacolumn                     =   DATA
 ndppp_prep_target.argument.msin.baseline                       =   check_station_mismatch.output.filter
+ndppp_prep_target.argument.msin.autoweight                     =   {{ raw_data }}
 ndppp_prep_target.argument.msout.datacolumn                    =   DATA
 ndppp_prep_target.argument.msout.writefullresflag              =   False
 ndppp_prep_target.argument.msout.overwrite                     =   True
 ndppp_prep_target.argument.msout.storagemanager                =   "Dysco"
 ndppp_prep_target.argument.msout.storagemanager.databitrate    =   0
-ndppp_prep_target.argument.steps                               =   [flag,elev,flagamp,applyclock,applyPA,applybandpass,applybeam,applyRM,interp,avg]
-ndppp_prep_target.argument.flag.type                           =   preflagger
-ndppp_prep_target.argument.flag.baseline                       =   {{ flag_baselines }}
-ndppp_prep_target.argument.elev.type                           =   preflagger
-ndppp_prep_target.argument.elev.elevation                      =   0deg..20deg
+ndppp_prep_target.argument.steps                               =   [filter,{{ initial_flagging }},{{ demix_step }}applyPA,applybandpass,{{ apply_steps }},applybeam,interp,avg]
+ndppp_prep_target.argument.filter.type                         =   filter
+ndppp_prep_target.argument.filter.baseline                     =   check_station_mismatch.output.filter
+ndppp_prep_target.argument.filter.remove                       =   true
+ndppp_prep_target.argument.flagedge.type                       =   preflagger
+ndppp_prep_target.argument.flagedge.chan                       =   [0..nchan/32-1,31*nchan/32..nchan-1] # we are running on a single subband
+ndppp_prep_target.argument.aoflag.type                         =   aoflagger
+ndppp_prep_target.argument.aoflag.memoryperc                   =   10
+ndppp_prep_target.argument.aoflag.keepstatistics               =   false
+ndppp_prep_target.argument.flagbaseline.type                   =   preflagger
+ndppp_prep_target.argument.flagbaseline.baseline               =   {{ flag_baselines }}
+ndppp_prep_target.argument.flagelev.type                       =   preflagger
+ndppp_prep_target.argument.flagelev.elevation                  =   0deg..20deg
 ndppp_prep_target.argument.flagamp.type                        =   preflagger
 ndppp_prep_target.argument.flagamp.amplmin                     =   1e-30
-ndppp_prep_target.argument.applyclock.type                     =   applycal
-ndppp_prep_target.argument.applyclock.parmdb                   =   {{ cal_solutions }}
-ndppp_prep_target.argument.applyclock.correction               =   clock000
-ndppp_prep_target.argument.applyclock.solset                   =   calibrator
 ndppp_prep_target.argument.applyPA.type                        =   applycal
 ndppp_prep_target.argument.applyPA.parmdb                      =   {{ cal_solutions }}
 ndppp_prep_target.argument.applyPA.correction                  =   polalign
@@ -202,48 +271,48 @@ ndppp_prep_target.argument.applyPA.solset                      =   calibrator
 ndppp_prep_target.argument.applybandpass.type                  =   applycal
 ndppp_prep_target.argument.applybandpass.parmdb                =   {{ cal_solutions }}
 ndppp_prep_target.argument.applybandpass.correction            =   bandpass
-ndppp_prep_target.argument.applybandpass.updateweights         =   True
+ndppp_prep_target.argument.applybandpass.updateweights         =   {{ updateweights }}
 ndppp_prep_target.argument.applybandpass.solset                =   calibrator
-ndppp_prep_target.argument.applybeam.type                      =   applybeam
-ndppp_prep_target.argument.applybeam.usechannelfreq            =   True
-ndppp_prep_target.argument.applybeam.updateweights             =   True
+ndppp_prep_target.argument.applyclock.type                     =   applycal
+ndppp_prep_target.argument.applyclock.parmdb                   =   {{ cal_solutions }}
+ndppp_prep_target.argument.applyclock.correction               =   clock000
+ndppp_prep_target.argument.applyclock.solset                   =   calibrator
+ndppp_prep_target.argument.applytec.type                       =   applycal
+ndppp_prep_target.argument.applytec.parmdb                     =   {{ cal_solutions }}
+ndppp_prep_target.argument.applytec.correction                 =   tec000
+ndppp_prep_target.argument.applytec.solset                     =   calibrator
+ndppp_prep_target.argument.applyphase.type                     =   applycal
+ndppp_prep_target.argument.applyphase.parmdb                   =   {{ solutions }}
+ndppp_prep_target.argument.applyphase.correction               =   phaseOrig000
+ndppp_prep_target.argument.applyphase.solset                   =   calibrator
 ndppp_prep_target.argument.applyRM.type                        =   applycal
 ndppp_prep_target.argument.applyRM.parmdb                      =   {{ cal_solutions }}
 ndppp_prep_target.argument.applyRM.correction                  =   RMextract
 ndppp_prep_target.argument.applyRM.solset                      =   target
+ndppp_prep_target.argument.applybeam.type                      =   applybeam
+ndppp_prep_target.argument.applybeam.usechannelfreq            =   True
+ndppp_prep_target.argument.applybeam.updateweights             =   {{ updateweights }}
 ndppp_prep_target.argument.interp.type                         =   interpolate
 ndppp_prep_target.argument.interp.windowsize                   =   {{ interp_windowsize }}
 ndppp_prep_target.argument.avg.type                            =   average
 ndppp_prep_target.argument.avg.timeresolution                  =   {{ avg_timeresolution }}
 ndppp_prep_target.argument.avg.freqresolution                  =   {{ avg_freqresolution }}
+ndppp_prep_target.argument.demix.type                          =   demixer
+ndppp_prep_target.argument.demix.demixfreqstep                 =   {{ demix_freqstep }}
+ndppp_prep_target.argument.demix.demixtimestep                 =   {{ demix_timestep }}
+ndppp_prep_target.argument.demix.ignoretarget                  =   False
+ndppp_prep_target.argument.demix.targetsource                  =   {{ demix_target }}
+ndppp_prep_target.argument.demix.subtractsources               =   {{ demix_sources }}
+ndppp_prep_target.argument.demix.ntimechunk                    =   {{ max_dppp_threads }}
+ndppp_prep_target.argument.demix.skymodel                      =   expand_sourcedb_ateam.output.mapfile
+ndppp_prep_target.argument.demix.freqstep                      =   1
+ndppp_prep_target.argument.demix.timestep                      =   1
+ndppp_prep_target.argument.demix.instrumentmodel               =   createmap_insttarg.output.mapfile
 
 
 #############################
 ##     Clip A-Team         ##
 #############################
-# create a mapfile with the A-Team skymodel, length = 1
-create_ateam_model_map.control.kind                            =   plugin
-create_ateam_model_map.control.type                            =   addListMapfile
-create_ateam_model_map.control.hosts                           =   ['localhost']
-create_ateam_model_map.control.files                           =   [ {{ prefactor_directory }}/skymodels/Ateam_LBA_CC.skymodel ]
-create_ateam_model_map.control.mapfile_dir                     =   input.output.mapfile_dir
-create_ateam_model_map.control.filename                        =   ateam_model_name.mapfile
-
-# make sourcedbs from the A-Team skymodel, length = 1
-make_sourcedb_ateam.control.type                               =   makesourcedb
-make_sourcedb_ateam.control.error_tolerance                    =   {{ error_tolerance }}
-make_sourcedb_ateam.control.mapfile_in                         =   create_ateam_model_map.output.mapfile
-make_sourcedb_ateam.argument.format                            =   <
-make_sourcedb_ateam.argument.outtype                           =   blob
-
-# expand the sourcedb mapfile so that there is one entry for every file, length = nfiles
-expand_sourcedb_ateam.control.kind                             =   plugin
-expand_sourcedb_ateam.control.type                             =   expandMapfile
-expand_sourcedb_ateam.control.mapfile_in                       =   make_sourcedb_ateam.output.mapfile
-expand_sourcedb_ateam.control.mapfile_to_match                 =   ndppp_prep_target.output.mapfile
-expand_sourcedb_ateam.control.mapfile_dir                      =   input.output.mapfile_dir
-expand_sourcedb_ateam.control.filename                         =   expand_sourcedb_ateam.datamap
-
 # Predict, corrupt, and predict the ateam-resolution model, length = nfiles
 predict_ateam.control.type                                     =   dppp
 predict_ateam.control.mapfiles_in                              =   [ndppp_prep_target.output.mapfile,expand_sourcedb_ateam.output.mapfile]
@@ -353,6 +422,7 @@ aoflag.control.args_format                                     =   wsclean
 aoflag.argument.strategy                                       =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
 aoflag.argument.flags                                          =   [-v,-memory-read,-combine-spws,msin]
 
+
 #############################
 ##     phasecal target     ##
 #############################
@@ -362,6 +432,12 @@ check_unflagged.control.executable                             =   {{ scripts }}
 check_unflagged.argument.flags                                 =   [dpppconcat.output.mapfile]
 check_unflagged.argument.min_fraction                          =   {{ min_unflagged_fraction }}
 
+# check potential station mismatch
+check_bad_antennas.control.kind                                =   plugin
+check_bad_antennas.control.type                                =   identifyBadAntennas
+check_bad_antennas.control.mapfile_in                          =   do_sortmap_maps.output.groupmap
+check_bad_antennas.control.filter                              =   {{ filter_baselines }}
+
 # prune flagged files from mapfile
 check_unflagged_map.control.kind                               =   plugin
 check_unflagged_map.control.type                               =   pruneMapfile
@@ -369,12 +445,6 @@ check_unflagged_map.control.mapfile_in                         =   check_unflagg
 check_unflagged_map.control.mapfile_dir                        =   input.output.mapfile_dir
 check_unflagged_map.control.filename                           =   check_unflagged_map.mapfile
 check_unflagged_map.control.prune_str                          =   None
-
-# check potential station mismatch
-check_bad_antennas.control.kind                                =   plugin
-check_bad_antennas.control.type                                =   identifyBadAntennas
-check_bad_antennas.control.mapfile_in                          =   do_sortmap_maps.output.groupmap
-check_bad_antennas.control.filter                              =   {{ filter_baselines }}
 
 # if wished, download the tgss skymodel for the target
 sky_tar.control.type                                           =   pythonplugin
@@ -423,29 +493,83 @@ h5_gsmsol_map.control.mapfile_in                               =   gsmcal_parmma
 h5_gsmsol_map.control.mapfile_dir                              =   input.output.mapfile_dir
 h5_gsmsol_map.control.filename                                 =   h5_imp_gsmsol_map.mapfile
 
-# # solve for phase-only calibration solutions
-# # solve and apply are seperate to allow to solve on a subset of baselines but apply to all
-gsmcal_solve.control.type                                      =   dppp
-gsmcal_solve.control.error_tolerance                           =   {{ error_tolerance }}
-gsmcal_solve.control.inplace                                   =   True
-gsmcal_solve.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
-gsmcal_solve.control.inputkeys                                 =   [input_file,sourcedb,parmdb]
-gsmcal_solve.argument.msin                                     =   input_file
-gsmcal_solve.argument.msin.datacolumn                          =   DATA
-gsmcal_solve.argument.msout.datacolumn                         =   CORRECTED_DATA
-gsmcal_solve.argument.steps                                    =   [filter,gaincal]
-gsmcal_solve.argument.filter.type                              =   filter
-gsmcal_solve.argument.filter.blrange                           =   [150, 999999]
-gsmcal_solve.argument.gaincal.type                             =   gaincal
-gsmcal_solve.argument.gaincal.maxiter                          =   50
-gsmcal_solve.argument.gaincal.caltype                          =   phaseonly
-gsmcal_solve.argument.gaincal.nchan                            =   0
-gsmcal_solve.argument.gaincal.solint                           =   1
-gsmcal_solve.argument.gaincal.sourcedb                         =   sourcedb
-gsmcal_solve.argument.gaincal.parmdb                           =   parmdb
-gsmcal_solve.argument.gaincal.usebeammodel                     =   True
-gsmcal_solve.argument.gaincal.usechannelfreq                   =   True
-gsmcal_solve.argument.gaincal.beammode                         =   array_factor
+# interpolate after flagging but before smoothing
+interp_target.control.type                                     =   dppp
+interp_target.control.inplace                                  =   True
+interp_target.control.error_tolerance                          =   {{ error_tolerance }}
+interp_target.control.mapfile_in                               =   check_unflagged_map.output.mapfile
+interp_target.control.inputkey                                 =   msfile
+interp_target.argument.msin                                    =   msfile
+interp_target.argument.msin.datacolumn                         =   DATA
+interp_target.argument.msout.datacolumn                        =   INTERP_DATA
+interp_target.argument.msout.storagemanager                    =   "Dysco"
+interp_target.argument.msout.storagemanager.databitrate        =   0
+interp_target.argument.steps                                   =   [interp]
+interp_target.argument.interp.type                             =   interpolate
+interp_target.argument.interp.windowsize                       =   {{ interp_windowsize }}
+
+# baseline-dependent smooting
+smooth_data.control.type                                       =   executable_args
+smooth_data.control.inplace                                    =   True
+smooth_data.control.error_tolerance                            =   {{ error_tolerance }}
+smooth_data.control.executable                                 =   {{ scripts }}/BLsmooth.py
+smooth_data.control.mapfile_in                                 =   check_unflagged_map.output.mapfile
+smooth_data.control.inputkey                                   =   msin
+smooth_data.argument.flags                                     =   [-S,{{ do_smooth }},-r,-f,0.2,-i,INTERP_DATA,-o,SMOOTHED_DATA,msin]
+
+# solve for phase-only calibration solutions
+gsmcal_phase.control.type                                      =   dppp
+gsmcal_phase.control.error_tolerance                           =   {{ error_tolerance }}
+gsmcal_phase.control.inplace                                   =   True
+gsmcal_phase.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
+gsmcal_phase.control.inputkeys                                 =   [input_file,sourcedb,parmdb]
+gsmcal_phase.argument.msin                                     =   input_file
+gsmcal_phase.argument.msin.baseline                            =   check_bad_antennas.output.filter
+gsmcal_phase.argument.msin.datacolumn                          =   SMOOTHED_DATA
+gsmcal_phase.argument.steps                                    =   [filter,gaincal]
+gsmcal_phase.argument.filter.type                              =   filter
+gsmcal_phase.argument.filter.blrange                           =   [150, 999999]
+gsmcal_phase.argument.gaincal.type                             =   gaincal
+gsmcal_phase.argument.gaincal.maxiter                          =   50
+gsmcal_phase.argument.gaincal.caltype                          =   phaseonly
+gsmcal_phase.argument.gaincal.nchan                            =   0
+gsmcal_phase.argument.gaincal.solint                           =   1
+gsmcal_phase.argument.gaincal.sourcedb                         =   sourcedb
+gsmcal_phase.argument.gaincal.parmdb                           =   parmdb
+gsmcal_phase.argument.gaincal.usebeammodel                     =   True
+gsmcal_phase.argument.gaincal.usechannelfreq                   =   True
+gsmcal_phase.argument.gaincal.beammode                         =   array_factor
+gsmcal_phase.argument.gaincal.tolerance                        =   1e-3
+gsmcal_phase.argument.gaincal.propagatesolutions               =   {{ propagatesolutions }}
+
+# solve for direction-independent TEC
+gsmcal_tec.control.type                                        =   dppp
+gsmcal_tec.control.error_tolerance                             =   {{ error_tolerance }}
+gsmcal_tec.control.inplace                                     =   True
+gsmcal_tec.control.mapfiles_in                                 =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
+gsmcal_tec.control.inputkeys                                   =   [input_file,sourcedb,parmdb]
+gsmcal_tec.argument.msin                                       =   input_file
+gsmcal_tec.argument.msin.datacolumn                            =   SMOOTHED_DATA
+gsmcal_tec.argument.msout.storagemanager                       =   "Dysco"
+gsmcal_tec.argument.msout.storagemanager.databitrate           =   {{ compression_bitrate }}
+gsmcal_tec.argument.steps                                      =   [filter,ddecal]
+gsmcal_tec.argument.filter.type                                =   filter
+gsmcal_tec.argument.filter.blrange                             =   [150, 999999]
+gsmcal_tec.argument.ddecal.type                                =   ddecal
+gsmcal_tec.argument.ddecal.uvlambdamin                         =   250
+gsmcal_tec.argument.ddecal.maxiter                             =   50
+gsmcal_tec.argument.ddecal.tolerance                           =   1e-3
+gsmcal_tec.argument.ddecal.solint                              =   3
+gsmcal_tec.argument.ddecal.nchan                               =   1
+gsmcal_tec.argument.ddecal.stepsize                            =   0.2
+gsmcal_tec.argument.ddecal.h5parm                              =   parmdb
+gsmcal_tec.argument.ddecal.mode                                =   tec
+gsmcal_tec.argument.ddecal.propagatesolutions                  =   {{ propagatesolutions }}
+gsmcal_tec.argument.ddecal.approximatetec                      =   True
+gsmcal_tec.argument.ddecal.maxapproxiter                       =   25
+gsmcal_tec.argument.ddecal.approxtolerance                     =   5e-3
+gsmcal_tec.argument.ddecal.sourcedb                            =   sourcedb
+
 
 ###########################
 ## Analyze cal           ##
@@ -460,45 +584,75 @@ h5imp_gsmcal.argument.flags                                    =   [-c,h5in]
 h5imp_gsmcal.argument.outh5parm                                =   outh5parm
 
 # create losoto v2 parset file
-prepare_losoto_gsmcal.control.kind                             =   plugin
-prepare_losoto_gsmcal.control.type                             =   makeLosotoParset
-prepare_losoto_gsmcal.control.steps                            =   [plotP, plotP2, plotPd, plotPd2]
-prepare_losoto_gsmcal.control.filename                         =   {{ job_directory }}/losoto.parset
-prepare_losoto_gsmcal.control.plotP.operation                  =   PLOT
-prepare_losoto_gsmcal.control.plotP.soltab                     =   sol000/phase000
-prepare_losoto_gsmcal.control.plotP.axesInPlot                 =   [time,freq]
-prepare_losoto_gsmcal.control.plotP.axisInTable                =   ant
-prepare_losoto_gsmcal.control.plotP.plotFlag                   =   True
-prepare_losoto_gsmcal.control.plotP.prefix                     =   {{ inspection_directory }}/ph_
-prepare_losoto_gsmcal.control.plotP.refAnt                     =   {{ refant }}
-prepare_losoto_gsmcal.control.plotP.minmax                     =   [-3.14,3.14]
-prepare_losoto_gsmcal.control.plotP2.operation                 =   PLOT
-prepare_losoto_gsmcal.control.plotP2.soltab                    =   sol000/phase000
-prepare_losoto_gsmcal.control.plotP2.axesInPlot                =   [time]
-prepare_losoto_gsmcal.control.plotP2.axisInTable               =   ant
-prepare_losoto_gsmcal.control.plotP2.axisInCol                 =   pol
-prepare_losoto_gsmcal.control.plotP2.plotFlag                  =   True
-prepare_losoto_gsmcal.control.plotP2.prefix                    =   {{ inspection_directory }}/ph_
-prepare_losoto_gsmcal.control.plotP2.refAnt                    =   {{ refant }}
-prepare_losoto_gsmcal.control.plotP2.minmax                    =   [-3.14,3.14]
-prepare_losoto_gsmcal.control.plotPd.operation                 =   PLOT
-prepare_losoto_gsmcal.control.plotPd.soltab                    =   sol000/phase000
-prepare_losoto_gsmcal.control.plotPd.axesInPlot                =   [time,freq]
-prepare_losoto_gsmcal.control.plotPd.axisInTable               =   ant
-prepare_losoto_gsmcal.control.plotPd.axisDiff                  =   pol
-prepare_losoto_gsmcal.control.plotPd.plotFlag                  =   True
-prepare_losoto_gsmcal.control.plotPd.prefix                    =   {{ inspection_directory }}/ph_poldif
-prepare_losoto_gsmcal.control.plotPd.refAnt                    =   {{ refant }}
-prepare_losoto_gsmcal.control.plotPd.minmax                    =   [-3.14,3.14]
-prepare_losoto_gsmcal.control.plotPd2.operation                =   PLOT
-prepare_losoto_gsmcal.control.plotPd2.soltab                   =   sol000/phase000
-prepare_losoto_gsmcal.control.plotPd2.axesInPlot               =   [time]
-prepare_losoto_gsmcal.control.plotPd2.axisInTable              =   ant
-prepare_losoto_gsmcal.control.plotPd2.axisDiff                 =   pol
-prepare_losoto_gsmcal.control.plotPd2.plotFlag                 =   True
-prepare_losoto_gsmcal.control.plotPd2.prefix                   =   {{ inspection_directory }}/ph_poldif_
-prepare_losoto_gsmcal.control.plotPd2.refAnt                   =   {{ refant }}
-prepare_losoto_gsmcal.control.plotPd2.minmax                   =   [-3.14,3.14]
+prepare_losoto_phase.control.kind                             =   plugin
+prepare_losoto_phase.control.type                             =   makeLosotoParset
+prepare_losoto_phase.control.steps                            =   [plotP, plotP2, plotPd, plotPd2]
+prepare_losoto_phase.control.filename                         =   {{ job_directory }}/losoto.parset
+prepare_losoto_phase.control.plotP.operation                  =   PLOT
+prepare_losoto_phase.control.plotP.soltab                     =   sol000/phase000
+prepare_losoto_phase.control.plotP.axesInPlot                 =   [time,freq]
+prepare_losoto_phase.control.plotP.axisInTable                =   ant
+prepare_losoto_phase.control.plotP.plotFlag                   =   True
+prepare_losoto_phase.control.plotP.prefix                     =   {{ inspection_directory }}/ph_
+prepare_losoto_phase.control.plotP.refAnt                     =   {{ refant }}
+prepare_losoto_phase.control.plotP.minmax                     =   [-3.14,3.14]
+prepare_losoto_phase.control.plotP2.operation                 =   PLOT
+prepare_losoto_phase.control.plotP2.soltab                    =   sol000/phase000
+prepare_losoto_phase.control.plotP2.axesInPlot                =   [time]
+prepare_losoto_phase.control.plotP2.axisInTable               =   ant
+prepare_losoto_phase.control.plotP2.axisInCol                 =   pol
+prepare_losoto_phase.control.plotP2.plotFlag                  =   True
+prepare_losoto_phase.control.plotP2.prefix                    =   {{ inspection_directory }}/ph_
+prepare_losoto_phase.control.plotP2.refAnt                    =   {{ refant }}
+prepare_losoto_phase.control.plotP2.minmax                    =   [-3.14,3.14]
+prepare_losoto_phase.control.plotPd.operation                 =   PLOT
+prepare_losoto_phase.control.plotPd.soltab                    =   sol000/phase000
+prepare_losoto_phase.control.plotPd.axesInPlot                =   [time,freq]
+prepare_losoto_phase.control.plotPd.axisInTable               =   ant
+prepare_losoto_phase.control.plotPd.axisDiff                  =   pol
+prepare_losoto_phase.control.plotPd.plotFlag                  =   True
+prepare_losoto_phase.control.plotPd.prefix                    =   {{ inspection_directory }}/ph_poldif
+prepare_losoto_phase.control.plotPd.refAnt                    =   {{ refant }}
+prepare_losoto_phase.control.plotPd.minmax                    =   [-3.14,3.14]
+prepare_losoto_phase.control.plotPd2.operation                =   PLOT
+prepare_losoto_phase.control.plotPd2.soltab                   =   sol000/phase000
+prepare_losoto_phase.control.plotPd2.axesInPlot               =   [time]
+prepare_losoto_phase.control.plotPd2.axisInTable              =   ant
+prepare_losoto_phase.control.plotPd2.axisDiff                 =   pol
+prepare_losoto_phase.control.plotPd2.plotFlag                 =   True
+prepare_losoto_phase.control.plotPd2.prefix                   =   {{ inspection_directory }}/ph_poldif_
+prepare_losoto_phase.control.plotPd2.refAnt                   =   {{ refant }}
+prepare_losoto_phase.control.plotPd2.minmax                   =   [-3.14,3.14]
+
+# create losoto v2 parset file
+prepare_losoto_tec.control.kind                                =   plugin
+prepare_losoto_tec.control.type                                =   makeLosotoParset
+prepare_losoto_tec.control.steps                               =   [plotP, plotP2, plotPd, plotPd2]
+prepare_losoto_tec.control.filename                            =   input.output.job_directory/losoto.parset
+prepare_losoto_tec.control.global.ncpu                         =   {{ num_proc_per_node }}
+# prepare_losoto_tec.control.plotCSPTEC.operation                =   PLOT
+# prepare_losoto_tec.control.plotCSPTEC.soltab                   =   sol000/phase000
+# prepare_losoto_tec.control.plotCSPTEC.axesInPlot               =   time
+# prepare_losoto_tec.control.plotCSPTEC.axisInTable              =   ant
+# prepare_losoto_tec.control.plotCSPTEC.plotFlag                 =   True
+# prepare_losoto_tec.control.plotCSPTEC.prefix                   =   {{ inspection_directory }}/csptec
+# prepare_losoto_tec.control.plotCSPTEC.refAnt                   =   {{ refant }}
+# prepare_losoto_tec.control.plotCSPTEC.soltabToAdd              =   tec000
+# prepare_losoto_tec.control.plotCSP.operation                   =   PLOT
+# prepare_losoto_tec.control.plotCSP.soltab                      =   sol000/phase000
+# prepare_losoto_tec.control.plotCSP.axesInPlot                  =   time
+# prepare_losoto_tec.control.plotCSP.axisInTable                 =   ant
+# prepare_losoto_tec.control.plotCSP.plotFlag                    =   True
+# prepare_losoto_tec.control.plotCSP.prefix                      =   {{ inspection_directory }}/csp
+# prepare_losoto_tec.control.plotCSP.refAnt                      =   {{ refant }}
+prepare_losoto_tec.control.plotTEC.operation                   =   PLOT
+prepare_losoto_tec.control.plotTEC.soltab                      =   sol000/tec000
+prepare_losoto_tec.control.plotTEC.axesInPlot                  =   time
+prepare_losoto_tec.control.plotTEC.axisInTable                 =   ant
+prepare_losoto_tec.control.plotTEC.plotFlag                    =   True
+prepare_losoto_tec.control.plotTEC.minmax                      =   [-0.5,0.5]
+prepare_losoto_tec.control.plotTEC.prefix                      =   {{ inspection_directory }}/tec
+prepare_losoto_tec.control.plotTEC.refAnt                      =   {{ refant }}
 
 # do the processing on the LoSoTo file
 process_losoto_gsmcal.control.type                             =   losoto
@@ -507,33 +661,66 @@ process_losoto_gsmcal.control.inputkey                         =   h5in
 process_losoto_gsmcal.argument.flags                           =   [h5in,{{ job_directory }}/losoto.parset]
 
 # output the final soltab into an external h5parm
-h5exp_gsmcal.control.type                                      =   h5parm_collector
-h5exp_gsmcal.control.inplace                                   =   True
-h5exp_gsmcal.control.error_tolerance                           =   {{ error_tolerance }}
-h5exp_gsmcal.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
-h5exp_gsmcal.control.inputkey                                  =   h5in
-h5exp_gsmcal.argument.flags                                    =   [h5in]
-h5exp_gsmcal.argument.insoltab                                 =   phase000
-h5exp_gsmcal.argument.outsolset                                =   target
-h5exp_gsmcal.argument.outh5parm                                =   {{ cal_solutions }}
+h5exp_phase.control.type                                      =   h5parm_collector
+h5exp_phase.control.inplace                                   =   True
+h5exp_phase.control.error_tolerance                           =   {{ error_tolerance }}
+h5exp_phase.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
+h5exp_phase.control.inputkey                                  =   h5in
+h5exp_phase.argument.flags                                    =   [h5in]
+h5exp_phase.argument.insoltab                                 =   phase000
+h5exp_phase.argument.outsolset                                =   target
+h5exp_phase.argument.outh5parm                                =   {{ cal_solutions }}
+
+# output the final soltab into an external h5parm
+h5exp_tec.control.type                                      =   h5parm_collector
+h5exp_tec.control.inplace                                   =   True
+h5exp_tec.control.error_tolerance                           =   {{ error_tolerance }}
+h5exp_tec.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
+h5exp_tec.control.inputkey                                  =   h5in
+h5exp_tec.argument.flags                                    =   [h5in]
+h5exp_tec.argument.insoltab                                 =   tec000
+h5exp_tec.argument.outsolset                                =   target
+h5exp_tec.argument.outh5parm                                =   {{ cal_solutions }}
 
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
-gsmcal_apply.control.type                                      =   dppp
-gsmcal_apply.control.error_tolerance                           =   {{ error_tolerance }}
-gsmcal_apply.control.inplace                                   =   True
-gsmcal_apply.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
-gsmcal_apply.control.inputkey                                  =   input_file
-gsmcal_apply.argument.msin                                     =   input_file
-gsmcal_apply.argument.msin.datacolumn                          =   DATA
-gsmcal_apply.argument.msout.datacolumn                         =   CORRECTED_DATA
-gsmcal_apply.argument.msout.writefullresflag                   =   False
-gsmcal_apply.argument.steps                                    =   [applycal]
-gsmcal_apply.argument.msout.storagemanager                     =   "Dysco"
-gsmcal_apply.argument.msout.storagemanager.databitrate         =   0
-gsmcal_apply.argument.applycal.type                            =   applycal
-gsmcal_apply.argument.applycal.correction                      =   phase000
-gsmcal_apply.argument.applycal.parmdb                          =   {{ cal_solutions }}
-gsmcal_apply.argument.applycal.solset                          =   target
+apply_phase.control.type                                      =   dppp
+apply_phase.control.error_tolerance                           =   {{ error_tolerance }}
+apply_phase.control.inplace                                   =   True
+apply_phase.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
+apply_phase.control.inputkey                                  =   input_file
+apply_phase.argument.msin                                     =   input_file
+apply_phase.argument.msin.datacolumn                          =   SMOOTHED_DATA
+apply_phase.argument.msin.baseline                            =   check_bad_antennas.output.filter
+apply_phase.argument.msout.datacolumn                         =   CORRECTED_DATA
+apply_phase.argument.msout.writefullresflag                   =   False
+apply_phase.argument.steps                                    =   [applycal]
+apply_phase.argument.msout.storagemanager                     =   "Dysco"
+apply_phase.argument.msout.storagemanager.databitrate         =   {{ compression_bitrate }}
+apply_phase.argument.applycal.type                            =   applycal
+apply_phase.argument.applycal.correction                      =   phase000
+apply_phase.argument.applycal.parmdb                          =   {{ cal_solutions }}
+apply_phase.argument.applycal.solset                          =   target
+
+# solve and apply are separate to allow to solve on a subset of baselines but apply to all
+apply_tec.control.type                                      =   dppp
+apply_tec.control.error_tolerance                           =   {{ error_tolerance }}
+apply_tec.control.inplace                                   =   True
+apply_tec.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
+apply_tec.control.inputkey                                  =   input_file
+apply_tec.argument.msin                                     =   input_file
+apply_tec.argument.msin.datacolumn                          =   SMOOTHED_DATA
+apply_tec.argument.msin.baseline                            =   check_bad_antennas.output.filter
+apply_tec.argument.msout.datacolumn                         =   CORRECTED_DATA
+apply_tec.argument.msout.writefullresflag                   =   False
+apply_tec.argument.steps                                    =   [applycal,interp]
+apply_tec.argument.msout.storagemanager                     =   "Dysco"
+apply_tec.argument.msout.storagemanager.databitrate         =   {{ compression_bitrate }}
+apply_tec.argument.applycal.type                            =   applycal
+apply_tec.argument.applycal.correction                      =   tec000
+apply_tec.argument.applycal.parmdb                          =   {{ cal_solutions }}
+apply_tec.argument.applycal.solset                          =   target
+apply_tec.argument.interp.type                              =   interpolate
+apply_tec.argument.interp.windowsize                        =   {{ interp_windowsize }}
 
 ################################
 ## feed back the results      ##
