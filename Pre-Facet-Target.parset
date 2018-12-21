@@ -98,7 +98,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 pipeline.steps              =  [prep, {{ clipATeam }} concat, prep_gsmcal, {{ gsmcal_step }}, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, check_station_mismatch, copy_input_h5parmfile, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
+pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, copy_input_h5parmfile, check_station_mismatch, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, aoflag]
 pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
@@ -141,14 +141,6 @@ combine_data_target_map.control.mapfile_dir                    =   input.output.
 combine_data_target_map.control.filename                       =   combine_data_tar_map.mapfile
 combine_data_target_map.control.mapfile_in                     =   createmap_target.output.mapfile
 
-# check potential station mismatch
-check_station_mismatch.control.kind                            =   plugin
-check_station_mismatch.control.type                            =   compareStationList
-check_station_mismatch.control.mapfile_in                      =   createmap_target.output.mapfile
-check_station_mismatch.control.h5parmdb                        =   {{ solutions }}
-check_station_mismatch.control.solset_name                     =   calibrator
-check_station_mismatch.control.filter                          =   {{ filter_baselines }}
-
 # copy the input calibrator h5parm file
 copy_input_h5parmfile.control.kind                             =   plugin
 copy_input_h5parmfile.control.type                             =   copyFiles
@@ -158,6 +150,14 @@ copy_input_h5parmfile.control.output_files                     =   [{{ cal_solut
 copy_input_h5parmfile.control.use_symlinks                     =   False
 copy_input_h5parmfile.control.mapfile_dir                      =   input.output.mapfile_dir
 copy_input_h5parmfile.control.filename                         =   copy_h5parmfile.mapfile
+
+# check potential station mismatch
+check_station_mismatch.control.kind                            =   plugin
+check_station_mismatch.control.type                            =   compareStationList
+check_station_mismatch.control.mapfile_in                      =   createmap_target.output.mapfile
+check_station_mismatch.control.h5parmdb                        =   {{ cal_solutions }}
+check_station_mismatch.control.solset_name                     =   calibrator
+check_station_mismatch.control.filter                          =   {{ filter_baselines }}
 
 
 ###################################
@@ -179,14 +179,9 @@ create_ateam_model_map.control.mapfile_dir                     =   input.output.
 create_ateam_model_map.control.filename                        =   ateam_model_name.mapfile
 
 # make sourcedbs from the A-Team skymodel, length = 1
-make_sourcedb_ateam.control.kind                               =   recipe
-make_sourcedb_ateam.control.type                               =   executable_args
-make_sourcedb_ateam.control.executable                         =   {{ lofar_directory }}/bin/makesourcedb
+make_sourcedb_ateam.control.type                               =   makesourcedb
 make_sourcedb_ateam.control.error_tolerance                    =   {{ error_tolerance }}
-make_sourcedb_ateam.control.args_format                        =   lofar
-make_sourcedb_ateam.control.outputkey                          =   out
 make_sourcedb_ateam.control.mapfile_in                         =   create_ateam_model_map.output.mapfile
-make_sourcedb_ateam.control.inputkey                           =   in
 make_sourcedb_ateam.argument.format                            =   <
 make_sourcedb_ateam.argument.outtype                           =   blob
 
@@ -283,7 +278,7 @@ ndppp_prep_target.argument.applytec.parmdb                     =   {{ cal_soluti
 ndppp_prep_target.argument.applytec.correction                 =   tec000
 ndppp_prep_target.argument.applytec.solset                     =   calibrator
 ndppp_prep_target.argument.applyphase.type                     =   applycal
-ndppp_prep_target.argument.applyphase.parmdb                   =   {{ solutions }}
+ndppp_prep_target.argument.applyphase.parmdb                   =   {{ cal_solutions }}
 ndppp_prep_target.argument.applyphase.correction               =   phaseOrig000
 ndppp_prep_target.argument.applyphase.solset                   =   calibrator
 ndppp_prep_target.argument.applyRM.type                        =   applycal
