@@ -113,9 +113,9 @@ def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
     errorcode = 1
     tries     = 0
     while errorcode != 0 and tries < 5:
-        if source == 'TGSS':
+        if Source == 'TGSS':
             errorcode = os.system("wget -O "+SkymodelPath+ " \'http://tgssadr.strw.leidenuniv.nl/cgi-bin/gsmv3.cgi?coord="+str(RATar)+","+str(DECTar)+"&radius="+str(Radius)+"&unit=deg&deconv=y\' ")
-        elif source == 'GSM':
+        elif Source == 'GSM':
             errorcode = os.system("wget -O "+SkymodelPath+ " \'http://172.104.228.177/cgi-bin/gsmv1.cgi?coord="+str(RATar)+","+str(DECTar)+"&radius="+str(Radius)+"&unit=deg&deconv=y\' ")
         time.sleep(5)
         tries += 1
