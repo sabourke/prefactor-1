@@ -103,7 +103,7 @@ def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
             raise ValueError("download_tgss_skymodel_target: Path: \"%s\" does not exist and skymodel download is disabled!"%(SkymodelPath))
 
     # If we got here, then we are supposed to download the skymodel.
-    assert download_flag == True # Jaja, belts and suspenders...
+    assert download_flag is True # Jaja, belts and suspenders...
     print "DOWNLOADING skymodel for the target into "+ SkymodelPath
 
     # Reading a MS to find the coordinate (pyrap)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
                         help='One (or more MSs) for which a TGSS/GSM skymodel will be download.')
     parser.add_argument('SkyTar', type=str,
                         help='Full name (with path) to the skymodel; the TGSS/GSM skymodel will be downloaded here')
-    parser.add_argument('--Radius', type=float, default=5.
+    parser.add_argument('--Radius', type=float, default=5.,
                         help='Radius for the TGSS/GSM cone search in degrees')
     parser.add_argument('--Source', type=str, default='TGSS',
                         help='Choose source for skymodel: TGSS or GSM')
@@ -146,5 +146,3 @@ if __name__ == '__main__':
         radius=args.Radius
 
     main(args.MSfile,args.SkyTar, str(radius), args.Source)
-
-
