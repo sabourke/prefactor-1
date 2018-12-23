@@ -49,7 +49,7 @@
 ! demix_step               =  {{ none }}                             ## choose {{ demix }} if you want to demix
 ! apply_steps              =  applyclock,applyRM                     ## comma-separated list of apply_steps performed in the target preparation (NOTE: only use applyRM if you have performed RMextract before!)
 ! clipAteam_step           =  {{ clipATeam }}                        ## choose {{ none }} if you want to skip A-team-clipping
-! gsmcal_step              =  phase                                  ## choose gsmcal_tec if you want to fit TEC instead of self-calibrating for phases
+! gsmcal_step              =  phase                                  ## choose tec if you want to fit TEC instead of self-calibrating for phases
 ! updateweights            =  False                                  ## update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations
 
 ## pipeline performance
@@ -234,7 +234,6 @@ ndppp_prep_target.control.type                                 =   dppp
 ndppp_prep_target.control.error_tolerance                      =   {{ error_tolerance }}
 ndppp_prep_target.control.mapfile_in                           =   createmap_target.output.mapfile
 ndppp_prep_target.control.inputkey                             =   input_file
-ndppp_prep_target.control.mapfile_out                          =   create_output_msfiles_map.output.mapfile
 ndppp_prep_target.control.outputkey                            =   msout
 ndppp_prep_target.argument.msin                                =   input_file
 ndppp_prep_target.argument.msin.datacolumn                     =   DATA
@@ -682,12 +681,17 @@ h5exp_tec.argument.outh5parm                                =   {{ cal_solutions
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
 apply_phase.control.type                                      =   dppp
 apply_phase.control.error_tolerance                           =   {{ error_tolerance }}
-apply_phase.control.inplace                                   =   True
 apply_phase.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 apply_phase.control.inputkey                                  =   input_file
+apply_phase.control.mapfile_out                               =   create_output_msfiles_map.output.mapfile
+apply_phase.control.outputkey                                 =   msout
 apply_phase.argument.msin                                     =   input_file
 apply_phase.argument.msin.datacolumn                          =   DATA
-apply_phase.argument.msout.datacolumn                         =   CORRECTED_DATA
+apply_phase.argument.msin.baseline                            =   check_bad_antennas.output.filter
+apply_phase.argument.msout.writefullresflag                   =   False
+apply_phase.argument.msout.overwrite                          =   True
+apply_phase.argument.msout.storagemanager                     =   "Dysco"
+apply_phase.argument.msout.storagemanager.databitrate         =   {{ compression_bitrate }}
 apply_phase.argument.steps                                    =   [applycal]
 apply_phase.argument.applycal.type                            =   applycal
 apply_phase.argument.applycal.correction                      =   phase000
@@ -697,12 +701,17 @@ apply_phase.argument.applycal.solset                          =   target
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
 apply_tec.control.type                                      =   dppp
 apply_tec.control.error_tolerance                           =   {{ error_tolerance }}
-apply_tec.control.inplace                                   =   True
 apply_tec.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 apply_tec.control.inputkey                                  =   input_file
+apply_tec.control.mapfile_out                               =   create_output_msfiles_map.output.mapfile
+apply_tec.control.outputkey                                 =   msout
 apply_tec.argument.msin                                     =   input_file
 apply_tec.argument.msin.datacolumn                          =   DATA
-apply_tec.argument.msout.datacolumn                         =   CORRECTED_DATA
+apply_tec.argument.msin.baseline                            =   check_bad_antennas.output.filter
+apply_tec.argument.msout.writefullresflag                   =   False
+apply_tec.argument.msout.overwrite                          =   True
+apply_tec.argument.msout.storagemanager                     =   "Dysco"
+apply_tec.argument.msout.storagemanager.databitrate         =   {{ compression_bitrate }}
 apply_tec.argument.steps                                    =   [applycal,interp]
 apply_tec.argument.applycal.type                            =   applycal
 apply_tec.argument.applycal.correction                      =   tec000
