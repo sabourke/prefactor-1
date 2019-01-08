@@ -234,7 +234,7 @@ aoflag.control.mapfile_in                                   =   ms_concat_map.ou
 aoflag.control.inputkey                                     =   msin
 aoflag.control.args_format                                  =   wsclean
 aoflag.argument.strategy                                    =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
-aoflag.argument.flags                                       =   [-v,-memory-read,-combine-spws,msin]
+aoflag.argument.flags                                       =   [-v,-combine-spws,msin]
 
 # find automatically the calibrator sky model
 sky_cal.control.type                                        =   pythonplugin
