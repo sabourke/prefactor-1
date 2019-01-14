@@ -179,6 +179,7 @@ def main(fitsimage, outfilename, outdir=None):
     hdulist = astropy.io.fits.open(fitsimage)
     data = hdulist[0].data
     imagenoise = find_imagenoise(data)
+    dynamicrange = numpy.max(data) / imagenoise
     hdulist.close()
 
     # plot
@@ -189,7 +190,10 @@ def main(fitsimage, outfilename, outdir=None):
     f.grid.set_alpha(0.5)
     f.grid.set_linewidth(0.2)
     f.add_colorbar()
-    f.colorbar.set_axis_label_text('Flux (Jy beam$^{-1}$)')
+    f.colorbar.set_axis_label_text('Flux Density (Jy/beam)')
+    f.add_beam()
+    f.beam.set_frame(True)
+    f.set_title('Mean rms = {0:1.2e} Jy/beam, Dynamic range = {1:1.2e}'.format(imagenoise, dynamicrange))
 
     if outdir is not None:
         if not os.path.exists(outdir):
