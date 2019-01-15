@@ -200,7 +200,6 @@ ndppp_prep_cal.argument.demix.demixtimestep                 =   {{ demix_timeste
 ndppp_prep_cal.argument.demix.ignoretarget                  =   False
 ndppp_prep_cal.argument.demix.targetsource                  =   {{ demix_target }}
 ndppp_prep_cal.argument.demix.subtractsources               =   {{ demix_sources }}
-ndppp_prep_cal.argument.demix.ntimechunk                    =   {{ max_dppp_threads }}
 ndppp_prep_cal.argument.demix.skymodel                      =   expand_sourcedb_ateam.output.mapfile
 ndppp_prep_cal.argument.demix.freqstep                      =   1
 ndppp_prep_cal.argument.demix.timestep                      =   1
