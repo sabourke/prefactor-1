@@ -25,8 +25,8 @@ It will prepare your data so that you will be able to use any direction-dependen
 .. note::
 
     This documentation refers to the production version, intended for automated
-    processing on CEP4/LTA sites. For the normal version, intended to be run
-    by users, see [insert normal version url here].
+    processing on CEP4/LTA sites. For the user version, intended to be run
+    by users, see [insert user version url here].
 
 Introduction
 ------------
