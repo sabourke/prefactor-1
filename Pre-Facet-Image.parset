@@ -44,7 +44,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, createmap_image, plot_im_high, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, createmap_image, plot_im_high, make_source_list, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -157,7 +157,7 @@ createmap_image.control.files             =   [{{ image_rootname }}-MFS-image-pb
 createmap_image.control.mapfile_dir       =   input.output.mapfile_dir
 createmap_image.control.filename          =   wsclean_high_deep_image.mapfile
 
-# plot the high-res image and mask, length = 1
+# plot the image, length = 1
 plot_im_high.control.type                       =   pythonplugin
 plot_im_high.control.executable                 =   {{ scripts }}/plot_image.py
 plot_im_high.control.error_tolerance            =   {{ error_tolerance }}
@@ -166,19 +166,20 @@ plot_im_high.control.inputkey                   =   imhigh
 plot_im_high.control.outputkey                  =   imname
 plot_im_high.argument.flags                     =   [imhigh,imname,{{ job_directory }}/results/inspection]
 
-# make source list for the high-res image, length = 1 (note: disabled until source list can be fed back)
-# make_source_list.control.type                       =   pythonplugin
-# make_source_list.control.executable                 =   {{ scripts }}/make_source_list.py
-# make_source_list.control.error_tolerance            =   {{ error_tolerance }}
-# make_source_list.control.mapfile_in                 =   createmap_high_deep_image.output.mapfile
-# make_source_list.control.inputkey                   =   imagefile
-# make_source_list.control.outputkey                  =   catalogfile
-# make_source_list.argument.flags                     =   [imagefile,catalogfile]
-# make_source_list.argument.threshisl                 =   3.0
-# make_source_list.argument.threshpix                 =   5.0
-# make_source_list.argument.atrous_do                 =   True
-# make_source_list.argument.rmsbox                    =   (60,20)
-# make_source_list.argument.adaptive_rmsbox           =   True
+# make source list, length = 1
+make_source_list.control.type                       =   pythonplugin
+make_source_list.control.executable                 =   {{ scripts }}/make_source_list.py
+make_source_list.control.error_tolerance            =   {{ error_tolerance }}
+make_source_list.control.mapfile_in                 =   createmap_image.output.mapfile
+make_source_list.control.inputkey                   =   imagefile
+make_source_list.control.outputkey                  =   catalogfile
+make_source_list.argument.flags                     =   [imagefile,catalogfile]
+make_source_list.argument.threshisl                 =   4.0
+make_source_list.argument.threshpix                 =   5.0
+make_source_list.argument.atrous_do                 =   False
+make_source_list.argument.rmsbox                    =   (60,20)
+make_source_list.argument.adaptive_rmsbox           =   True
+make_source_list.argument.compare_dir               =   {{ job_directory }}/results/inspection
 
 # copy image to output filenames expected for feedback
 copy_output_images.control.kind                     =   plugin

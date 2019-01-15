@@ -4,7 +4,6 @@ Script to make a source catalog for an image
 """
 import argparse
 from argparse import RawTextHelpFormatter
-import casacore.images as pim
 from astropy.io import fits as pyfits
 from astropy.coordinates import Angle
 import pickle
@@ -23,10 +22,12 @@ try:
     import bdsf
 except ImportError:
     from lofar import bdsm as bdsf
+import lsmtool
 
 
-def main(image_name, catalog_name, atrous_do=False, threshisl=0.0, threshpix=0.0, rmsbox=None,
-         rmsbox_bright=(35, 7), adaptive_rmsbox=False, atrous_jmax=6, adaptive_thresh=150.0):
+def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0, rmsbox=(60,20),
+         rmsbox_bright=(35, 7), adaptive_rmsbox=False, atrous_jmax=6, adaptive_thresh=150.0,
+         compare_dir=None):
     """
     Make a source catalog for an image
 
@@ -53,8 +54,10 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=0.0, threshpix=0.0
     adaptive_thresh : float, optional
         If adaptive_rmsbox is True, this value sets the threshold above
         which a source will use the small rms box
+    compare_dir : str, optional
+        Directory for output plots/info of comparison of source properties to surveys
     """
-    if rmsbox is not None and type(rmsbox) is str:
+    if type(rmsbox) is str:
         rmsbox = eval(rmsbox)
 
     if type(rmsbox_bright) is str:
@@ -90,6 +93,13 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=0.0, threshpix=0.0
                              atrous_jmax=atrous_jmax)
     img.write_catalog(outfile=catalog_name, clobber=True)
 
+    # Use LSMTool to make some basic comparisons to surveys
+    if compare_dir is not None:
+        s = lsmtool.load(catalog_name)
+        _, _, refRA, refDec = s._getXY()
+        s_gsm = lsmtool.load('GSM', VOPosition=[refRA, refDec], VORadius='5 deg')
+        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=True, outDir=compare_dir)
+
 
 if __name__ == '__main__':
     descriptiontext = "Make a source catalog from an image.\n"
@@ -111,4 +121,4 @@ if __name__ == '__main__':
     main(args.image_name, args.catalog_name, atrous_do=args.atrous_do,
          threshisl=args.threshisl, threshpix=args.threshpix, rmsbox=args.rmsbox,
          rmsbox_bright=args.rmsbox_bright, daptive_rmsbox=args.adaptive_rmsbox,
-         atrous_jmax=args.atrous_jmax))
+         atrous_jmax=args.atrous_jmax)
