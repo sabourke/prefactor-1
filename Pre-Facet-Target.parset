@@ -54,6 +54,7 @@
 
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
+! min_length               =  50                                     ## minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
 
 ## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
@@ -400,7 +401,7 @@ ms_concat_target.control.executable                            =   {{ scripts }}
 ms_concat_target.control.error_tolerance                       =   {{ error_tolerance }}
 ms_concat_target.argument.filename                             =   concatmapfile.mapfile
 ms_concat_target.argument.mapfile_dir                          =   input.output.mapfile_dir
-ms_concat_target.argument.flags                                =   [combine_concat_map.output.mapfile,outputkey,{{ max_length }}]
+ms_concat_target.argument.flags                                =   [combine_concat_map.output.mapfile,outputkey,{{ min_length }}]
 
 # convert the output of ms_concat_target into usable mapfiles
 ms_concat_target_map.control.kind                              =   plugin
@@ -414,7 +415,7 @@ aoflag.control.mapfile_in                                      =   ms_concat_tar
 aoflag.control.inputkey                                        =   msin
 aoflag.control.args_format                                     =   wsclean
 aoflag.argument.strategy                                       =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
-aoflag.argument.flags                                          =   [-v,-combine-spws,msin]
+aoflag.argument.flags                                          =   [-v,ms_concat_target.output.memory.mapfile,-combine-spws,msin]
 
 
 #############################

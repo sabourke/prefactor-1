@@ -23,7 +23,6 @@
 ! filter_baselines         =  [CR]S*&                                ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault.rfis                        ## strategy to be applied with the statistical flagger (AOFlagger)
-! max_length               =  400                                    ## amount of subbands to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to about 148)
 ! max2interpolate          =  30                                     ## amount of channels in which interpolation should be performed for deriving the bandpass
 ! interp_windowsize        =  15                                     ## Size of the window over which a value is interpolated. Should be odd.
 ! ampRange                 =  [50,200]                               ## range of median amplitudes accepted per station
@@ -54,6 +53,7 @@
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
 ! memoryperc               =  20                                     ## maximum of memory used for aoflagger in raw_flagging mode in percent
+! min_length               =  50                                     ## minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
 
 ## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
@@ -219,7 +219,7 @@ ms_concat.control.executable                                =   {{ scripts }}/co
 ms_concat.control.error_tolerance                           =   {{ error_tolerance }}
 ms_concat.argument.filename                                 =   concatmapfile.mapfile
 ms_concat.argument.mapfile_dir                              =   input.output.mapfile_dir
-ms_concat.argument.flags                                    =   [combine_data_cal_map.output.mapfile,outputkey,{{ max_length }}]
+ms_concat.argument.flags                                    =   [combine_data_cal_map.output.mapfile,outputkey,{{ min_length }}]
 
 # convert the output of ms_concat into usable mapfiles
 ms_concat_map.control.kind                                  =   plugin
@@ -233,7 +233,7 @@ aoflag.control.mapfile_in                                   =   ms_concat_map.ou
 aoflag.control.inputkey                                     =   msin
 aoflag.control.args_format                                  =   wsclean
 aoflag.argument.strategy                                    =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
-aoflag.argument.flags                                       =   [-v,-combine-spws,msin]
+aoflag.argument.flags                                       =   [-v,ms_concat.output.memory.mapfile,-combine-spws,msin]
 
 # find automatically the calibrator sky model
 sky_cal.control.type                                        =   pythonplugin
@@ -413,6 +413,7 @@ prepare_losoto_PA.control.plotAlign.axisDiff                =   pol
 prepare_losoto_PA.control.plotAlign.plotFlag                =   True
 prepare_losoto_PA.control.plotAlign.prefix                  =   {{ inspection_directory }}/polalign
 prepare_losoto_PA.control.plotAlign.refAnt                  =   {{ refant }}
+prepare_losoto_PA.control.plotAlign.minmax                  =   [-3.14,3.14]
 prepare_losoto_PA.control.residual.operation                =   RESIDUALS
 prepare_losoto_PA.control.residual.soltab                   =   sol000/phase000
 prepare_losoto_PA.control.residual.soltabsToSub             =   polalign
