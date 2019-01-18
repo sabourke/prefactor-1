@@ -67,7 +67,6 @@ The phase solutions derived from the preparation step are now collected and load
 
 The solutions are stored in the h5parm file format.
 The last step also incorporates full `Dysco`_ compression to save disk space. The fully calibrated data is stored in the DATA column.
-In the results directory also the uncompressed and uncorrected data is stored. These data are used for the :ref:`initsubtract_pipeline`.
 
 User-defined parameter configuration
 ------------------------------------
@@ -180,6 +179,22 @@ Parameters for **HBA** and **LBA** observations
 
 
 In case of **LBA** observation you might also want to enable demixing in the ``prep_targ_strategy`` variable.
+
+
+Differences between production and user versions
+------------------------------------------------
+
+The production version has the following primary differences relative to the user version:
+
+    - input and output data must be specified as a list of filenames (instead of a directory+wildcard)
+    - output solutions h5parm filename must be specified as a (typically length-one) list
+    - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks
+      configuration file (see the ``tasks.cfg`` file in this repository for a minimal example)
+    - the PREFACTOR_PATH environment variable must be set to the prefactor installation directory
+    - target solutions are applied to the individual subbands rather than to the concatenated ones (to
+      preserve the one-to-one mapping between input and output)
+    - feedback steps are done to generate and feed back metadata for the output data products (for
+      ingest into the LTA)
 
 .. _RMextract: https://github.com/lofar-astron/RMextract/
 .. _factor: https://github.com/lofar-astron/factor/

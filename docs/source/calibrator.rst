@@ -215,4 +215,18 @@ Parameters for **HBA** and **LBA** observations
 
 In case of **LBA** observation you might also want to enable demixing in the ``prep_cal_strategy`` variable.
 
+Differences between production and user versions
+------------------------------------------------
+
+The production version has the following primary differences relative to the user version:
+
+    - input and output data must be specified as a list of filenames (instead of a directory+wildcard)
+    - output solutions h5parm filename must be specified as a (typically length-one) list
+    - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks
+      configuration file (see the ``tasks.cfg`` file in this repository for a minimal example)
+    - the PREFACTOR_PATH environment variable must be set to the prefactor installation directory
+    - feedback steps are done to generate and feed back metadata for the output data products (for
+      ingest into the LTA)
+
+
 .. _here: https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#description_of_baseline_selection_parameters
