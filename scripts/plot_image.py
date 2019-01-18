@@ -176,10 +176,15 @@ def robust_sigma(in_y, zero=0):
 def main(fitsimage, outfilename, outdir=None):
 
     # find image noise
-    hdulist = astropy.io.fits.open(fitsimage)
+    hdulist = astropy.io.fits.open(fitsimage, mode='update')
     data = hdulist[0].data
     imagenoise = find_imagenoise(data)
     dynamicrange = numpy.max(data) / imagenoise
+
+    # Store the rms value in the image header, for later reference by metadata.py (see
+    # CEP/Pipeline/recipes/sip/helpers/metadata.py in the LOFAR software repository)
+    header = hdulist[0].header
+    header['MEANRMS'] = imagenoise
     hdulist.close()
 
     # plot
@@ -200,3 +205,4 @@ def main(fitsimage, outfilename, outdir=None):
             os.makedirs(outdir)
         outfilename = os.path.join(outdir, os.path.basename(outfilename))
     f.save('{}.png'.format(outfilename), dpi=400)
+
