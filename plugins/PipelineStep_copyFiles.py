@@ -72,7 +72,7 @@ def plugin_main(args, **kwargs):
     # If symlinks are used, copy file_in so that it is present in the output path. Then,
     # use this copy in the output mapfile
     if use_symlinks:
-        file_in_copy = os.path.join(os.path.dirname(files[0]), os.path.basename(file_in))
+        file_in_copy = os.path.join(os.path.dirname(files[0]), os.path.basename(file_in).upper())
         if os.path.isdir(file_in):
             if os.path.exists(file_in_copy):
                 delete_directory(file_in_copy)
