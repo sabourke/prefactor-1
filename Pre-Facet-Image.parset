@@ -52,7 +52,7 @@ create_ms_map.control.type                           =   addListMapfile
 create_ms_map.control.hosts                          =   [localhost]
 create_ms_map.control.files                          =   {{ data_input_filenames }}
 create_ms_map.control.check_files_exist              =   True
-create_ms_map.control.check_ms_column                =   CORRECTED_DATA
+create_ms_map.control.check_ms_column                =   DATA
 create_ms_map.control.mapfile_dir                    =   input.output.mapfile_dir
 create_ms_map.control.filename                       =   create_ms_map.mapfile
 
