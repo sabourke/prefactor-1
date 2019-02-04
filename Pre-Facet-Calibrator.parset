@@ -601,7 +601,7 @@ createmap_chunks.control.pattern                            =   bandpass_*.h5
 # create losoto v2 parset file for processing each time chunk
 prepare_losoto_bandpass1.control.kind                        =   plugin
 prepare_losoto_bandpass1.control.type                        =   makeLosotoParset
-prepare_losoto_bandpass1.control.steps                       =   [duplicateAbkp,flag,flagextend,flagbp,merge,bandpass,smooth,interp]
+prepare_losoto_bandpass1.control.steps                       =   [duplicateAbkp,flag,flagextend,flagbp,merge,smooth,interp]
 prepare_losoto_bandpass1.control.filename                    =   {{ job_directory }}/losoto.parset
 prepare_losoto_bandpass1.control.duplicateAbkp.operation     =   DUPLICATE
 prepare_losoto_bandpass1.control.duplicateAbkp.soltab        =   sol000/amplitude000
@@ -630,14 +630,6 @@ prepare_losoto_bandpass1.control.merge.operation             =   REWEIGHT
 prepare_losoto_bandpass1.control.merge.mode                  =   copy
 prepare_losoto_bandpass1.control.merge.soltab                =   sol000/phase000
 prepare_losoto_bandpass1.control.merge.soltabImport          =   amplitude000
-prepare_losoto_bandpass1.control.bandpass.operation          =   SMOOTH
-prepare_losoto_bandpass1.control.bandpass.soltab             =   sol000/amplitude000
-prepare_losoto_bandpass1.control.bandpass.pol                =   XX,YY
-prepare_losoto_bandpass1.control.bandpass.axesToSmooth       =   [freq]
-prepare_losoto_bandpass1.control.bandpass.mode               =   savitzky-golay
-prepare_losoto_bandpass1.control.bandpass.size               =   [17]
-prepare_losoto_bandpass1.control.bandpass.degree             =   2
-prepare_losoto_bandpass1.control.bandpass.log                =   True
 prepare_losoto_bandpass1.control.smooth.operation            =   SMOOTH
 prepare_losoto_bandpass1.control.smooth.soltab               =   sol000/amplitude000
 prepare_losoto_bandpass1.control.smooth.pol                  =   XX,YY
@@ -854,6 +846,7 @@ prepare_losoto_ion.control.flagstation.operation            =   FLAGSTATION
 prepare_losoto_ion.control.flagstation.soltab               =   sol000/phase000
 prepare_losoto_ion.control.flagstation.mode                 =   resid
 prepare_losoto_ion.control.flagstation.soltabExport         =   clock000
+prepare_losoto_ion.control.flagstation.refAnt               =   {{ refant }}
 
 # do the processing on the LoSoTo file
 process_losoto_ion.control.type                             =   losoto
