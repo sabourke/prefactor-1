@@ -185,6 +185,9 @@ def main(fitsimage, outfilename, outdir=None):
     # CEP/Pipeline/recipes/sip/helpers/metadata.py in the LOFAR software repository)
     header = hdulist[0].header
     header['MEANRMS'] = imagenoise
+    beammaj = header['BMAJ']
+    beammin = header['BMIN']
+    beampa = header['BPA']
     hdulist.close()
 
     # plot
@@ -198,7 +201,9 @@ def main(fitsimage, outfilename, outdir=None):
     f.colorbar.set_axis_label_text('Flux Density (Jy/beam)')
     f.add_beam()
     f.beam.set_frame(True)
-    f.set_title('Mean rms = {0:1.2e} Jy/beam, Dynamic range = {1:1.2e}'.format(imagenoise, dynamicrange))
+    f.set_title('Mean rms = {0:1.2e} Jy/beam; Dynamic range = {1:1.2e}; \n '
+                'Restoring beam = ({2:3.1f} x {3:3.1f}) arcsec, PA = {4:3.1f} deg'.format(
+                imagenoise, dynamicrange, beammaj*3600.0, beammin*3600.0, beampa))
 
     if outdir is not None:
         if not os.path.exists(outdir):
