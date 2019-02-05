@@ -157,7 +157,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``default_flagging``: regular flagging steps after pre-processing by the observatory pipelines (default: ``flag,elev,flagamp``)
 - ``raw_flagging``: full set flagging steps (usually only necessary for raw data, default: ``flagedge,aoflag,{{ default_flagging }}``)
 - ``1st_order``: steps for first order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct,plotTEC,residuals``)
-- ``3rd_order``: steps for third order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct3,plotTEC3,residuals3``)
+- ``3rd_order``: steps for third order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct3,plotTEC,plotTEC3,residuals3``)
 - ``prep_cal_strategy``: steps to be performed for the  preparation of the calibrator data. Add ``,demix`` if you want to enable demixing. (default: ``{{ default_flagging }}``)
 - ``cal_ion``: choose whether you want to perform 1st or 3rd order ionospheric effects during clock-TEC separation (default: ``{{ 1st_order }}``)
 

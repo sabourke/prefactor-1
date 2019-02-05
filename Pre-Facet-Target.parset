@@ -101,7 +101,7 @@ pipeline.steps              =  [prep, {{ clipATeam }} concat, prep_gsmcal, {{ gs
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
-pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
+pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dp3concat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
 pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, h5exp_phase, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, h5exp_tec,   apply_tec]
@@ -241,7 +241,7 @@ process_losoto_RMextract.argument.flags                        =   [{{ cal_solut
 ## Apply calibrator sols   ##
 #############################
 # run NDPPP on the target data to flag, transfer calibrator values, and average
-ndppp_prep_target.control.type                                 =   dppp
+ndppp_prep_target.control.type                                 =   dp3
 ndppp_prep_target.control.error_tolerance                      =   {{ error_tolerance }}
 ndppp_prep_target.control.mapfile_in                           =   createmap_target.output.mapfile
 ndppp_prep_target.control.inputkey                             =   input_file
@@ -319,7 +319,7 @@ ndppp_prep_target.argument.demix.instrumentmodel               =   createmap_ins
 ##     Clip A-Team         ##
 #############################
 # Predict, corrupt, and predict the ateam-resolution model, length = nfiles
-predict_ateam.control.type                                     =   dppp
+predict_ateam.control.type                                     =   dp3
 predict_ateam.control.mapfiles_in                              =   [ndppp_prep_target.output.mapfile,expand_sourcedb_ateam.output.mapfile]
 predict_ateam.control.inputkeys                                =   [msin,sourcedb]
 predict_ateam.control.inplace                                  =   True
@@ -366,7 +366,7 @@ sortmap_target.argument.mapfile_dir                            =   input.output.
 sortmap_target.argument.target_path                            =   input.output.working_directory/input.output.job_name
 sortmap_target.argument.numSB                                  =   {{ num_SBs_per_group }}
 sortmap_target.argument.NDPPPfill                              =   True
-sortmap_target.argument.stepname                               =   dpppconcat
+sortmap_target.argument.stepname                               =   dp3concat
 sortmap_target.argument.firstSB                                =   {{ reference_stationSB }}
 sortmap_target.argument.truncateLastSBs                        =   False
 
@@ -377,7 +377,7 @@ do_sortmap_maps.control.mapfile_groupmap                       =   sortmap_targe
 do_sortmap_maps.control.mapfile_datamap                        =   sortmap_target.output.mapfile.mapfile
 
 # run NDPPP to concatenate the target
-dpppconcat.control.type                                        =   dppp
+dpppconcat.control.type                                        =   dp3
 dpppconcat.control.error_tolerance                             =   {{ error_tolerance }}
 dpppconcat.control.mapfile_out                                 =   do_sortmap_maps.output.groupmap # tell the pipeline to give the output useful names
 dpppconcat.control.mapfiles_in                                 =   [do_sortmap_maps.output.datamap]
@@ -508,7 +508,7 @@ h5_gsmsol_map.control.mapfile_dir                              =   input.output.
 h5_gsmsol_map.control.filename                                 =   h5_imp_gsmsol_map.mapfile
 
 # interpolate after flagging but before smoothing
-interp_target.control.type                                     =   dppp
+interp_target.control.type                                     =   dp3
 interp_target.control.inplace                                  =   True
 interp_target.control.error_tolerance                          =   {{ error_tolerance }}
 interp_target.control.mapfile_in                               =   check_unflagged_map.output.mapfile
@@ -532,7 +532,7 @@ smooth_data.control.inputkey                                   =   msin
 smooth_data.argument.flags                                     =   [-S,{{ do_smooth }},-r,-f,0.2,-i,INTERP_DATA,-o,SMOOTHED_DATA,msin]
 
 # solve for phase-only calibration solutions
-gsmcal_phase.control.type                                      =   dppp
+gsmcal_phase.control.type                                      =   dp3
 gsmcal_phase.control.error_tolerance                           =   {{ error_tolerance }}
 gsmcal_phase.control.inplace                                   =   True
 gsmcal_phase.control.mapfiles_in                               =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
@@ -557,7 +557,7 @@ gsmcal_phase.argument.gaincal.tolerance                        =   1e-3
 gsmcal_phase.argument.gaincal.propagatesolutions               =   {{ propagatesolutions }}
 
 # solve for direction-independent TEC
-gsmcal_tec.control.type                                        =   dppp
+gsmcal_tec.control.type                                        =   dp3
 gsmcal_tec.control.error_tolerance                             =   {{ error_tolerance }}
 gsmcal_tec.control.inplace                                     =   True
 gsmcal_tec.control.mapfiles_in                                 =   [check_unflagged_map.output.mapfile,expand_sourcedb_target.output.mapfile,gsmcal_parmmap.output.mapfile]
@@ -681,7 +681,7 @@ h5exp_tec.argument.outsolset                                =   target
 h5exp_tec.argument.outh5parm                                =   {{ cal_solutions }}
 
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
-apply_phase.control.type                                      =   dppp
+apply_phase.control.type                                      =   dp3
 apply_phase.control.error_tolerance                           =   {{ error_tolerance }}
 apply_phase.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 apply_phase.control.inputkey                                  =   input_file
@@ -707,7 +707,7 @@ apply_phase.argument.avg.timeresolution                       =   {{ avg_timeres
 apply_phase.argument.avg.freqresolution                       =   {{ avg_freqresolution_concat }}
 
 # solve and apply are separate to allow to solve on a subset of baselines but apply to all
-apply_tec.control.type                                      =   dppp
+apply_tec.control.type                                      =   dp3
 apply_tec.control.error_tolerance                           =   {{ error_tolerance }}
 apply_tec.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 apply_tec.control.inputkey                                  =   input_file

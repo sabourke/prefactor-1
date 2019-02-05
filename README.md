@@ -26,6 +26,7 @@ There are several pipeline parsets in this repository:
 
 Software requirements:
 * the full "offline" LOFAR software installation (version >= 3.1)
+* DPPP (latest master -- see https://github.com/lofar-astron/DP3)
 * LoSoTo (version >= 2.0 -- see https://github.com/revoltek/losoto)
 * LSMTool (see https://github.com/darafferty/LSMTool)
 * RMextract (see https://github.com/maaijke/RMextract)

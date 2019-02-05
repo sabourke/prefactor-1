@@ -28,7 +28,8 @@
 ! ampRange                 =  [50,200]                               ## range of median amplitudes accepted per station
 ! skip_international       =  True                                   ## skip fitting the bandpass for international stations (this avoids flagging them in many cases)
 ! raw_data                 =  False                                  ## use autoweight, set to True in case you are using raw data
-! propagatesolutions       =  True                                   ## use already derived solutions as initial guess for the upcoming time slot
+! propagatesolutions       =  True                                   ## use already derived solutions as initial guess for the upcoming time slot (if they converged)
+! flagunconverged          =  True                                   ## flag solutions for solves that did not converge (if they were also detected to diverge)
 
 # demixing options (only used if demix step is added to the prep_cal_strategy variable)
 ! demix_sources            =  [CasA,CygA]                            ## choose sources to demix (provided as list)
@@ -40,7 +41,7 @@
 ! default_flagging         =  flagbaseline,flagelev,flagamp          ## regular flagging after pre-processing by the observatory pipelines
 ! raw_flagging             =  flagedge,aoflag,{{ default_flagging }} ## full flagging (usually only necessary for raw data)
 ! 1st_order                =  ct,plotTEC,residuals                   ## Do not change! Only cal_ion should be edited if needed
-! 3rd_order                =  ct3,plotTEC3,residuals3                ## Do not change! Only cal_ion should be edited if needed
+! 3rd_order                =  ct3,plotTEC,plotTEC3,residuals3        ## Do not change! Only cal_ion should be edited if needed
 ! demix                    =  demix,                                 ## Do not change! Only demix_step should be edited if needed
 ! none                     =                                         ## Do not change!
 
@@ -172,7 +173,7 @@ create_output_msfiles_map.control.mapfile_dir               =   input.output.map
 create_output_msfiles_map.control.filename                  =   output_msfiles.mapfile
 
 # run NDPPP on the calibrator data
-ndppp_prep_cal.control.type                                 =   dppp
+ndppp_prep_cal.control.type                                 =   dp3
 ndppp_prep_cal.control.error_tolerance                      =   {{ error_tolerance }}
 ndppp_prep_cal.control.mapfile_in                           =   createmap_cal.output.mapfile
 ndppp_prep_cal.control.inputkey                             =   msfile
@@ -294,7 +295,7 @@ h5imp_cal_map.control.mapfile_dir                           =   input.output.map
 h5imp_cal_map.control.filename                              =   h5imp_cal_map.mapfile
 
 # interpolate after flagging but before smoothing
-interp_cal.control.type                                     =   dppp
+interp_cal.control.type                                     =   dp3
 interp_cal.control.inplace                                  =   True
 interp_cal.control.error_tolerance                          =   {{ error_tolerance }}
 interp_cal.control.mapfile_in                               =   ndppp_prep_cal.output.mapfile
@@ -327,7 +328,7 @@ smooth_corrected.control.inputkey                           =   msin
 smooth_corrected.argument.flags                             =   [-S,{{ do_smooth }},-r,-i,CORRECTED_DATA,-o,SMOOTHED_DATA,msin]
 
 # predict to save time
-predict_cal.control.type                                    =   dppp
+predict_cal.control.type                                    =   dp3
 predict_cal.control.inplace                                 =   True
 predict_cal.control.error_tolerance                         =   {{ error_tolerance }}
 predict_cal.control.mapfiles_in                             =   [ndppp_prep_cal.output.mapfile,expand_sourcedb.output.mapfile]
@@ -346,7 +347,7 @@ predict_cal.argument.predict.usechannelfreq                 =   False
 predict_cal.argument.predict.beammode                       =   array_factor
 
 # now run NDPPP on the averaged calibrator data (rotation+diagonal)
-calib_cal.control.type                                      =   dppp
+calib_cal.control.type                                      =   dp3
 calib_cal.control.inplace                                   =   True
 calib_cal.control.error_tolerance                           =   {{ error_tolerance }}
 calib_cal.control.mapfiles_in                               =   [ndppp_prep_cal.output.mapfile,calib_cal_parmmap.output.mapfile]
@@ -363,6 +364,9 @@ calib_cal.argument.solve.maxiter                            =   50
 calib_cal.argument.solve.nchan                              =   1
 calib_cal.argument.solve.solint                             =   1
 calib_cal.argument.solve.propagatesolutions                 =   {{ propagatesolutions }}
+calib_cal.argument.solve.propagateconvergedonly             =   true
+calib_cal.argument.solve.flagunconverged                    =   {{ flagunconverged }}
+calib_cal.argument.solve.flagdivergedonly                   =   true
 calib_cal.argument.solve.tolerance                          =   1e-3
 
 
@@ -816,7 +820,7 @@ prepare_losoto_ion.control.plotTEC3.operation               =   PLOT
 prepare_losoto_ion.control.plotTEC3.soltab                  =   sol000/tec3rd000
 prepare_losoto_ion.control.plotTEC3.axesInPlot              =   [time]
 prepare_losoto_ion.control.plotTEC3.axisInTable             =   ant
-prepare_losoto_ion.control.plotTEC3.prefix                  =   plots/tec3rd
+prepare_losoto_ion.control.plotTEC3.prefix                  =   {{ inspection_directory }}/tec3rd
 prepare_losoto_ion.control.plotTEC3.plotFlag                =   False
 prepare_losoto_ion.control.plotTEC3.refAnt                  =   {{ refant }}
 prepare_losoto_ion.control.residuals.operation              =   RESIDUALS
@@ -869,7 +873,7 @@ h5exp_cal_ion.argument.outsolset                            =   calibrator
 ## applying the results       ##
 ################################
 # apply the PA solutions
-apply_PA.control.type                                       =   dppp
+apply_PA.control.type                                       =   dp3
 apply_PA.control.error_tolerance                            =   {{ error_tolerance }}
 apply_PA.control.inplace                                    =   True
 apply_PA.control.mapfile_in                                 =   ndppp_prep_cal.output.mapfile
@@ -885,7 +889,7 @@ apply_PA.argument.applyPA.correction                        =   polalign
 apply_PA.argument.applyPA.parmdb                            =   {{ cal_solutions }}
 
 # apply the bandpass
-apply_bandpass.control.type                                 =   dppp
+apply_bandpass.control.type                                 =   dp3
 apply_bandpass.control.error_tolerance                      =   {{ error_tolerance }}
 apply_bandpass.control.inplace                              =   True
 apply_bandpass.control.mapfile_in                           =   ndppp_prep_cal.output.mapfile
@@ -902,7 +906,7 @@ apply_bandpass.argument.applybandpass.parmdb                =   {{ cal_solutions
 apply_bandpass.argument.applybandpass.updateweights         =   True
 
 # apply the beam
-apply_beam.control.type                                     =   dppp
+apply_beam.control.type                                     =   dp3
 apply_beam.control.error_tolerance                          =   {{ error_tolerance }}
 apply_beam.control.inplace                                  =   True
 apply_beam.control.mapfile_in                               =   ndppp_prep_cal.output.mapfile
@@ -920,7 +924,7 @@ apply_beam.argument.applybeam.beammode                      =   element
 apply_beam.argument.applybeam.updateweights                 =   True
 
 # apply the FR solutions
-apply_FR.control.type                                       =   dppp
+apply_FR.control.type                                       =   dp3
 apply_FR.control.error_tolerance                            =   {{ error_tolerance }}
 apply_FR.control.inplace                                    =   True
 apply_FR.control.mapfile_in                                 =   ndppp_prep_cal.output.mapfile

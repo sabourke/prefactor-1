@@ -44,7 +44,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, createmap_image, plot_im_high, make_source_list, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dp3concat, wsclean_high_deep, createmap_image, plot_im_high, make_source_list, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -86,7 +86,7 @@ do_magic_maps.control.mapfile_single_map             =  do_magic.output.single_m
 do_magic_maps.control.mapfile_deep_high_size_map     =  do_magic.output.deep_high_size_mapfile.mapfile
 
 # average the data
-average.control.type                                 =   dppp
+average.control.type                                 =   dp3
 average.control.error_tolerance                      =   {{ error_tolerance }}
 average.control.mapfile_in                           =   do_magic_maps.output.single_map
 average.control.inputkey                             =   msfile
@@ -110,8 +110,8 @@ combine_mapfile_deep.control.mapfile_in              =  average.output.mapfile
 combine_mapfile_deep.control.mapfile_dir             =  input.output.mapfile_dir
 combine_mapfile_deep.control.filename                =  combine_mapfile_deep.mapfile
 
-# run DPPP to concatenate the data, length = 1
-dpppconcat.control.type                                 =   dppp
+# run dp3 to concatenate the data, length = 1
+dpppconcat.control.type                                 =   dp3
 dpppconcat.control.error_tolerance                      =   {{ error_tolerance }}
 dpppconcat.control.mapfile_in                           =   combine_mapfile_deep.output.mapfile
 dpppconcat.control.inputkey                             =   msin
