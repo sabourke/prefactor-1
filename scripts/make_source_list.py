@@ -27,7 +27,7 @@ import lsmtool
 
 def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0, rmsbox=(60,20),
          rmsbox_bright=(35, 7), adaptive_rmsbox=False, atrous_jmax=6, adaptive_thresh=150.0,
-         compare_dir=None):
+         compare_dir=None, format='pdf'):
     """
     Make a source catalog for an image
 
@@ -56,6 +56,8 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
         which a source will use the small rms box
     compare_dir : str, optional
         Directory for output plots/info of comparison of source properties to surveys
+    format : str, optional
+        Format of output plots: 'png' or 'pdf'
     """
     if type(rmsbox) is str:
         rmsbox = eval(rmsbox)
@@ -98,7 +100,8 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
         s = lsmtool.load(catalog_name)
         _, _, refRA, refDec = s._getXY()
         s_gsm = lsmtool.load('GSM', VOPosition=[refRA, refDec], VORadius='5 deg')
-        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=True, outDir=compare_dir)
+        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=True, outDir=compare_dir,
+                  name1='LOFAR', name2='GSM', format=format)
 
 
 if __name__ == '__main__':
@@ -116,9 +119,11 @@ if __name__ == '__main__':
         type=str, default='(60, 20)')
     parser.add_argument('-o', '--adaptive_rmsbox', help='use an adaptive rms box', type=bool, default=False)
     parser.add_argument('-j', '--atrous_jmax', help='Max wavelet scale', type=int, default=3)
+    parser.add_argument('-c', '--compare_dir', help='', type=str, default=None)
+    parser.add_argument('-f', '--format', help='', type=str, default='pdf')
 
     args = parser.parse_args()
     main(args.image_name, args.catalog_name, atrous_do=args.atrous_do,
          threshisl=args.threshisl, threshpix=args.threshpix, rmsbox=args.rmsbox,
-         rmsbox_bright=args.rmsbox_bright, daptive_rmsbox=args.adaptive_rmsbox,
-         atrous_jmax=args.atrous_jmax)
+         rmsbox_bright=args.rmsbox_bright, adaptive_rmsbox=args.adaptive_rmsbox,
+         atrous_jmax=args.atrous_jmax, compare_dir=args.compare_dir, format=args.format)
