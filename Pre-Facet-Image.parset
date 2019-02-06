@@ -44,7 +44,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dp3concat, wsclean_high_deep, createmap_image, plot_im_high, make_source_list, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, createmap_image, plot_im_high, make_source_list, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -136,7 +136,7 @@ wsclean_high_deep.argument.channels-out             =   nchansout_clean1
 wsclean_high_deep.argument.niter                    =   100000
 wsclean_high_deep.argument.threshold                =   0.0
 wsclean_high_deep.argument.pol                      =   IQUV
-wsclean_high_deep.argument.link-polarization        =   I
+wsclean_high_deep.argument.link-polarizations       =   I
 wsclean_high_deep.argument.weight                   =   briggs 0.0
 wsclean_high_deep.argument.mgain                    =   0.65
 wsclean_high_deep.argument.minuv-l                  =   80
@@ -154,7 +154,7 @@ wsclean_high_deep.argument.idg-mode                 =   {{ idg_mode }}
 createmap_image.control.kind              =   plugin
 createmap_image.control.type              =   addListMapfile
 createmap_image.control.hosts             =   [localhost]
-createmap_image.control.files             =   [{{ image_rootname }}-MFS-image-pb.fits]
+createmap_image.control.files             =   [{{ image_rootname }}-MFS-I-image-pb.fits]
 createmap_image.control.mapfile_dir       =   input.output.mapfile_dir
 createmap_image.control.filename          =   wsclean_high_deep_image.mapfile
 
@@ -186,7 +186,7 @@ make_source_list.argument.compare_dir               =   {{ job_directory }}/resu
 copy_output_images.control.kind                     =   plugin
 copy_output_images.control.type                     =   copyFiles
 copy_output_images.control.hosts                    =   [localhost]
-copy_output_images.control.input_file               =   {{ image_rootname }}-MFS-image-pb.fits
+copy_output_images.control.input_file               =   {{ image_rootname }}-MFS-I-image-pb.fits
 copy_output_images.control.output_files             =   {{ image_output_filenames }}
 copy_output_images.control.use_symlinks             =   True
 copy_output_images.control.mapfile_dir              =   input.output.mapfile_dir
