@@ -20,7 +20,7 @@
 # definitions for pipeline options
 ! refant                   =  CS001HBA0                              ## name of the station that will be used as a reference for the phase-plots
 ! flag_baselines           =  []                                     ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
-! filter_baselines         =  [CR]S*&                                ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
+! filter_baselines         =  *                                      ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault.rfis                        ## strategy to be applied with the statistical flagger (AOFlagger)
 ! max2interpolate          =  30                                     ## amount of channels in which interpolation should be performed for deriving the bandpass
@@ -359,8 +359,8 @@ calib_cal.argument.solve.type                               =   ddecal
 calib_cal.argument.solve.mode                               =   rotation+diagonal
 calib_cal.argument.solve.h5parm                             =   h5parm
 calib_cal.argument.solve.usemodelcolumn                     =   True
-calib_cal.argument.solve.uvlambdamin                        =   300
-calib_cal.argument.solve.maxiter                            =   500
+calib_cal.argument.solve.uvlambdamin                        =   100
+calib_cal.argument.solve.maxiter                            =   150
 calib_cal.argument.solve.nchan                              =   1
 calib_cal.argument.solve.solint                             =   1
 calib_cal.argument.solve.propagatesolutions                 =   {{ propagatesolutions }}
