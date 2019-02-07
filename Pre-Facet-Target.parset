@@ -65,7 +65,7 @@
 pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 
 ## skymodel directory
-! target_skymodel           =  {{ job_directory }}/target.skymodel    ## path to the skymodel for the phase-only calibration of the target
+! target_skymodel           =  {{ job_directory }}/target.skymodel    ## path to the skymodel for the phase-only calibration of the target (all sources should be in a single patch)
 ! use_target                =  True                                   ## download the phase-only calibration skymodel from TGSS, "Force" : always download , "True" download if {{ target_skymodel }} does not exist , "False" : never download
 ! skymodel_source           =  TGSS                                   ## use GSM if you want to use the experimental (!) GSM SkyModel creator using TGSS, NVSS, WENSS and VLSS
 
