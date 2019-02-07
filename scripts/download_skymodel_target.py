@@ -4,9 +4,9 @@ import glob
 import pyrap.tables as pt
 import numpy as np
 import time
+import lsmtool
 
 
-########################################################################
 def grab_coord_MS(MS):
     """
     Read the coordinates of a field from one MS corresponding to the selection given in the parameters
@@ -39,7 +39,6 @@ def grab_coord_MS(MS):
     return ra_deg,dec_deg
 
 
-########################################################################
 def input2strlist_nomapfile(invar):
     """ from bin/download_IONEX.py
     give the list of MSs from the list provided as a string
@@ -58,7 +57,6 @@ def input2strlist_nomapfile(invar):
     return str_list
 
 
-########################################################################
 def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
     """
     Download the skymodel for the target field
@@ -123,10 +121,12 @@ def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
     if not os.path.isfile(SkymodelPath):
         raise IOError("download_tgss_skymodel_target: Path: \"%s\" does not exist after trying to download the skymodel."%(SkymodelPath))
 
-    return
+    # Regroup to a single patch (so that DDECal can be used for dir-indep. solves)
+    s = lsmtool.load(SkymodelPath)
+    s.group('single')
+    s.write(clobber=True)
 
 
-########################################################################
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description=' Download the TGSS or GSM skymodel for the target field')
