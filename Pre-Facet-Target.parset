@@ -101,7 +101,7 @@ pipeline.steps              =  [prep, {{ clipATeam }} concat, prep_gsmcal, {{ gs
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
-pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dp3concat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
+pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
 pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, h5exp_phase, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, h5exp_tec,   apply_tec]
@@ -366,7 +366,7 @@ sortmap_target.argument.mapfile_dir                            =   input.output.
 sortmap_target.argument.target_path                            =   input.output.working_directory/input.output.job_name
 sortmap_target.argument.numSB                                  =   {{ num_SBs_per_group }}
 sortmap_target.argument.NDPPPfill                              =   True
-sortmap_target.argument.stepname                               =   dp3concat
+sortmap_target.argument.stepname                               =   dpppconcat
 sortmap_target.argument.firstSB                                =   {{ reference_stationSB }}
 sortmap_target.argument.truncateLastSBs                        =   False
 
