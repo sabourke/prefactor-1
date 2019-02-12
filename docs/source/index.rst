@@ -26,7 +26,7 @@ It will prepare your data so that you will be able to use any direction-dependen
 
     This documentation refers to the production version, intended for automated
     processing on CEP4/LTA sites. For the user version,
-    see [insert user version url here]. The two versions are very similar, with the
+    see http://www.astron.nl/citt/prefactor. The two versions are very similar, with the
     primary differences being that the production version requires that input and output
     data be specified explicitly and that metadata-feedback steps be done at the end
     (required for ingest of data products into the LTA). For more details on the differences,

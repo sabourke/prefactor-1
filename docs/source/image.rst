@@ -53,8 +53,8 @@ standard observations.
     single image for the full bandwidth. A typical HBA Stokes-I image looks like the one below.
 
     .. image:: image_pipeline_example.png
-``plot_im_high``
-    Make a png figure of the image, including estimates of the image rms and dynamic
+``plot_im_high_i/v``
+    Make a png figure of the Stokes-I/V image, including estimates of the image rms and dynamic
     range and the restoring beam size.
 ``make_source_list``
     Make a list of sources from the image using PyBDSF and compare their properties to
