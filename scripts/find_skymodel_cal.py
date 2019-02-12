@@ -77,7 +77,6 @@ def find_skymodel(ra, dec, PathSkyMod, extensionSky = ".skymodel", max_separatio
     #skymodels = [s for s in skymodels if 'Ateam' not in s]
     #skymodels = [s for s in skymodels if 'A-Team' not in s]
 
->>>>>>> 436dc02... remove duplicate skymodels #199
     for skymodel in skymodels:
         check = check_skymodel(skymodel, ra, dec, max_separation_arcmin)
         if check[0]:
