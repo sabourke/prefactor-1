@@ -3,11 +3,12 @@ import pyrap.tables as pt
 from losoto.h5parm import h5parm
 import logging
 
+
 def plugin_main(args, **kwargs):
     """
     Takes in list of targets and an h5parm solution set and returns a list of stations
     in the target data which mismatch the calibrator solutions antenna table
-    
+
     Parameters
     ----------
     mapfile_in : str
@@ -18,7 +19,7 @@ def plugin_main(args, **kwargs):
         Name of the solution set of the corresponding h5parm set to compare with
     filter: str
         Default filter constrains for the ndppp_prep_target step (usually removing International Baselines)
-    
+
     Returns
     -------
     result : dict
@@ -30,37 +31,28 @@ def plugin_main(args, **kwargs):
     filter         = kwargs['filter']
     data           = DataMap.load(mapfile_in)
     mslist         = [data[i].file for i in xrange(len(data))]
-       
-   
-    
-    #mslist      = MSfiles.lstrip('[').rstrip(']').replace(' ','').replace("'","").split(',')
-    
+
     if len(mslist) == 0:
         raise ValueError("Did not find any existing directory in input MS list!")
-        pass
     else:
         MS = mslist[0]
-        pass
-    
-    ## reading ANTENNA table of MS
-    antennaFile  = MS + "/ANTENNA"
+
+    # reading ANTENNA table of MS
+    antennaFile  = MS + "::ANTENNA"
     logging.info('Collecting information from the ANTENNA table.')
-    antennaTable = pt.table(antennaFile, ack = False)
+    antennaTable = pt.table(antennaFile, ack=False)
     antennaNames = antennaTable.getcol('NAME')
-    
-    ## reading ANTENNA information of h5parm
+
+    # reading ANTENNA information of h5parm
     data   = h5parm(h5parmdb, readonly = True)
     solset = data.getSolset(solset_name)
     station_names = solset.getAnt().keys()
-    
-    ## check whether there are more stations in the target than in the calibrator solutions
+
+    # check whether there are more stations in the target than in the calibrator solutions
     missing_stations = list(set(antennaNames) - set(station_names))
     for missing_station in missing_stations:
         filter += ';!' + missing_station + '*'
-        pass
-    
-    ## return results
-    result = {'filter':str(filter)}
+
+    # return results
+    result = {'filter': str(filter)}
     return result
-    
-    pass    

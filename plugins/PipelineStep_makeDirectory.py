@@ -1,6 +1,4 @@
 import os
-#from lofarpipe.support.data_map import DataMap
-#from lofarpipe.support.data_map import DataProduct
 
 
 def plugin_main(args, **kwargs):

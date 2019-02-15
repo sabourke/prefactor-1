@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import re
 from lofarpipe.support.data_map import DataMap
@@ -104,7 +103,7 @@ class MapfileManager(DataMap):
         if pattern:
             #convert pattern-strin to RegExp format and make compiled RegExp
             rePattern = pattern.strip().replace('.','\.').replace('?','.').replace('*','.*')+'$'
-            PatternReg = re.compile(rePattern)        
+            PatternReg = re.compile(rePattern)
         for i, item in enumerate(self._data):
             if item.host == host or item.file == data or item.skip == skip:
                 del self._data[i]

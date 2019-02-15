@@ -48,6 +48,7 @@ def plugin_main(args, **kwargs):
 
     return result
 
+
 class MultiDataProduct(DataProduct):
     """
     Class representing multiple files in a DataProduct.
