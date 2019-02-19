@@ -27,14 +27,14 @@ def input2strlist_nomapfile(invar):
 
 ########################################################################
 def getsystemmemory():
-   
+
    memory = int(os.popen('cat /proc/meminfo | grep MemAvailable').readlines()[0].split(':')[-1].split()[0])
    return memory
    pass
 
 ########################################################################
 def getfilesize(MS):
-   
+
    size = int(os.popen('du -cks ' + MS).readlines()[0].split()[0])
    return size
 
@@ -59,9 +59,19 @@ def main(ms_input, ms_output, min_length, filename=None, mapfile_dir=None):
 
     """
     filelist      = input2strlist_nomapfile(ms_input)
-    max_space     = int(getsystemmemory() / getfilesize(filelist[0]))
+    system_memory = getsystemmemory()
+    file_size     = getfilesize(filelist[0])
+    max_space     = int(system_memory / file_size)
     max_length    = len(filelist) / ((len(filelist) / max_space) + 1)
-    
+
+
+    overhead = 0.8
+    i = 0
+    while max_length * file_size > overhead * system_memory:
+        i += 1
+        max_length = len(filelist) / ((len(filelist) / max_space) + i)
+        pass
+
     if max_length >= int(min_length):
         memory = '-memory-read'
         pass
@@ -69,10 +79,11 @@ def main(ms_input, ms_output, min_length, filename=None, mapfile_dir=None):
         max_length = len(filelist)
         memory = '-indirect-read'
         pass
-    
+
     print "The max_length value is: " + str(max_length)
-    set_ranges    = list(numpy.arange(0, len(filelist), int(max_length)))
-    set_ranges.append(len(filelist))
+    set_ranges    = list(numpy.arange(0, len(filelist) + 1, int(max_length)))
+    set_ranges[-1] = len(filelist)
+    print "The ranges are:", set_ranges
 
     map_out = DataMap([])
     for i in numpy.arange(len(set_ranges) - 1):
