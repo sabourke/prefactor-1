@@ -49,7 +49,7 @@
 ! apply_steps              =  applyclock,applybeam,applyRM           ## comma-separated list of apply_steps performed in the target preparation (NOTE: only use applyRM if you have performed RMextract before!)
 ! clipAteam_step           =  {{ clipATeam }}                        ## choose {{ none }} if you want to skip A-team-clipping
 ! gsmcal_step              =  phase                                  ## choose tec if you want to fit TEC instead of self-calibrating for phases
-! updateweights            =  False                                  ## update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations
+! updateweights            =  True                                   ## update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations
 
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
