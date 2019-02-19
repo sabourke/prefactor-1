@@ -49,12 +49,13 @@
 ! initial_flagging         =  {{ default_flagging }}                 ## choose {{ raw_flagging }} if you process raw data
 ! demix_step               =  {{ none }}                             ## choose {{ demix }} if you want to demix
 ! cal_ion                  =  {{ 1st_order }}                        ## choose {{ 3rd_order }} if you want to include 3rd order ionospheric effects (may be useful for LBA < 35 MHz)
-! tables2export            =  clock000                               ## comma-separated list of tables to export from the ionospheric calibration step (cal_ion)
+! tables2export            =  clock                                  ## comma-separated list of tables to export from the ionospheric calibration step (cal_ion)
 
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
 ! memoryperc               =  20                                     ## maximum of memory used for aoflagger in raw_flagging mode in percent
 ! min_length               =  50                                     ## minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
+! min_separation           =  30                                     ## minimal accepted distance to an A-team source on the sky in degrees (will raise a WARNING)
 
 ## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
@@ -85,10 +86,10 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! bandpass_freqresolution  =  195.3125kHz # resolution of the bandpass table is 195.3125kHz (= 1 ch/SB)
 
 # which steps to run
-pipeline.steps             =  [createmap_cal, prep, PA, FR, bandpass, ion, finalize, feedback]
+pipeline.steps             =  [prep, PA, FR, bandpass, ion, finalize, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_cal_values_dir, createmap_prepcal, createmap_instcal, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, ms_concat, ms_concat_map, expand_memory_map, aoflag, sky_cal, make_sourcedb, expand_sourcedb, expand_skymodel, calib_cal_parmmap, h5imp_cal_map, interp_cal, smooth_data, predict_cal]
+pipeline.steps.prep        =  [createmap_cal, combine_data_map, check_Ateam_separation, mk_cal_values_dir, createmap_prepcal, createmap_instcal, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, ms_concat, ms_concat_map, expand_memory_map, aoflag, sky_cal, make_sourcedb, expand_sourcedb, expand_skymodel, calib_cal_parmmap, h5imp_cal_map, interp_cal, smooth_data, predict_cal]
 pipeline.steps.PA          =  [calib_cal, h5imp_cal_PA, prepare_losoto_PA, process_losoto_PA, h5exp_cal_PA, apply_PA, apply_beam]
 pipeline.steps.FR          =  [smooth_corrected, calib_cal, h5imp_cal_FR, prepare_losoto_FR, process_losoto_FR, h5exp_cal_FR, apply_FR]
 pipeline.steps.bandpass    =  [smooth_corrected, calib_cal, h5imp_cal_bandpass1, split_h5_bandpass, createmap_chunks, prepare_losoto_bandpass1, process_losoto_bandpass1, h5imp_cal_map2, h5imp_cal_bandpass2, h5exp_cal_bandpass, prepare_losoto_bandpass2, process_losoto_bandpass2, apply_PA, apply_bandpass, apply_beam, apply_FR]
@@ -109,6 +110,22 @@ createmap_cal.control.check_files_exist                     =   True
 createmap_cal.control.check_ms_column                       =   DATA
 createmap_cal.control.mapfile_dir                           =   input.output.mapfile_dir
 createmap_cal.control.filename                              =   createmap_cal.mapfile
+
+# combine all entries into one mapfile
+combine_data_map.control.kind                               =   plugin
+combine_data_map.control.type                               =   createMapfile
+combine_data_map.control.method                             =   mapfile_all_to_one
+combine_data_map.control.mapfile_dir                        =   input.output.mapfile_dir
+combine_data_map.control.filename                           =   combine_data_map.mapfile
+combine_data_map.control.mapfile_in                         =   createmap_cal.output.mapfile
+
+# warn for potential nearby A-Team sources
+check_Ateam_separation.control.type                         =   pythonplugin
+check_Ateam_separation.control.executable                   =   {{ scripts }}/check_Ateam_separation.py
+check_Ateam_separation.control.mapfile_in                   =   combine_data_map.output.mapfile
+check_Ateam_separation.control.inputkey                     =   MSfile
+check_Ateam_separation.argument.min_separation              =   {{ min_separation }}
+check_Ateam_separation.argument.flags                       =   [MSfile]
 
 
 #############################
@@ -427,7 +444,7 @@ prepare_losoto_PA.control.plotA3.plotFlag                   =   True
 prepare_losoto_PA.control.plotA3.prefix                     =   {{ inspection_directory }}/polalign_amp_
 prepare_losoto_PA.control.bkp.operation                     =   DUPLICATE
 prepare_losoto_PA.control.bkp.soltab                        =   sol000/phase000
-prepare_losoto_PA.control.bkp.soltabOut                     =   phaseOrig000
+prepare_losoto_PA.control.bkp.soltabOut                     =   phaseOrig
 prepare_losoto_PA.control.align.soltab                      =   sol000/phase000
 prepare_losoto_PA.control.align.operation                   =   POLALIGN
 prepare_losoto_PA.control.align.soltabOut                   =   polalign
@@ -533,16 +550,17 @@ prepare_losoto_FR.control.plotA3.plotFlag                   =   True
 prepare_losoto_FR.control.plotA3.prefix                     =   {{ inspection_directory }}/fr_amp_
 prepare_losoto_FR.control.faraday.operation                 =   FARADAY
 prepare_losoto_FR.control.faraday.soltab                    =   sol000/rotation000
+prepare_losoto_FR.control.faraday.soltabOut                 =   faraday
 prepare_losoto_FR.control.faraday.refAnt                    =   {{ refant }}
 prepare_losoto_FR.control.faraday.maxResidual               =   1.
 prepare_losoto_FR.control.plotFR.operation                  =   PLOT
-prepare_losoto_FR.control.plotFR.soltab                     =   sol000/rotationmeasure000
+prepare_losoto_FR.control.plotFR.soltab                     =   sol000/faraday
 prepare_losoto_FR.control.plotFR.axesInPlot                 =   [time]
 prepare_losoto_FR.control.plotFR.axisInTable                =   ant
 prepare_losoto_FR.control.plotFR.prefix                     =   {{ inspection_directory }}/fr
 prepare_losoto_FR.control.residual.operation                =   RESIDUALS
 prepare_losoto_FR.control.residual.soltab                   =   sol000/phase000
-prepare_losoto_FR.control.residual.soltabsToSub             =   rotationmeasure000
+prepare_losoto_FR.control.residual.soltabsToSub             =   faraday
 prepare_losoto_FR.control.plotPr.operation                  =   PLOT
 prepare_losoto_FR.control.plotPr.soltab                     =   sol000/phase000
 prepare_losoto_FR.control.plotPr.axesInPlot                 =   [time,freq]
@@ -575,7 +593,7 @@ h5exp_cal_FR.control.error_tolerance                        =   {{ error_toleran
 h5exp_cal_FR.control.mapfile_in                             =   h5imp_cal_FR.output.mapfile
 h5exp_cal_FR.control.inputkey                               =   h5in
 h5exp_cal_FR.argument.flags                                 =   [h5in]
-h5exp_cal_FR.argument.insoltab                              =   rotationmeasure000
+h5exp_cal_FR.argument.insoltab                              =   faraday
 h5exp_cal_FR.argument.outh5parm                             =   {{ cal_solutions }}
 h5exp_cal_FR.argument.outsolset                             =   calibrator
 
@@ -797,35 +815,43 @@ prepare_losoto_ion.control.plotPd.refAnt                    =   {{ refant }}
 prepare_losoto_ion.control.plotPd.minmax                    =   [-3.14,3.14]
 prepare_losoto_ion.control.duplicatePbkp.operation          =   DUPLICATE
 prepare_losoto_ion.control.duplicatePbkp.soltab             =   sol000/phase000
-prepare_losoto_ion.control.duplicatePbkp.soltabOut          =   phaseOrig000
+prepare_losoto_ion.control.duplicatePbkp.soltabOut          =   phaseOrig
 prepare_losoto_ion.control.ct.operation                     =   CLOCKTEC
 prepare_losoto_ion.control.ct.soltab                        =   sol000/phase000
+prepare_losoto_ion.control.ct.clocksoltabOut                =   clock
+prepare_losoto_ion.control.ct.tecsoltabOut                  =   tec
+prepare_losoto_ion.control.ct.tec3rdsoltabOut               =   tec3rd
+prepare_losoto_ion.control.ct.offsetsoltabOut               =   phase_offset
 prepare_losoto_ion.control.ct.CombinePol                    =   True
 prepare_losoto_ion.control.ct.FlagBadChannels               =   False
 prepare_losoto_ion.control.ct.Fit3rdOrder                   =   False
 prepare_losoto_ion.control.ct.Circular                      =   False
 prepare_losoto_ion.control.ct3.operation                    =   CLOCKTEC
 prepare_losoto_ion.control.ct3.soltab                       =   sol000/phase000
+prepare_losoto_ion.control.ct3.clocksoltabOut               =   clock
+prepare_losoto_ion.control.ct3.tecsoltabOut                 =   tec
+prepare_losoto_ion.control.ct3.tec3rdsoltabOut              =   tec3rd
+prepare_losoto_ion.control.ct3.offsetsoltabOut              =   phase_offset
 prepare_losoto_ion.control.ct3.CombinePol                   =   True
 prepare_losoto_ion.control.ct3.FlagBadChannels              =   False
 prepare_losoto_ion.control.ct3.Fit3rdOrder                  =   True
 prepare_losoto_ion.control.ct3.Circular                     =   False
 prepare_losoto_ion.control.plotClock.operation              =   PLOT
-prepare_losoto_ion.control.plotClock.soltab                 =   sol000/clock000
+prepare_losoto_ion.control.plotClock.soltab                 =   sol000/clock
 prepare_losoto_ion.control.plotClock.axesInPlot             =   [time]
 prepare_losoto_ion.control.plotClock.axisInTable            =   ant
 prepare_losoto_ion.control.plotClock.prefix                 =   {{ inspection_directory }}/clock
 prepare_losoto_ion.control.plotClock.plotFlag               =   False
 prepare_losoto_ion.control.plotClock.refAnt                 =   {{ refant }}
 prepare_losoto_ion.control.plotTEC.operation                =   PLOT
-prepare_losoto_ion.control.plotTEC.soltab                   =   sol000/tec000
+prepare_losoto_ion.control.plotTEC.soltab                   =   sol000/tec
 prepare_losoto_ion.control.plotTEC.axesInPlot               =   [time]
 prepare_losoto_ion.control.plotTEC.axisInTable              =   ant
 prepare_losoto_ion.control.plotTEC.prefix                   =   {{ inspection_directory }}/tec
 prepare_losoto_ion.control.plotTEC.plotFlag                 =   False
 prepare_losoto_ion.control.plotTEC.refAnt                   =   {{ refant }}
 prepare_losoto_ion.control.plotTEC3.operation               =   PLOT
-prepare_losoto_ion.control.plotTEC3.soltab                  =   sol000/tec3rd000
+prepare_losoto_ion.control.plotTEC3.soltab                  =   sol000/tec3rd
 prepare_losoto_ion.control.plotTEC3.axesInPlot              =   [time]
 prepare_losoto_ion.control.plotTEC3.axisInTable             =   ant
 prepare_losoto_ion.control.plotTEC3.prefix                  =   {{ inspection_directory }}/tec3rd
@@ -833,10 +859,10 @@ prepare_losoto_ion.control.plotTEC3.plotFlag                =   False
 prepare_losoto_ion.control.plotTEC3.refAnt                  =   {{ refant }}
 prepare_losoto_ion.control.residuals.operation              =   RESIDUALS
 prepare_losoto_ion.control.residuals.soltab                 =   sol000/phase000
-prepare_losoto_ion.control.residuals.soltabsToSub           =   [tec000,clock000]
+prepare_losoto_ion.control.residuals.soltabsToSub           =   [tec,clock]
 prepare_losoto_ion.control.residuals3.operation             =   RESIDUALS
 prepare_losoto_ion.control.residuals3.soltab                =   sol000/phase000
-prepare_losoto_ion.control.residuals3.soltabsToSub          =   [tec000,clock000,tec3rd000] # only for very low-freq dataset
+prepare_losoto_ion.control.residuals3.soltabsToSub          =   [tec,clock,tec3rd] # only for very low-freq dataset
 prepare_losoto_ion.control.plotPr.operation                 =   PLOT
 prepare_losoto_ion.control.plotPr.soltab                    =   sol000/phase000
 prepare_losoto_ion.control.plotPr.axesInPlot                =   [time,freq]
@@ -857,8 +883,8 @@ prepare_losoto_ion.control.plotPr3.minmax                   =   [-3.14,3.14]
 prepare_losoto_ion.control.flagstation.operation            =   FLAGSTATION
 prepare_losoto_ion.control.flagstation.soltab               =   sol000/phase000
 prepare_losoto_ion.control.flagstation.mode                 =   resid
-prepare_losoto_ion.control.flagstation.soltabExport         =   clock000
 prepare_losoto_ion.control.flagstation.refAnt               =   {{ refant }}
+prepare_losoto_ion.control.flagstation.soltabExport         =   clock
 
 # do the processing on the LoSoTo file
 process_losoto_ion.control.type                             =   losoto
@@ -944,7 +970,7 @@ apply_FR.argument.msout.storagemanager                      =   Dysco
 apply_FR.argument.msout.storagemanager.databitrate          =   0
 apply_FR.argument.steps                                     =   [applyFR]
 apply_FR.argument.applyFR.type                              =   applycal
-apply_FR.argument.applyFR.correction                        =   rotationmeasure000
+apply_FR.argument.applyFR.correction                        =   faraday
 apply_FR.argument.applyFR.parmdb                            =   {{ cal_solutions }}
 
 

@@ -24,7 +24,6 @@
 ! filter_baselines         =  [CR]S*&                                ## selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 ! do_smooth                =  False                                  ## enable or disable baseline-based smoothing
 ! rfistrategy              =  HBAdefault.rfis                        ## strategy to be applied with the statistical flagger (AOFlagger)
-! max_length               =  10                                     ## amount of subbands (calibrator) or chunks (target) to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to ~5 chunks for about 128 GB of RAM)
 ! interp_windowsize        =  15                                     ## Size of the window over which a value is interpolated. Should be odd.
 ! min_unflagged_fraction   =  0.0                                    ## minimum fraction of unflagged data after RFI flagging and A-team clipping
 ! compression_bitrate      =  16                                     ## defines the bitrate of Dysco compression of the data after the final step, choose 0 if you do NOT want to compress the data
@@ -55,6 +54,7 @@
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
 ! min_length               =  5                                      ## minimum amount of chunks to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
+! min_separation           =  30                                     ## minimal accepted distance to an A-team source on the sky in degrees (will raise a WARNING)
 
 ## job directory
 ! job_directory            =  input.output.job_directory             ## directory of the prefactor outputs
@@ -101,7 +101,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 pipeline.steps              =  [prep, {{ clipATeam }} concat, prep_gsmcal, {{ gsmcal_step }}, finalize, feedback]
 
 # pipeline substeps
-pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
+pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
 pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
 pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
@@ -149,6 +149,14 @@ combine_data_target_map.control.method                         =   mapfile_all_t
 combine_data_target_map.control.mapfile_dir                    =   input.output.mapfile_dir
 combine_data_target_map.control.filename                       =   combine_data_tar_map.mapfile
 combine_data_target_map.control.mapfile_in                     =   createmap_target.output.mapfile
+
+# warn for potential nearby A-Team sources
+check_Ateam_separation.control.type                            =   pythonplugin
+check_Ateam_separation.control.executable                      =   {{ scripts }}/check_Ateam_separation.py
+check_Ateam_separation.control.mapfile_in                      =   combine_data_target_map.output.mapfile
+check_Ateam_separation.control.inputkey                        =   MSfile
+check_Ateam_separation.argument.min_separation                 =   {{ min_separation }}
+check_Ateam_separation.argument.flags                          =   [MSfile]
 
 # copy the input calibrator h5parm file
 copy_input_h5parmfile.control.kind                             =   plugin
@@ -289,15 +297,15 @@ ndppp_prep_target.argument.applybandpass.updateweights         =   {{ updateweig
 ndppp_prep_target.argument.applybandpass.solset                =   calibrator
 ndppp_prep_target.argument.applyclock.type                     =   applycal
 ndppp_prep_target.argument.applyclock.parmdb                   =   {{ cal_solutions }}
-ndppp_prep_target.argument.applyclock.correction               =   clock000
+ndppp_prep_target.argument.applyclock.correction               =   clock
 ndppp_prep_target.argument.applyclock.solset                   =   calibrator
 ndppp_prep_target.argument.applytec.type                       =   applycal
 ndppp_prep_target.argument.applytec.parmdb                     =   {{ cal_solutions }}
-ndppp_prep_target.argument.applytec.correction                 =   tec000
+ndppp_prep_target.argument.applytec.correction                 =   tec
 ndppp_prep_target.argument.applytec.solset                     =   calibrator
 ndppp_prep_target.argument.applyphase.type                     =   applycal
 ndppp_prep_target.argument.applyphase.parmdb                   =   {{ cal_solutions }}
-ndppp_prep_target.argument.applyphase.correction               =   phaseOrig000
+ndppp_prep_target.argument.applyphase.correction               =   phaseOrig
 ndppp_prep_target.argument.applyphase.solset                   =   calibrator
 ndppp_prep_target.argument.applyRM.type                        =   applycal
 ndppp_prep_target.argument.applyRM.parmdb                      =   {{ cal_solutions }}
@@ -611,7 +619,7 @@ h5imp_gsmcal.argument.outh5parm                                =   outh5parm
 # create losoto v2 parset file
 prepare_losoto_phase.control.kind                             =   plugin
 prepare_losoto_phase.control.type                             =   makeLosotoParset
-prepare_losoto_phase.control.steps                            =   [plotP, plotP2, plotPd, plotPd2]
+prepare_losoto_phase.control.steps                            =   [plotP, plotP2, plotPd, plotPd2, bkp]
 prepare_losoto_phase.control.filename                         =   {{ job_directory }}/losoto.parset
 prepare_losoto_phase.control.plotP.operation                  =   PLOT
 prepare_losoto_phase.control.plotP.soltab                     =   sol000/phase000
@@ -648,11 +656,14 @@ prepare_losoto_phase.control.plotPd2.plotFlag                 =   True
 prepare_losoto_phase.control.plotPd2.prefix                   =   {{ inspection_directory }}/ph_poldif_
 prepare_losoto_phase.control.plotPd2.refAnt                   =   {{ refant }}
 prepare_losoto_phase.control.plotPd2.minmax                   =   [-3.14,3.14]
+prepare_losoto_phase.control.bkp.operation                    =   DUPLICATE
+prepare_losoto_phase.control.bkp.soltab                       =   sol000/phase000
+prepare_losoto_phase.control.bkp.soltabOut                    =   {{ skymodel_source }}phase
 
 # create losoto v2 parset file
 prepare_losoto_tec.control.kind                                =   plugin
 prepare_losoto_tec.control.type                                =   makeLosotoParset
-prepare_losoto_tec.control.steps                               =   [plotTEC]
+prepare_losoto_tec.control.steps                               =   [plotTEC, bkp]
 prepare_losoto_tec.control.filename                            =   {{ job_directory }}/losoto.parset
 prepare_losoto_tec.control.steps                               =   [plotTEC]
 prepare_losoto_tec.control.plotTEC.operation                   =   PLOT
@@ -663,6 +674,9 @@ prepare_losoto_tec.control.plotTEC.plotFlag                    =   True
 prepare_losoto_tec.control.plotTEC.minmax                      =   [-0.5,0.5]
 prepare_losoto_tec.control.plotTEC.prefix                      =   {{ inspection_directory }}/tec
 prepare_losoto_tec.control.plotTEC.refAnt                      =   {{ refant }}
+prepare_losoto_tec.control.bkp.operation                       =   DUPLICATE
+prepare_losoto_tec.control.bkp.soltab                          =   sol000/tec000
+prepare_losoto_tec.control.bkp.soltabOut                       =   {{ skymodel_source }}tec
 
 # do the processing on the LoSoTo file
 process_losoto_gsmcal.control.type                             =   losoto
@@ -677,7 +691,7 @@ h5exp_phase.control.error_tolerance                           =   {{ error_toler
 h5exp_phase.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
 h5exp_phase.control.inputkey                                  =   h5in
 h5exp_phase.argument.flags                                    =   [-c,h5in]
-h5exp_phase.argument.insoltab                                 =   phase000
+h5exp_phase.argument.insoltab                                 =   {{ skymodel_source }}phase
 h5exp_phase.argument.outsolset                                =   target
 h5exp_phase.argument.outh5parm                                =   {{ cal_solutions }}
 
@@ -688,7 +702,7 @@ h5exp_tec.control.error_tolerance                           =   {{ error_toleran
 h5exp_tec.control.mapfile_in                                =   h5imp_gsmcal.output.mapfile
 h5exp_tec.control.inputkey                                  =   h5in
 h5exp_tec.argument.flags                                    =   [-c,h5in]
-h5exp_tec.argument.insoltab                                 =   tec000
+h5exp_tec.argument.insoltab                                 =   {{ skymodel_source }}tec
 h5exp_tec.argument.outsolset                                =   target
 h5exp_tec.argument.outh5parm                                =   {{ cal_solutions }}
 
@@ -711,7 +725,7 @@ apply_phase.argument.filter.type                              =   filter
 apply_phase.argument.filter.baseline                          =   check_bad_antennas.output.filter
 apply_phase.argument.filter.remove                            =   true
 apply_phase.argument.applycal.type                            =   applycal
-apply_phase.argument.applycal.correction                      =   phase000
+apply_phase.argument.applycal.correction                      =   {{ skymodel_source }}phase
 apply_phase.argument.applycal.parmdb                          =   {{ cal_solutions }}
 apply_phase.argument.applycal.solset                          =   target
 apply_phase.argument.interp.type                              =   interpolate
@@ -739,7 +753,7 @@ apply_tec.argument.filter.type                              =   filter
 apply_tec.argument.filter.baseline                          =   check_bad_antennas.output.filter
 apply_tec.argument.filter.remove                            =   true
 apply_tec.argument.applycal.type                            =   applycal
-apply_tec.argument.applycal.correction                      =   tec000
+apply_tec.argument.applycal.correction                      =   {{ skymodel_source }}tec
 apply_tec.argument.applycal.parmdb                          =   {{ cal_solutions }}
 apply_tec.argument.applycal.solset                          =   target
 apply_tec.argument.interp.type                              =   interpolate
