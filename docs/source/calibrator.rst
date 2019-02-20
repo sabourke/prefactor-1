@@ -159,7 +159,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``1st_order``: steps for first order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct,plotTEC,residuals``)
 - ``3rd_order``: steps for third order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct3,plotTEC,plotTEC3,residuals3``)
 - ``prep_cal_strategy``: steps to be performed for the  preparation of the calibrator data. Add ``,demix`` if you want to enable demixing. (default: ``{{ default_flagging }}``)
-- ``cal_ion``: choose whether you want to perform 1st or 3rd order ionospheric effects during clock-TEC separation (default: ``{{ 1st_order }}``)
+- ``cal_clocktec``: choose ``ct3`` if you want to include 3rd order ionospheric effects during clock-TEC separation ((default: ``ct``))
+- ``cal_ion``: choose whether you want to plot 1st or 3rd order ionospheric effects (default: ``{{ 1st_order }}``)
 
 
 **Parameters for pipeline performance**
@@ -207,6 +208,7 @@ Parameters for **HBA** and **LBA** observations
 ---------------------- --------------- -----------------------
 ``do_smooth``          False           True
 ``rfistrategy``        HBAdefault.rifs LBAdefaultwideband.rfis
+``cal_clock``          ct              ct3
 ``cal_ion``            {{ 1st_order }} {{ 3rd_order }}
 ``tables2export``      clock000        phaseOrig000
 ``avg_timeresolution`` 4               1
@@ -225,6 +227,7 @@ The production version has the following primary differences relative to the use
     - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks
       configuration file (see the ``tasks.cfg`` file in this repository for a minimal example)
     - the PREFACTOR_PATH environment variable must be set to the prefactor installation directory
+    - the bandpass and clock-TEC losoto steps are split over time chunks to allow them to run on multiple nodes simultaneously
     - feedback steps are done to generate and feed back metadata for the output data products (for
       ingest into the LTA)
 
