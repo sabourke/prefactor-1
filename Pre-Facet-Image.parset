@@ -156,7 +156,7 @@ createmap_image_i.control.type              =   addListMapfile
 createmap_image_i.control.hosts             =   [localhost]
 createmap_image_i.control.files             =   [{{ image_rootname }}-MFS-I-image-pb.fits]
 createmap_image_i.control.mapfile_dir       =   input.output.mapfile_dir
-createmap_image_i.control.filename          =   wsclean_high_deep_image.mapfile
+createmap_image_i.control.filename          =   wsclean_high_deep_image_i.mapfile
 
 # plot the Stokes-I image, length = 1
 plot_im_high_i.control.type                       =   pythonplugin
@@ -173,7 +173,7 @@ createmap_image_v.control.type              =   addListMapfile
 createmap_image_v.control.hosts             =   [localhost]
 createmap_image_v.control.files             =   [{{ image_rootname }}-MFS-V-image-pb.fits]
 createmap_image_v.control.mapfile_dir       =   input.output.mapfile_dir
-createmap_image_v.control.filename          =   wsclean_high_deep_image.mapfile
+createmap_image_v.control.filename          =   wsclean_high_deep_image_v.mapfile
 
 # plot the Stokes-V image, length = 1
 plot_im_high_v.control.type                       =   pythonplugin
