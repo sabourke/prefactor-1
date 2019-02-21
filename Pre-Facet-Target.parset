@@ -156,6 +156,7 @@ check_Ateam_separation.control.executable                      =   {{ scripts }}
 check_Ateam_separation.control.mapfile_in                      =   combine_data_target_map.output.mapfile
 check_Ateam_separation.control.inputkey                        =   MSfile
 check_Ateam_separation.argument.min_separation                 =   {{ min_separation }}
+check_Ateam_separation.argument.outputimage                    =   {{ inspection_directory }}/A-Team_elevation_target.png
 check_Ateam_separation.argument.flags                          =   [MSfile]
 
 # copy the input calibrator h5parm file
@@ -792,7 +793,6 @@ h5parm_name.argument.pointing                               =   get_targetname.o
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                             =   feedback
-make_msfiles_metadata.control.max_per_node                     =   1
 make_msfiles_metadata.control.mapfile_in                       =   ndppp_prep_target.output.mapfile
 make_msfiles_metadata.control.metadata_file                    =   {{ msfiles_metadata_file }}
 make_msfiles_metadata.control.product_type                     =   Correlated
