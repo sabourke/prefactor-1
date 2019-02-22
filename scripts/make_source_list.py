@@ -4,10 +4,6 @@ Script to make a source catalog for an image
 """
 import argparse
 from argparse import RawTextHelpFormatter
-from astropy.io import fits as pyfits
-from astropy.coordinates import Angle
-import pickle
-import numpy as np
 import sys
 import os
 # workaround for a bug / ugly behavior in matplotlib / pybdsf
@@ -25,7 +21,7 @@ except ImportError:
 import lsmtool
 
 
-def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0, rmsbox=(60,20),
+def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0, rmsbox=(60, 20),
          rmsbox_bright=(35, 7), adaptive_rmsbox=False, atrous_jmax=6, adaptive_thresh=150.0,
          compare_dir=None, format='pdf'):
     """
@@ -68,7 +64,7 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
     if type(atrous_do) is str:
         if atrous_do.lower() == 'true':
             atrous_do = True
-            threshisl = 4.0 # override user setting to ensure proper source fitting
+            threshisl = 4.0  # override user setting to ensure proper source fitting
         else:
             atrous_do = False
 
@@ -99,9 +95,24 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
     if compare_dir is not None:
         s = lsmtool.load(catalog_name)
         _, _, refRA, refDec = s._getXY()
-        s_gsm = lsmtool.load('GSM', VOPosition=[refRA, refDec], VORadius='5 deg')
-        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=False, outDir=compare_dir,
-                  name1='LOFAR', name2='GSM', format=format)
+        def_dict = s.getDefaultValues()
+        if 'ReferenceFrequency' in def_dict:
+            ref_freq_hz = def_dict['ReferenceFrequency']
+        else:
+            ref_freq_hz = 0.0
+        if ref_freq_hz > 140e6 and ref_freq_hz < 160e6:
+            # use TGSS
+            vocat = 'TGSS'
+            ignspec = None
+        else:
+            # LBA -> use GSM
+            vocat = 'GSM'
+            ignspec = -0.7
+        s_vo = lsmtool.load(vocat, VOPosition=[refRA, refDec], VORadius='5 deg')
+        s.select('Type = POINT')
+        s_vo.select('Type = POINT')
+        s.compare(s_vo, radius='30 arcsec', excludeMultiple=False, outDir=compare_dir,
+                  name1='LOFAR', name2=vocat, format=format, ignoreSpec=ignspec)
 
 
 if __name__ == '__main__':
@@ -114,9 +125,9 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--threshisl', help='', type=float, default=3.0)
     parser.add_argument('-p', '--threshpix', help='', type=float, default=5.0)
     parser.add_argument('-r', '--rmsbox', help='rms box width and step (e.g., "(60, 20)")',
-        type=str, default='(60, 20)')
+                        type=str, default='(60, 20)')
     parser.add_argument('--rmsbox_bright', help='rms box for bright sources(?) width and step (e.g., "(60, 20)")',
-        type=str, default='(60, 20)')
+                        type=str, default='(60, 20)')
     parser.add_argument('-o', '--adaptive_rmsbox', help='use an adaptive rms box', type=bool, default=False)
     parser.add_argument('-j', '--atrous_jmax', help='Max wavelet scale', type=int, default=3)
     parser.add_argument('-c', '--compare_dir', help='', type=str, default=None)
