@@ -100,7 +100,7 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
         s = lsmtool.load(catalog_name)
         _, _, refRA, refDec = s._getXY()
         s_gsm = lsmtool.load('GSM', VOPosition=[refRA, refDec], VORadius='5 deg')
-        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=True, outDir=compare_dir,
+        s.compare(s_gsm, radius='30 arcsec', excludeMultiple=False, outDir=compare_dir,
                   name1='LOFAR', name2='GSM', format=format)
 
 
