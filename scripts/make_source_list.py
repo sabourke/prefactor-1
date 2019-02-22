@@ -94,6 +94,7 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
     # Use LSMTool to make some basic comparisons to surveys
     if compare_dir is not None:
         s = lsmtool.load(catalog_name)
+        s.group('every')
         _, _, refRA, refDec = s._getXY()
         def_dict = s.getDefaultValues()
         if 'ReferenceFrequency' in def_dict:
@@ -105,10 +106,11 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
             vocat = 'TGSS'
             ignspec = None
         else:
-            # LBA -> use GSM
+            # too far in freq from TGSS -> use GSM
             vocat = 'GSM'
             ignspec = -0.7
         s_vo = lsmtool.load(vocat, VOPosition=[refRA, refDec], VORadius='5 deg')
+        s_vo.group('every')
         s.select('Type = POINT')
         s_vo.select('Type = POINT')
         s.compare(s_vo, radius='30 arcsec', excludeMultiple=False, outDir=compare_dir,
