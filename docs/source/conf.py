@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Prefactor'
-copyright = '2018, David Rafferty and Alexander Drabent'
+copyright = '2019, David Rafferty and Alexander Drabent'
 author = 'David Rafferty and Alexander Drabent'
 
 # The short X.Y version

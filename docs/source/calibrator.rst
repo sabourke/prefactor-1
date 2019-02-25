@@ -6,8 +6,8 @@ Calibrator pipeline
 This pipeline processes the calibrator data in order to derive direction-independent corrections.
 It will take into account the correct order of distortions to be calibrated for.
 This chapter will present the specific steps of the calibrator pipeline in more detail.
-You will find the single steps in the parameter ``pipeline.steps`` in line 98.
-All results (diagnostic plots and calibration solutions) are usually stored in a subfolder of the results directory, see ``inspection_directory`` (line 79) and ``cal_values_directory`` (line 80), respectively.
+You will find the single steps in the parameter ``pipeline.steps``.
+All results (diagnostic plots and calibration solutions) are usually stored in a subfolder of the results directory, see ``inspection_directory`` and ``cal_values_directory``, respectively.
 
     .. image:: calibscheme.png
 
@@ -123,6 +123,11 @@ User-defined parameter configuration
 
 - ``cal_input_filenames``: specify the list of input MS filenames (full path)
 
+*Information about the output*
+
+- ``cal_output_filenames``: list of output MS filenames (full path)
+- ``h5parm_output_filenames``: list of output solution table filenames (full path)
+
 *Location of the software*
 
 - ``prefactor_directory``: full path to your prefactor copy
@@ -132,15 +137,19 @@ User-defined parameter configuration
 
 *Data selection and calibration options*
 
-- ``refant``:name of the station that will be used as a reference for the phase-plots
+- ``refant``: name of the station that will be used as a reference for the phase-plots
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: ``[]`` )
 - ``filter_baselines``: selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 - ``do_smooth``: enable or disable baseline-based smoothing
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``
-- ``max_length``: amount of subbands to concatenate for full-bandwidth flagging (for an HBA calibrator, you can take all SBs if memory allows)
 - ``max2interpolate``: amount of channels in which interpolation should be performed for deriving the bandpass (default: 30)
 - ``interp_windowsize``: size of the window over which a value is interpolated. Should be odd. (default: 15)
 - ``raw_data``: use autoweight, set to True in case you are using raw data (default: False)
+- ``ampRange``: range of median amplitudes accepted per station
+- ``skip_international``: skip fitting the bandpass for international stations (this avoids flagging them in many cases)
+- ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot (if they converged)
+- ``flagunconverged``: flag solutions for solves that did not converge (if they were also detected to diverge)
+- ``maxStddev``: maximum allowable standard deviation when outlier clipping is done. For phases, this should value should be in radians, for amplitudes in log(amp). If None (or negative), a value of 0.1 rad is used for phases and 0.01 for amplitudes
 
 A comprehensive explanation of the baseline selection syntax can be found `here`_.
 
@@ -154,18 +163,19 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 *Definitions for pipeline options*
 
-- ``default_flagging``: regular flagging steps after pre-processing by the observatory pipelines (default: ``flag,elev,flagamp``)
-- ``raw_flagging``: full set flagging steps (usually only necessary for raw data, default: ``flagedge,aoflag,{{ default_flagging }}``)
-- ``1st_order``: steps for first order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct,plotTEC,residuals``)
-- ``3rd_order``: steps for third order clock-TEC separation (Do not change! Only ``cal_ion`` should be edited if needed, default: ``ct3,plotTEC,plotTEC3,residuals3``)
-- ``prep_cal_strategy``: steps to be performed for the  preparation of the calibrator data. Add ``,demix`` if you want to enable demixing. (default: ``{{ default_flagging }}``)
-- ``cal_clocktec``: choose ``ct3`` if you want to include 3rd order ionospheric effects during clock-TEC separation ((default: ``ct``))
+- ``cal_clocktec``: choose ``ct3`` if you want to include 3rd order ionospheric effects during clock-TEC separation (default: ``ct``)
 - ``cal_ion``: choose whether you want to plot 1st or 3rd order ionospheric effects (default: ``{{ 1st_order }}``)
+- ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data
+- ``demix_step``: choose ``{{ demix }}`` if you want to demix
+- ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``)
 
 
 **Parameters for pipeline performance**
 
 - ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: False)
+- ``memoryperc``: maximum of memory used for aoflagger in ``raw_flagging`` mode in percent
+- ``min_length``: minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
+- ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (will raise a WARNING)
 
 **Parameters you may want to adjust**
 
@@ -181,6 +191,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 *Skymodel directory*
 
 - ``calibrator_path_skymodel``: location of the prefactor skymodels (default: ``{{ prefactor_directory }}/skymodels``)
+- ``A-team_skymodel``: location of the A-team skymodels (default: ``{{ calibrator_path_skymodel }}/Ateam_LBA_CC.skymodel``)
 
 *Result directories*
 
@@ -210,9 +221,8 @@ Parameters for **HBA** and **LBA** observations
 ``rfistrategy``        HBAdefault.rifs LBAdefaultwideband.rfis
 ``cal_clock``          ct              ct3
 ``cal_ion``            {{ 1st_order }} {{ 3rd_order }}
-``tables2export``      clock000        phaseOrig000
+``tables2export``      clock           phaseOrig
 ``avg_timeresolution`` 4               1
-``max_length``         400             50
 ====================== =============== =======================
 
 In case of **LBA** observation you might also want to enable demixing in the ``prep_cal_strategy`` variable.
@@ -225,7 +235,7 @@ The production version has the following primary differences relative to the use
     - input and output data must be specified as a list of filenames (instead of a directory+wildcard)
     - output solutions h5parm filename must be specified as a (typically length-one) list
     - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks
-      configuration file (see the ``tasks.cfg`` file in this repository for a minimal example)
+      configuration file (see the ``tasks.cfg`` file in the prefactor GitHub repository for a minimal example)
     - the PREFACTOR_PATH environment variable must be set to the prefactor installation directory
     - the bandpass and clock-TEC losoto steps are split over time chunks to allow them to run on multiple nodes simultaneously
     - feedback steps are done to generate and feed back metadata for the output data products (for
