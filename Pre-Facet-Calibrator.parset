@@ -38,15 +38,13 @@
 ! demix_freqstep           =  16                                     ## number of channels to average when demixing.
 ! demix_timestep           =  10                                     ## number of time slots to average when demixing
 
-# definitions for pipeline options -- do not change!
+# definitions for pipeline options
 ! default_flagging         =  flagbaseline,flagelev,flagamp          ## regular flagging after pre-processing by the observatory pipelines
 ! raw_flagging             =  flagedge,aoflag,{{ default_flagging }} ## full flagging (usually only necessary for raw data)
 ! 1st_order                =  plotTEC,residuals                      ## Do not change! Only cal_ion should be edited if needed
 ! 3rd_order                =  plotTEC,plotTEC3,residuals3            ## Do not change! Only cal_ion should be edited if needed
 ! demix                    =  demix,                                 ## Do not change! Only demix_step should be edited if needed
 ! none                     =                                         ## Do not change!
-
-# pipeline options
 ! initial_flagging         =  {{ default_flagging }}                 ## choose {{ raw_flagging }} if you process raw data
 ! demix_step               =  {{ none }}                             ## choose {{ demix }} if you want to demix
 ! cal_clocktec             =  ct                                     ## choose ct3 if you want to include 3rd order ionospheric effects (may be useful for LBA < 35 MHz)
