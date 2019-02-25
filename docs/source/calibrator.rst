@@ -167,6 +167,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``cal_ion``: choose whether you want to plot 1st or 3rd order ionospheric effects (default: ``{{ 1st_order }}``)
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix
+- ``uvlambdamin``: minimum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps
+- ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps
 - ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``)
 
 

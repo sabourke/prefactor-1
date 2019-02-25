@@ -30,8 +30,8 @@ It will prepare your data so that you will be able to use any direction-dependen
     primary differences being that the production version requires that input and output
     data be specified explicitly and that metadata-feedback steps be done at the end
     (required for ingest of data products into the LTA). For more details on the differences,
-    see the individual pipeline sections below. For general information on installing or
-    running prefactor, see the documentation for the user version.
+    see the individual pipeline sections below. For general information on prefactor (e.g., installing,
+    running, etc.), see the documentation for the user version.
 
 
 The Prefactor Pipelines
