@@ -37,18 +37,22 @@ Software requirements:
 * APLpy (for Initial-Subtract)
 
 The Pre-Facet-Calibration pipeline and its scripts where developed by:
-* Alexander Drabent <alex somewhere tls-tautenburg.de>
-* Martin Hardcastle <mjh somewhere extragalactic.info>
-* George Heald <heald somewhere astron.nl>
-* Andreas Horneffer <ahorneffer somewhere mpifr-bonn.mpg.de>
-* Soumyajit Mandal <mandal somewhere strw.leidenuniv.nl>
-* David Rafferty <drafferty somewhere hs.uni-hamburg.de>
-* Carole Roskowinski <carosko gmail.com>
-* Jose Sabater Montes <jsm somewhere iaa.es>
-* Timothy Shimwell <shimwell somewhere strw.leidenuniv.nl>
-* Sarrvesh Sridhar <sarrvesh somewhere astro.rug.nl>
-* Reinout van Weeren <rvweeren somewhere strw.leidenuniv.nl>
-* Wendy Williams <wwilliams somewhere strw.leidenuniv.nl>
+* Alexander Drabent
+* David Rafferty
+* Andreas Horneffer
+* Francesco de Gasperin
+* Marco Iacobelli
+* Emanuela Orru
+* Björn Adebahr
+* Martin Hardcastle
+* George Heald
+* Soumyajit Mandal
+* Carole Roskowinski
+* Jose Sabater Montes
+* Timothy Shimwell
+* Sarrvesh Sridhar
+* Reinout van Weeren
+* Wendy Williams
 
 With special thanks to Stefan Froehlich for developing the genericpipeline.
 
