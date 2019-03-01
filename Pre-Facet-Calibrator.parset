@@ -127,6 +127,7 @@ check_Ateam_separation.control.executable                   =   {{ scripts }}/ch
 check_Ateam_separation.control.mapfile_in                   =   combine_data_map.output.mapfile
 check_Ateam_separation.control.inputkey                     =   MSfile
 check_Ateam_separation.argument.min_separation              =   {{ min_separation }}
+check_Ateam_separation.argument.outputimage                 =   {{ inspection_directory }}/A-Team_elevation_target.png
 check_Ateam_separation.argument.flags                       =   [MSfile]
 
 
