@@ -142,11 +142,10 @@ get_targetname.control.mapfile_in                              =   createmap_tar
 
 # combine all entries into one mapfile, for the sortmap script
 combine_data_target_map.control.kind                           =   plugin
-combine_data_target_map.control.type                           =   createMapfile
-combine_data_target_map.control.method                         =   mapfile_all_to_one
+combine_data_target_map.control.type                           =   compressMapfile
+combine_data_target_map.control.mapfile_in                     =   createmap_target.output.mapfile
 combine_data_target_map.control.mapfile_dir                    =   input.output.mapfile_dir
 combine_data_target_map.control.filename                       =   combine_data_tar_map.mapfile
-combine_data_target_map.control.mapfile_in                     =   createmap_target.output.mapfile
 
 # warn for potential nearby A-Team sources
 check_Ateam_separation.control.type                            =   pythonplugin
@@ -367,11 +366,10 @@ ateamcliptar.control.inputkey                                  =   allms
 #############################
 # combine all entries into one mapfile, for the sortmap script
 combine_target_map.control.kind                                =   plugin
-combine_target_map.control.type                                =   createMapfile
-combine_target_map.control.method                              =   mapfile_all_to_one
+combine_target_map.control.type                                =   compressMapfile
+combine_target_map.control.mapfile_in                          =   ndppp_prep_target.output.mapfile
 combine_target_map.control.mapfile_dir                         =   input.output.mapfile_dir
 combine_target_map.control.filename                            =   combine_target_map.mapfile
-combine_target_map.control.mapfile_in                          =   ndppp_prep_target.output.mapfile
 
 # sort the target data by frequency into groups so that NDPPP can concatenate them
 sortmap_target.control.type                                    =   pythonplugin
@@ -415,11 +413,10 @@ dpppconcat.argument.avg.freqresolution                         =   {{ avg_freqre
 
 # combine all entries into one mapfile, for the sortmap script
 combine_concat_map.control.kind                                =   plugin
-combine_concat_map.control.type                                =   createMapfile
-combine_concat_map.control.method                              =   mapfile_all_to_one
+combine_concat_map.control.type                                =   compressMapfile
+combine_concat_map.control.mapfile_in                          =   do_sortmap_maps.output.groupmap
 combine_concat_map.control.mapfile_dir                         =   input.output.mapfile_dir
 combine_concat_map.control.filename                            =   combine_concat_map.mapfile
-combine_concat_map.control.mapfile_in                          =   do_sortmap_maps.output.groupmap
 
 # virtually concatenate target subbands
 ms_concat_target.control.type                                  =   pythonplugin

@@ -115,11 +115,10 @@ createmap_cal.control.filename                              =   createmap_cal.ma
 
 # combine all entries into one mapfile
 combine_data_map.control.kind                               =   plugin
-combine_data_map.control.type                               =   createMapfile
-combine_data_map.control.method                             =   mapfile_all_to_one
+combine_data_map.control.type                               =   compressMapfile
+combine_data_map.control.mapfile_in                         =   createmap_cal.output.mapfile
 combine_data_map.control.mapfile_dir                        =   input.output.mapfile_dir
 combine_data_map.control.filename                           =   combine_data_map.mapfile
-combine_data_map.control.mapfile_in                         =   createmap_cal.output.mapfile
 
 # warn for potential nearby A-Team sources
 check_Ateam_separation.control.type                         =   pythonplugin
@@ -239,11 +238,10 @@ ndppp_prep_cal.argument.demix.instrumentmodel               =   createmap_instca
 
 # combine all entries into one mapfile (just for the find_skymodel_cal_auto script)
 combine_data_cal_map.control.kind                           =   plugin
-combine_data_cal_map.control.type                           =   createMapfile
-combine_data_cal_map.control.method                         =   mapfile_all_to_one
+combine_data_cal_map.control.type                           =   compressMapfile
+combine_data_cal_map.control.mapfile_in                     =   ndppp_prep_cal.output.mapfile
 combine_data_cal_map.control.mapfile_dir                    =   input.output.mapfile_dir
 combine_data_cal_map.control.filename                       =   combine_data_cal_map.mapfile
-combine_data_cal_map.control.mapfile_in                     =   ndppp_prep_cal.output.mapfile
 
 # virtually concatenate calibrator subbands
 ms_concat.control.type                                      =   pythonplugin
