@@ -89,12 +89,13 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
                              adaptive_rms_box=adaptive_rmsbox, adaptive_thresh=adaptive_thresh,
                              rms_box_bright=rmsbox_bright, rms_map=True, quiet=True,
                              atrous_jmax=atrous_jmax)
-    img.write_catalog(outfile=catalog_name, clobber=True)
+    srcroot = 'prefactor'
+    img.write_catalog(outfile=catalog_name, bbs_patches='source', srcroot=srcroot, clobber=True)
 
     # Use LSMTool to make some basic comparisons to surveys
     if compare_dir is not None:
         s = lsmtool.load(catalog_name)
-        s.group('every')
+        s.setPatchPositions(method='wmean')
         _, _, refRA, refDec = s._getXY()
         def_dict = s.getDefaultValues()
         if 'ReferenceFrequency' in def_dict:
@@ -106,13 +107,12 @@ def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0
             vocat = 'TGSS'
             ignspec = None
         else:
-            # too far in freq from TGSS -> use GSM
+            # too far in freq from TGSS -> use GSM, ignoring sources that lack spectral
+            # information (spec_indx = -0.7)
             vocat = 'GSM'
             ignspec = -0.7
         s_vo = lsmtool.load(vocat, VOPosition=[refRA, refDec], VORadius='5 deg')
-        s_vo.group('every')
-        s.select('Type = POINT')
-        s_vo.select('Type = POINT')
+        s_vo.group('threshold', FWHM='30 arcsec', threshold=0.001)
         s.compare(s_vo, radius='30 arcsec', excludeMultiple=False, outDir=compare_dir,
                   name1='LOFAR', name2=vocat, format=format, ignoreSpec=ignspec)
 
