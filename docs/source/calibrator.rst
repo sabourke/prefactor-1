@@ -139,6 +139,7 @@ User-defined parameter configuration
 
 - ``refant``: name of the station that will be used as a reference for the phase-plots
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: ``[]`` )
+- ``process_baselines_cal``: performs A-Team-clipping/demixing only on these baselines. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 - ``filter_baselines``: selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations.
 - ``do_smooth``: enable or disable baseline-based smoothing
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``
@@ -216,18 +217,18 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
-====================== =============== =======================
-**parameter**          **HBA**         **LBA**
----------------------- --------------- -----------------------
-``do_smooth``          False           True
-``rfistrategy``        HBAdefault.rifs LBAdefaultwideband.rfis
-``cal_clock``          ct              ct3
-``cal_ion``            {{ 1st_order }} {{ 3rd_order }}
-``tables2export``      clock           phaseOrig
-``avg_timeresolution`` 4               1
-====================== =============== =======================
+====================== ====================== =======================
+**parameter**          **HBA**                **LBA**
+---------------------- ---------------------- -----------------------
+``do_smooth``          False                  True
+``rfistrategy``        HBAdefault.rifs        LBAdefaultwideband.rfis
+``cal_clock``          ct                     ct3
+``cal_ion``            {{ 1st_order }},smooth {{ 1st_order }} or {{ 3rd_order }}
+``tables2export``      clock                  phaseOrig
+``avg_timeresolution`` 4                      1
+====================== ====================== =======================
 
-In case of **LBA** observation you might also want to enable demixing in the ``prep_cal_strategy`` variable.
+In case of **LBA** observations you might also want to enable demixing in the ``prep_cal_strategy`` variable.
 
 Differences between production and user versions
 ------------------------------------------------
