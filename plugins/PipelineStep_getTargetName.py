@@ -18,7 +18,10 @@ def plugin_main(args, **kwargs):
     """
     mapfile_in = kwargs['mapfile_in']
     data = DataMap.load(mapfile_in)
-    msfile = data[0].file
+    for item in data:
+        if not item.skip:
+            msfile = item.file
+            break
 
     observationTable = ct.table(msfile+'::OBSERVATION')
     targetName = observationTable.getcol('LOFAR_TARGET')['array'][0]

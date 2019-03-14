@@ -29,7 +29,9 @@ def plugin_main(args, **kwargs):
     mapfile_in = kwargs['mapfile_in']
     filter = kwargs['filter']
     data = DataMap.load(mapfile_in)
-    mslist = [data[i].file for i in range(len(data))]
+    mslist = [item.file for item in data if not item.skip]
+    if len(mslist) == 0:
+        raise ValueError("Did not find any valid MS files in input mapfile!")
 
     pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
     flaggedants_list = pool.map(find_flagged_antennas, mslist)

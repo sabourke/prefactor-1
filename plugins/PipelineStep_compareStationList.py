@@ -30,10 +30,10 @@ def plugin_main(args, **kwargs):
     solset_name    = kwargs['solset_name']
     filter         = kwargs['filter']
     data           = DataMap.load(mapfile_in)
-    mslist         = [data[i].file for i in xrange(len(data))]
+    mslist         = [item.file for item in data if not item.skip]
 
     if len(mslist) == 0:
-        raise ValueError("Did not find any existing directory in input MS list!")
+        raise ValueError("Did not find any valid MS files in input mapfile!")
     else:
         MS = mslist[0]
 
