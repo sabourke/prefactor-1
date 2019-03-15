@@ -23,7 +23,7 @@ import lsmtool
 
 def main(image_name, catalog_name, atrous_do=False, threshisl=3.0, threshpix=5.0, rmsbox=(60, 20),
          rmsbox_bright=(35, 7), adaptive_rmsbox=False, atrous_jmax=6, adaptive_thresh=150.0,
-         compare_dir=None, format='pdf'):
+         compare_dir=None, format='png'):
     """
     Make a source catalog for an image
 
