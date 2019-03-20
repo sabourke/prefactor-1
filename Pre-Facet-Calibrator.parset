@@ -641,7 +641,7 @@ h5imp_cal_bandpass1.control.outputkey                        =   outh5parm
 h5imp_cal_bandpass1.argument.flags                           =   [-q,-v,-c,h5parm]
 h5imp_cal_bandpass1.argument.outh5parm                       =   outh5parm
 
-# split into 10-minute chunks for parallel processing
+# split into chunks for parallel processing
 split_h5_bandpass.control.type                              =   h5parm_split
 split_h5_bandpass.control.inplace                           =   True
 split_h5_bandpass.control.error_tolerance                   =   {{ error_tolerance }}
@@ -816,7 +816,7 @@ h5imp_cal_ion1.control.outputkey                             =   outh5parm
 h5imp_cal_ion1.argument.flags                                =   [-q,-v,-c,h5parm]
 h5imp_cal_ion1.argument.outh5parm                            =   outh5parm
 
-# split into 10-minute chunks for parallel processing
+# split into chunks for parallel processing
 split_h5_ion.control.type                                    =   h5parm_split
 split_h5_ion.control.inplace                                 =   True
 split_h5_ion.control.error_tolerance                         =   {{ error_tolerance }}
