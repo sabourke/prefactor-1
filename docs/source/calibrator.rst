@@ -164,7 +164,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 *Definitions for pipeline options*
 
-- ``cal_clocktec``: choose ``ct3`` if you want to include 3rd order ionospheric effects during clock-TEC separation (default: ``ct``)
+- ``cal_clocktec``: choose ``ct3,residuals3`` if you want to include 3rd order ionospheric effects during clock-TEC separation (default: ``ct,residuals``)
 - ``cal_ion``: choose whether you want to plot 1st or 3rd order ionospheric effects (default: ``{{ 1st_order }}``)
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix
@@ -217,16 +217,16 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
-====================== ====================== =======================
+====================== ====================== ==================================
 **parameter**          **HBA**                **LBA**
----------------------- ---------------------- -----------------------
+---------------------- ---------------------- ----------------------------------
 ``do_smooth``          False                  True
 ``rfistrategy``        HBAdefault.rifs        LBAdefaultwideband.rfis
-``cal_clock``          ct                     ct3
+``cal_clock``          ct,residuals           ct,residuals or ct3,residuals3
 ``cal_ion``            {{ 1st_order }},smooth {{ 1st_order }} or {{ 3rd_order }}
 ``tables2export``      clock                  phaseOrig
 ``avg_timeresolution`` 4                      1
-====================== ====================== =======================
+====================== ====================== ==================================
 
 In case of **LBA** observations you might also want to enable demixing in the ``prep_cal_strategy`` variable.
 
@@ -240,7 +240,10 @@ The production version has the following primary differences relative to the use
     - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks
       configuration file (see the ``tasks.cfg`` file in the prefactor GitHub repository for a minimal example)
     - the PREFACTOR_PATH environment variable must be set to the prefactor installation directory
-    - the bandpass and clock-TEC losoto steps are split over time chunks to allow them to run on multiple nodes simultaneously
+    - the bandpass and clock-TEC losoto steps are split over time chunks to
+      allow them to run on multiple nodes simultaneously. The final phase residuals are
+      calculated on each chunk separately, as the phase_offset resulting
+      from the clock-TEC step differs for each chunk.
     - feedback steps are done to generate and feed back metadata for the output data products (for
       ingest into the LTA)
 
