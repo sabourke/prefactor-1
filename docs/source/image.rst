@@ -3,14 +3,14 @@
 Image pipeline
 ==============
 
-This pipeline produces an image of the full FOV of the target data, using the full bandwidth. The
+This pipeline produces a Stokes-I image (a Stokes-V image is also produced for quality-control purposes but is not ingested) of the full FOV of the target data, using the full bandwidth. The
 parset is named ``Pre-Facet-Image.parset``.
 
 
 Prepare target
 --------------
 
-The target data that result from the target pipeline are averaged and concatenated in preparation for imaging. The steps
+The target data that result from the target pipeline (those specified in ``target_output_filenames`` of the :ref:`target_pipeline`) are averaged and concatenated in preparation for imaging. The steps
 are as follows:
 
 ``create_ms_map``
@@ -44,21 +44,30 @@ are as follows:
 
 Imaging
 -------
-WSClean is used to produce the image. See the parset and the ``do_magic`` step above
-for details of the parameters used. They are chosen to produce good results for most
+WSClean is used to produce the Stokes-I/V images. See the parset and the ``do_magic`` step above
+for details of the parameters used. The values are chosen to produce good results for most
 standard observations.
 
 ``wsclean_high_deep``
     Image the data with WSClean+IDG. Imaging is done in MFS mode, resulting in a
-    single image for the full bandwidth. A typical HBA Stokes-I image looks like the one below.
-
-    .. image:: image_pipeline_example.png
+    single image for the full bandwidth.
 ``plot_im_high_i/v``
-    Make a png figure of the Stokes-I/V image, including estimates of the image rms and dynamic
-    range and the restoring beam size.
+    Make a png figure of the Stokes-I/V images, including estimates of the image rms and dynamic
+    range and the restoring beam size. Typical HBA images look like the ones below (Stokes-I image is shown first and the Stokes-V image second).
+
+    .. image:: MFS-I-image-pb.plot_im_high_i.png
+    .. image:: MFS-V-image-pb.plot_im_high_v.png
+
 ``make_source_list``
-    Make a list of sources from the image using PyBDSF and compare their properties to
-    those of the GSM catalog.
+    Make a list of sources from the Stokes-I image using PyBDSF and compare their properties to
+    those of the TGSS and GSM catalogs for HBA and LBA data, respectively. A number of plots
+    are made to allow quick assessment of the flux scale and astrometry of the image:
+
+    .. image:: flux_ratio_sky.png
+    .. image:: flux_ratio_vs_distance.png
+    .. image:: flux_ratio_vs_flux.png
+    .. image:: positional_offsets_sky.png
+
 ``copy_output_images``
     Copy the image to the output filenames expected for feedback.
 ``make_image_metadata``
@@ -69,38 +78,70 @@ standard observations.
 
 User-defined parameter configuration
 ------------------------------------
+**Parameters adjusted when specifying (via xmlgen.py or in MoM) the pipeline in the system**
+
+*Information about the input data*
+
 - ``data_input_filenames``
     List of input MS filenames (full path).
+
+*Information about the output*
+
 - ``image_output_filenames``
     List of output image filenames for feedback (full path).
+
+*Imaging parameters*
+
 - ``cellsize_highres_deg``
-    Cellsize in degrees.
+    Cellsize in degrees (default: 0.00208).
+
+    .. note::
+
+        On CEP-4, this is set automatically to 0.00208 for HBA data and 0.00324 for LBA data to ensure proper sampling of the restoring beam.
 - ``fieldsize_highres``
     Size of the image is this value times the FWHM of mean semi-major axis of
-    the station beam at the lowest observed frequency.
+    the station beam at the lowest observed frequency (default: 1.5).
 - ``maxlambda_highres``
-    Maximum uv-distance in lambda that will be used for imaging.
+    Maximum uv-distance in lambda that will be used for imaging. A minimum uv-distance
+    of 80 lambda is used in all cases (default: 7000).
+
+    .. note::
+
+        On CEP-4, this is set automatically to 7000 for HBA data and 4000 for LBA data to exclude longer baselines that are poorly calibrated (e.g., due to ionospheric effects).
 - ``image_padding``
-    How much padding shall we add during the imaging?
+    Amount of padding to add during the imaging (default: 1.2).
 - ``idg_mode``
-    IDG mode to use: cpu or hybrid (= CPU + GPU).
+    IDG mode to use: cpu or hybrid (default: cpu).
+
+    .. note::
+
+        On CEP-4, this is set automatically depending on whether the pipeline is running on a CPU or GPU node.
 - ``local_scratch_dir``
-    Scratch directory for WSClean (can be local to the processing nodes!).
+    Scratch directory for WSClean (default: ``{{ job_directory }}``).
 - ``images_metadata_file``
-    Feedback metadata file (full path).
+    Feedback metadata file (default: ``input.output.working_directory/input.output.job_name/images.metadata``).
 - ``parset_prefix``
-    Feedback parset prefix.
+    Feedback parset prefix (default: none).
+
+    .. note::
+
+        On CEP-4, this is set automatically as specified by MoM.
 - ``image_rootname``
-    Output image root name. The image will be named ``image_rootname-MFS-image.fits``.
+    Output image root name (default: ``{{ job_directory }}/fullband``). The image will be named ``image_rootname-MFS-image.fits``.
+
+    .. note::
+
+        On CEP-4, this is set automatically to the SASID specified by MoM.
 
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
-======================== ================== =======================
-**parameter**            **HBA**            **LBA**
------------------------- ------------------ -----------------------
-``cellsize_highres_deg``   0.00208              0.00416
-======================== ================== =======================
+======================== ======= =======
+**parameter**            **HBA** **LBA**
+------------------------ ------- -------
+``cellsize_highres_deg`` 0.00208 0.00324
+``maxlambda_highres``    7000    4000
+======================== ======= =======
 
 
 Differences between production and user versions

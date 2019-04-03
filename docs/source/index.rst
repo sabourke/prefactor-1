@@ -6,7 +6,8 @@
 Prefactor: Preprocessing for Facet Calibration for LOFAR (Production Version)
 =============================================================================
 
-**prefactor** is a pipeline to correct for various instrumental and ionospheric effects in both **LOFAR HBA** and **LOFAR LBA** observations.
+**prefactor** is a pipeline to correct for various instrumental and ionospheric effects in both **LOFAR HBA** and **LOFAR LBA** observations,
+as detailed in de Gasperin, F.; Dijkema, T. J.; Drabent, A.; Mevius, M.; Rafferty, D. A.; van Weeren, R., et al. 2018, arXiv:1811.07954.
 
 It includes:
 
@@ -17,10 +18,10 @@ It includes:
 - removal of the element beam
 - advanced flagging and interpolation of bad data
 - mitigation of broad-band RFI and bad stations
-- direction-independent phase correction of the target, using a global sky model from `TGSS ADR`_  or the new Global Sky Model (GSM)
-- detailled diagnostics
+- direction-independent phase correction of the target, using a global sky model from `TGSS ADR`_  or the new Global Sky Model (GSM) for HBA and LBA data, respectively.
+- detailled diagnostics and a summary log file
 
-It will prepare your data so that you will be able to use any direction-dependent calibration software, like `factor`_ or `killMS`_.
+It will prepare your data so that you will be able to use any direction-dependent calibration software, like `factor`_ or `killMS`_, as well as any generic long-baseline pipeline.
 
 .. note::
 
@@ -31,7 +32,7 @@ It will prepare your data so that you will be able to use any direction-dependen
     data be specified explicitly and that metadata-feedback steps be done at the end
     (required for ingest of data products into the LTA). For more details on the differences,
     see the individual pipeline sections below. For general information on prefactor (e.g., installing,
-    running, etc.), see the documentation for the user version.
+    running, etc.), see the documentation for the user version (see link above).
 
 
 The Prefactor Pipelines
