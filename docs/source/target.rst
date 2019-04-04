@@ -22,7 +22,7 @@ The basic steps are:
 
 - mapping of data to be used (``target_input_filenames``).
 - copying h5parm solution set from the calibrator (``copy_input_h5parmfile``).
-- check of A-team relation to target: plot of the elevation of the target and A-team sources (plus the Sun, Jupiter, and the Moon) versus time.
+- check of A-team relation to target: plot of the elevation of the target and A-team sources (plus the Sun, Jupiter, and the Moon) versus time (``check_Ateam_separation``).
     .. image:: A-Team_elevation_target.png
 - gathering differential rotation measure (dRM) satellite information and writing it into the h5parm (``h5imp_RMextract``).
     .. image:: RMextract.png
@@ -112,6 +112,11 @@ User-defined parameter configuration
         On CEP-4, this is set automatically to False for HBA data and True for LBA data.
 
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``.
+
+    .. note::
+
+        On CEP-4, this is set automatically depending on the array type.
+
 - ``interp_windowsize``: size of the window over which a value is interpolated. Should be odd. (default: 15).
 - ``raw_data``: use autoweight, set to True in case you are using raw data (default: False).
 - ``min_unflagged_fraction``: minimal fraction of unflagged data to be accepted for further processing of the data chunk (default: 0).
@@ -132,8 +137,18 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data (default: ``{{ default_flagging }}``).
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix (default: ``{{ none }}``).
 - ``apply_steps``:  comma-separated list of apply_steps performed in the target preparation (default: ``applyclock,applybeam,applyRM``). Note: only use ``applyRM`` if you have performed the RMextract step before.
+
+    .. note::
+
+        On CEP-4, this is set automatically to ``applyclock,applybeam,applyRM`` for HBA data and ``applyphase`` for LBA data.
+
 - ``clipAteam_step``:  choose ``{{ none }}`` if you want to skip A-team-clipping (default: ``{{ clipATeam }}``).
 - ``gsmcal_step``:  choose ``tec`` if you want to fit dTEC instead of self-calibrating for phases (default: ``phase``).
+
+    .. note::
+
+        On CEP-4, this is set automatically to ``phase`` for HBA data and ``tec`` for LBA data.
+
 - ``updateweights``:  update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations (default: True).
 
 
@@ -211,7 +226,7 @@ Parameters for **HBA** and **LBA** observations
 ``gsmcal_step``        ``phase``              ``tec``
 ====================== ====================== ===========================
 
-In case of **LBA** observations, by default the full phase solutions from the calibrator are applied, as it is assumed that the calibrator is observed simultaneously with the target.
+In the case of **LBA** observations, by default the full phase solutions from the calibrator are applied, as it is assumed that the calibrator is observed simultaneously with the target.
 
 Differences between production and user versions
 ------------------------------------------------

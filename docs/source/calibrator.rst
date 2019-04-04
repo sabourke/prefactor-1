@@ -21,7 +21,7 @@ The pipeline must be run on pre-processed data only.
 The basic steps are:
 
 - mapping of data to be used (``cal_input_filenames``).
-- check of A-team relation to target: plot of the elevation of the calibrator and A-team sources (plus the Sun, Jupiter, and the Moon) versus time.
+- check of A-team relation to target: plot of the elevation of the calibrator and A-team sources (plus the Sun, Jupiter, and the Moon) versus time (``check_Ateam_separation``).
     .. image:: A-Team_elevation_calibrator.png
 - creating a model of A-Team sources to be subtracted (``make_sourcedb_ateam``). This step is not currently used.
 - basic flagging and averaging (``ndppp_prep_cal``).
@@ -166,7 +166,12 @@ User-defined parameter configuration
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (default: ``[]``).
 - ``process_baselines_cal``: performs A-Team-clipping/demixing only on these baselines (default: ``[CR]S*&``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
 - ``filter_baselines``: selects only this set of baselines to be processed (default: ``*``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
-- ``do_smooth``: enable or disable baseline-based smoothing (default: False for HBA data and True for LBA data). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
+- ``do_smooth``: enable or disable baseline-based smoothing (default: False). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
+
+    .. note::
+
+        On CEP-4, this is set automatically to False for HBA data and True for LBA data.
+
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``.
 
     .. note::
@@ -197,11 +202,20 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``cal_clocktec``: choose ``ct3,residuals3`` if you want to include 3rd order ionospheric effects during clock-dTEC separation (default: ``ct,residuals``). The inclusion of 3rd order effects may be useful when dealing with data at frequencies below 30 MHz.
 - ``cal_ion``: choose whether you want to plot 1st or 3rd order ionospheric effects (default: ``{{ 1st_order }},smooth``). Add ``smooth`` if you want to use the median of the clock in time (suggested for HBA+LB). Do not use ``smooth`` for LBA data if the calibrator was observed simultaneously with the target as, in this case, one wants a time-dependent clock.
+
+    .. note::
+
+        On CEP-4, this is set automatically to ``{{ 1st_order }},smooth`` for HBA data and ``{{ 1st_order }}`` for LBA data.
+
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data (default: ``{{ default_flagging }}``).
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix (default: ``{{ none }}``).
 - ``uvlambdamin``: minimum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: 100).
 - ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: 20000).
-- ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``) (default: ``{{ 1st_order }},smooth``). Choose {{ 3rd_order }} if you want to include 3rd order ionospheric effects (may be useful for LBA < 35 MHz), add smooth if you want to use the median of the clock in time (suggested for HBA+LB).
+- ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``) (default: ``clock``).
+
+    .. note::
+
+        On CEP-4, this is set automatically to ``clock`` for HBA data and ``phaseOrig`` for LBA data.
 
 
 **Parameters for pipeline performance**
@@ -243,6 +257,11 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 *Averaging for the calibrator data*
 
 - ``avg_timeresolution``: final time resolution of the data in seconds after averaging (default: 4).
+
+    .. note::
+
+        On CEP-4, this is set automatically to 4 for HBA data and 1 for LBA data.
+
 - ``avg_freqresolution`` : final frequency resolution of the data after averaging (default: 48.82kHz, which translates to 4 channels per subband).
 - ``bandpass_freqresolution``: frequency resolution of the bandpass solution table (default: 195.3125kHz, which translates to 1 channel per subband).
 
@@ -253,13 +272,13 @@ Parameters for **HBA** and **LBA** observations
 ---------------------- -------------------------- ------------------------------------------
 ``do_smooth``          ``False``                  ``True``
 ``rfistrategy``        ``HBAdefault.rifs``        ``LBAdefaultwideband.rfis``
-``cal_clock``          ``ct,residuals``           ``ct,residuals`` or ``ct3,residuals3``
+``cal_clocktec``       ``ct,residuals``           ``ct,residuals`` or ``ct3,residuals3``
 ``cal_ion``            ``{{ 1st_order }},smooth`` ``{{ 1st_order }}`` or ``{{ 3rd_order }}``
 ``tables2export``      ``clock``                  ``phaseOrig``
 ``avg_timeresolution`` 4                          1
 ====================== ========================== ==========================================
 
-In case of **LBA** observations with frequencies below 30 MHz, you may want to use the 3rd-order dTEC fitting options above for ``cal_clock`` and ``cal_ion``. Otherwise, the default first-order fitting options should work well.
+In the case of **LBA** observations with frequencies below 30 MHz, you may want to use the 3rd-order dTEC fitting options above for ``cal_clocktec`` and ``cal_ion``. Otherwise, the default first-order fitting options should work well.
 
 Differences between production and user versions
 ------------------------------------------------
