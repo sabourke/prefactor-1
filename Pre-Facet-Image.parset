@@ -44,7 +44,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! image_rootname           =  {{ job_directory }}/fullband        ## image root name
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, dpppconcat, wsclean_high_deep, createmap_image_i, plot_im_high_i, createmap_image_v, plot_im_high_v, make_source_list, copy_output_images, make_image_metadata]
+pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, average, combine_mapfile_deep, plot_uvcov, dpppconcat, wsclean_high_deep, createmap_image_i, plot_im_high_i, createmap_image_v, plot_im_high_v, make_source_list, copy_output_images, make_image_metadata]
 
 # generate a mapfile of all the target data
 create_ms_map.control.kind                           =   plugin
@@ -107,6 +107,14 @@ combine_mapfile_deep.control.type                    =   compressMapfile
 combine_mapfile_deep.control.mapfile_in              =   average.output.mapfile
 combine_mapfile_deep.control.mapfile_dir             =   input.output.mapfile_dir
 combine_mapfile_deep.control.filename                =   combine_mapfile_deep.mapfile
+
+# plot the uv coverage with flags
+plot_uvcov.control.type                                =  pythonplugin
+plot_uvcov.control.executable                          =  {{ scripts }}/plot_uvcov.py
+plot_uvcov.control.mapfile_in                          =  combine_mapfile_deep.output.mapfile
+plot_uvcov.control.inputkey                            =  msin
+plot_uvcov.argument.flags                              =  [msin,{{ job_directory }}/results/inspection/uv_coverage.png]
+plot_uvcov.argument.markersize                         =  1
 
 # run dp3 to concatenate the data, length = 1
 dpppconcat.control.type                                 =   dp3
