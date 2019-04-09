@@ -10,6 +10,10 @@ This chapter will present the specific steps of the target pipeline in more deta
 
 All results (diagnostic plots and calibration solutions) are usually stored in a subfolder of the results directory, see ``inspection_directory`` and ``cal_values_directory``, respectively.
 
+    .. note::
+
+        In the following, example plots are shown for a well-behaved HBA calibration run. Results that differ significantly from these may indicate problems with the calibration and should be investigated in more detail if possible.
+
 
 Prepare target
 --------------

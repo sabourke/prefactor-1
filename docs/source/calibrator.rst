@@ -9,6 +9,10 @@ This chapter will present the specific steps of the calibrator pipeline in more 
 You will find the single steps in the parameter ``pipeline.steps``.
 All results (diagnostic plots and calibration solutions) are usually stored in a subfolder of the results directory, see ``inspection_directory`` and ``cal_values_directory``, respectively.
 
+    .. note::
+
+        In the following, example plots are shown for a well-behaved HBA calibration run. Results that differ significantly from these may indicate problems with the calibration and should be investigated in more detail if possible.
+
     .. image:: calibscheme.png
 
 Prepare calibrator
@@ -122,9 +126,14 @@ The following diagnostic plots are created:
     .. image:: ion_ph_poldif.png
 - ``clock``: matrix plot of the derived (instrumental) clock offsets in seconds.
     .. image:: clock.png
-- ``tec``: matrix plot of the derived differential TEC in TECU. Note that some small jumps may be evident. These jump are due to splitting the solutions into multiple time chunks for processing and simply represent the uncertainty with which the dTEC values can be derived.
+- ``tec``: matrix plot of the derived differential TEC in TECU.
+
+    .. note::
+
+        Some small jumps may be evident. These jump are due to splitting the solutions into multiple time chunks for processing (in which each chunk is treated independently) and simply represent the uncertainty with which the dTEC values can be derived (e.g., due to noise and 2-pi ambiguities in the phases used for fitting).
+
     .. image:: tec.png
-- ``ion_ph-res_pol??``: matrix plot of the residual phase solutions for the XX and YY polarization after subtraction the derived instrumental and ionospheric delays.
+- ``ion_ph-res_pol??``: matrix plot of the residual phase solutions for the XX and YY polarization after subtraction the derived instrumental and ionospheric delays. If the calibration went well, the residuals for all stations should be small. Any regions of large residuals will be flagged in the FLAGSTATION losoto step.
     .. image:: ion_ph-res_polXX.png
 - ``ion_ph-res_poldif``: matrix plot of the residual phase solutions for XX-YY after subtraction of the derived instrumental and ionospheric delays.
     .. image:: ion_ph-res_poldif.png
