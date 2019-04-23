@@ -83,6 +83,10 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
                 sys.exit(1)
         wideband = string2bool(wideband)
 
+        outdir = os.path.dirname(output)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
         badval = 0.0
         xaxisvals = []
         yaxisvals = []
@@ -92,17 +96,14 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
         numPlotted = 0
         for inputMS in MSlist:
             # open the main table and print some info about the MS
-            print 'Getting info for', inputMS
             t = pt.table(inputMS, readonly=True, ack=False)
             tfreq = pt.table(t.getkeyword('SPECTRAL_WINDOW'),readonly=True,ack=False)
             ref_freq = tfreq.getcol('REF_FREQUENCY',nrow=1)[0]
             ch_freq = tfreq.getcol('CHAN_FREQ',nrow=1)[0]
-            print 'Reference frequency:\t%f MHz' % (ref_freq/1.e6)
             if wideband:
                 ref_wavelength = 2.99792458e8/ch_freq
             else:
                 ref_wavelength = [2.99792458e8/ref_freq]
-            print 'Reference wavelength:\t%f m' % (ref_wavelength[0])
 
             firstTime = t.getcell("TIME", 0)
             lastTime = t.getcell("TIME", t.nrows()-1)
@@ -151,7 +152,6 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
             numPlotted += 1
 
         # Plot the uv coverage
-        print 'Plotting uv points ...'
         xaxisvals = numpy.array(xaxisvals)
         yaxisvals = numpy.array(yaxisvals)
         zvals = numpy.zeros(xaxisvals.shape)
@@ -213,7 +213,7 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
         plt.bar(bins_mean, flagged_mean, (bins[1]-bins[0])/2.0)
         plt.xlabel(r'uv distance [k$\lambda$]')
         plt.ylabel('unflagged fraction')
-        plt.savefig('{0}_uvdist.{1}'.format(*os.path.splitext(output)))
+        plt.savefig('{0}_uvdist{1}'.format(*os.path.splitext(output)))
 
 
 
