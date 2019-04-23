@@ -114,7 +114,6 @@ plot_uvcov.control.executable                          =  {{ scripts }}/plot_uvc
 plot_uvcov.control.mapfile_in                          =  combine_mapfile_deep.output.mapfile
 plot_uvcov.control.inputkey                            =  msin
 plot_uvcov.argument.flags                              =  [msin,{{ job_directory }}/results/inspection/uv_coverage.png]
-plot_uvcov.argument.markersize                         =  1
 
 # run dp3 to concatenate the data, length = 1
 dpppconcat.control.type                                 =   dp3
