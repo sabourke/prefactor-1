@@ -5,7 +5,7 @@ import multiprocessing
 
 def find_flagged_antennas(ms_file):
     outputs = os.popen('DPPP msin=' + ms_file + ' msout=. steps=[count] count.type=counter count.warnperc=100 | grep NOTE').readlines()
-    flaggedants = [ output.split('(')[-1].rstrip(')\n') for output in outputs ]
+    flaggedants = [ output.split('(')[-1].rstrip(')\n') for output in outputs if 'station' in output]
     return flaggedants
 
 
