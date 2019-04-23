@@ -42,9 +42,8 @@ The basic steps are:
 - interpolate flagged data from the wide-band statistical flagging step (``interp_cal``).
 - baseline-dependent smoothing of the data (``smooth_data``).
 - perform direction-independent phase-only calibration. In the first two calibrations, both diagonal terms and a common rotation angle are solved for (``calib_cal``). In the third and forth calibrations, after correction for Faraday rotation, only the diagonal terms are solved for (``calib_cal2``).
-- feed back results so that they can be ingested into the LTA (``make_msfiles_metadata``).
 
-The solutions are stored in the h5parm file format.
+All solutions are stored in the h5parm file format.
 
 Calibration of the polarization alignment (PA)
 ----------------------------------------------
@@ -140,6 +139,11 @@ The following diagnostic plots are created:
 
 The solutions are then stored in the final calibrator solution set ``cal_solutions``.
 
+Feedback
+--------
+Lastly, metadata for the averaged, uncalibrated data and the final solutions are created so that the data products can be ingested into the LTA (``make_msfiles_metadata``).
+
+
 User-defined parameter configuration
 ------------------------------------
 **Parameters adjusted when specifying (via xmlgen.py or in MoM) the pipeline in the system**
@@ -231,7 +235,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: False).
 - ``memoryperc``: maximum of memory used for aoflagger in ``raw_flagging`` mode in percent (default: 20).
-- ``min_length``: minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read (default: 50).
+- ``min_length``: minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. If the data are too big aoflag will use indirect-read (default: 50).
 - ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (default: 30). If one or more A-team sources is closer than this distance, a warning will be raised.
 
 **Parameters you may want to adjust**

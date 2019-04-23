@@ -18,7 +18,7 @@ All results (diagnostic plots and calibration solutions) are usually stored in a
 Prepare target
 --------------
 This part of the pipeline prepares the target data in order to be calibration-ready for the first direction-independent phase-only self-calibration against a global sky model.
-This mainly includes mitigation of bad data (RFI, bad antennas, contaminations from A-Team sources), selection of the data to be calibrated (usually Dutch stations only), and some averaging to reduce data size and enhance the signal-to-noise ratio.
+These steps mainly includes mitigation of bad data (RFI, bad antennas, contaminations from A-Team sources), selection of the data to be calibrated (usually Dutch stations only), and some averaging to reduce data size and enhance the signal-to-noise ratio.
 Furthermore, ionospheric Rotation Measure corrections are applied, using `RMextract`_
 The pipeline must be run on pre-processed data only.
 
@@ -46,22 +46,25 @@ The basic steps are:
 - clipping potentially A-Team affected data (``ateamcliptar``).
 - interpolate, average (to 8 seconds and 2 channels per subband), and concatenate target data into chunks of ten subbands (``dpppconcat``). These chunks are enforced to be equidistant in frequency. Missing data will be filled back and flagged.
 - wide-band statistical flagging (``aoflag``).
-- remove chunks with more than 50\% flagged data (``check_unflagged``).
-- identify fully flagged antennas (``check_bad_antennas``).
-- feed back results so that they can be ingested into the LTA (``make_msfiles_metadata``).
 
-Now the data is prepared and cleaned of the majority of bad data.
+At the end of this stage, the data are prepared and cleaned of the majority of bad data. They are now ready for calibration.
 
 Phase-only self-calibration
 ---------------------------
 These steps aim for deriving a good first guess for the phase correction into the direction of the phase center (direction-independent phase correction).
-Once this is done, the data is ready for further processing with direction-dependent calibration techniques, using software like `factor`_ or `killMS`_ or other
-generic pipeline (e.g., to exploit the content of the long-baseline data).
+Once this is done, the data are ready for further processing with direction-dependent calibration techniques, using software like `factor`_ or `killMS`_ or other
+generic pipelines (e.g., to exploit the content of the long-baseline data).
 
 - download global sky model for the target field automatically (``sky_tar``).
-- interpolate flagged data and perform direction-independent phase-only calibration (diagonal terms) within a limited baseline range (by default, baselines for the core and remote stations only), using the filter (``gsmcal_dysco``).
+- interpolate flagged data and perform direction-independent phase-only calibration (diagonal terms) within a limited baseline range (by default, baselines for the core and remote stations only), using the filter (``gsmcal``).
+- remove chunks with more than the given threshold fraction of flagged data (``check_unflagged``).
+- identify fully flagged antennas (``check_bad_antennas``).
+- apply the direction-independent phase-only calibration solutions and average to the values set by ``avg_freqresolution_concat`` and ``avg_timeresolution_concat`` (``apply_phase`` or ``apply_tec``).
 
-The phase solutions derived from the preparation step are now collected and loaded into **LoSoTo** to provide diagnostic plots:
+All solutions are stored in the h5parm file format.
+The apply step also incorporates full `Dysco`_ compression to save disk space. The fully calibrated data are stored in the DATA column.
+
+The phase solutions derived from the preparation step are collected and loaded into **LoSoTo** to provide diagnostic plots:
 
 - ``ph_freq??``: matrix plot of the phase solutions with time for a particular chunk of target data, where both polarizations are colorcoded.
     .. image:: ph_freq.png
@@ -72,8 +75,10 @@ The phase solutions derived from the preparation step are now collected and load
 - ``ph_poldif``: matrix plot of the phase solutions for the XX-YY polarization.
     .. image:: ph_poldif.png
 
-The solutions are stored in the h5parm file format.
-The last step also incorporates full `Dysco`_ compression to save disk space. The fully calibrated data is stored in the DATA column.
+Feedback
+--------
+Lastly, metadata for the averaged, calibrated data and the final solutions are created so that the data products can be ingested into the LTA (``make_msfiles_metadata``).
+
 
 User-defined parameter configuration
 ------------------------------------
