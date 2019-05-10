@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from losoto.h5parm import h5parm
 from losoto.lib_operations import *
@@ -16,7 +16,6 @@ def main(h5parmdb, solsetName='sol000', pointing='POINTING'):
 
     for i in numpy.arange(len(sources)):
         sources[i] = (pointing, direction)
-        pass
 
     data.close()
     return 0

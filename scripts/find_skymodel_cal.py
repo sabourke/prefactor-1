@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import glob
 import pyrap.tables as pt
@@ -40,10 +40,8 @@ def check_skymodel(skymodel, ra, dec, max_separation_arcmin = 1.0):
         patch_position = int(numpy.where(dist_deg * 60 < max_separation_arcmin)[0][0])
         patch_name = s.getPatchNames()[patch_position]
         return (True, patch_name)
-        pass
     else:
         return (False, '')
-        pass
     pass
 
 ########################################################################
@@ -80,15 +78,12 @@ def find_skymodel(ra, dec, PathSkyMod, extensionSky = ".skymodel", max_separatio
     for skymodel in skymodels:
         check = check_skymodel(skymodel, ra, dec, max_separation_arcmin)
         if check[0]:
-            print "The following skymodel will be used for the calibrator: " + skymodel.split("/")[-1] + " (in " + PathSkyMod + ")"
+            print("The following skymodel will be used for the calibrator: " + skymodel.split("/")[-1] + " (in " + PathSkyMod + ")")
             return (skymodel, check[-1])
-            pass
         else:
             pass
-        pass
 
     raise TypeError('find_skymodel: SKYMODEL FOR THE CALIBRATOR NOT FOUND IN ' + PathSkyMod)
-    pass
 
 ########################################################################
 def input2strlist_nomapfile(invar):
@@ -133,7 +128,7 @@ def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcm
     """
 
     if os.path.isfile(DirSkymodelCal):
-        print "Using the skymodel provided: " + DirSkymodelCal
+        print("Using the skymodel provided: " + DirSkymodelCal)
         return { 'SkymodelCal' : DirSkymodelCal }
 
     elif os.path.isdir(DirSkymodelCal):

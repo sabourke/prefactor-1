@@ -2,6 +2,10 @@ import os
 import re
 from lofarpipe.support.data_map import DataMap
 from lofarpipe.support.data_map import DataProduct
+try:
+  basestring
+except NameError:
+  basestring = str
 
 
 # mandatory arguments:

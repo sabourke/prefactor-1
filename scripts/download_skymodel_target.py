@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os,sys
 import glob
 import pyrap.tables as pt
@@ -89,20 +89,19 @@ def main(ms_input, SkymodelPath, Radius="5.", DoDownload="True", Source="TGSS"):
         download_flag = True
     elif DoDownload.upper() == "TRUE" or DoDownload.upper() == "YES":
         if FileExists:
-            print "USING the exising skymodel in "+ SkymodelPath
+            print("USING the exising skymodel in "+ SkymodelPath)
             return
         else:
             download_flag = True
     elif DoDownload.upper() == "FALSE" or DoDownload.upper() == "NO":
          if FileExists:
-            print "USING the exising skymodel in "+ SkymodelPath
+            print("USING the exising skymodel in "+ SkymodelPath)
             return
          else:
             raise ValueError("download_tgss_skymodel_target: Path: \"%s\" does not exist and skymodel download is disabled!"%(SkymodelPath))
 
     # If we got here, then we are supposed to download the skymodel.
-    assert download_flag is True # Jaja, belts and suspenders...
-    print "DOWNLOADING skymodel for the target into "+ SkymodelPath
+    print("DOWNLOADING skymodel for the target into "+ SkymodelPath)
 
     # Reading a MS to find the coordinate (pyrap)
     [RATar,DECTar]=grab_coord_MS(input2strlist_nomapfile(ms_input)[0])

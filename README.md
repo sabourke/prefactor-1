@@ -4,7 +4,7 @@
 **prefactor** is a pipeline to correct for various instrumental and ionospheric effects in both **LOFAR HBA** and **LOFAR LBA** observations.
 It will prepare your data so that you will be able to use any direction-dependent calibration software, like [factor](https://github.com/lofar-astron/factor) or [killMS](https://github.com/saopicc/killMS/).
 
-Note: this is the production version for use in automated processing on CEP4/LTA sites. For the user version, see the master branch.
+Note: this is the production version for use in automated processing on CEP4/LTA sites. It requires Python 3.6 or later. For the user version, see the master branch.
 
 It includes:
 * removal of clock offsets between core and remote stations (using clock-TEC separation)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import glob
 import signal
@@ -47,27 +47,27 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
 
         MSlist = input2strlist_nomapfile(input)
         if len(MSlist) == 0:
-            print 'Error: You must specify at least one MS name.'
+            print('Error: You must specify at least one MS name.')
             sys.exit(1)
         plottitle = title
         fileformat = output.split('.')[-1]
         if fileformat not in ['png','pdf','eps','ps']:
-            print 'Error: Unknown file extension'
+            print('Error: Unknown file extension')
             sys.exit(1)
         axlimits = limits.strip().split(',')
         if len(axlimits) == 4:
             xmin,xmax,ymin,ymax = axlimits
         else:
-            print 'Error: You must specify four axis limits'
+            print('Error: You must specify four axis limits')
             sys.exit(1)
         timeslots = timeslots.split(',')
         if len(timeslots) != 3:
-            print 'Error: Timeslots format is start,skip,end'
+            print('Error: Timeslots format is start,skip,end')
             sys.exit(1)
         for i in range(len(timeslots)):
             timeslots[i] = int(timeslots[i])
             if timeslots[i] < 0:
-                print 'Error: timeslots values must not be negative'
+                print('Error: timeslots values must not be negative')
                 sys.exit(1)
         antToPlotSpl = antennas.split(',')
         antToPlot = []
@@ -79,7 +79,7 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
                 for j in range(int(tmpspl[0]),int(tmpspl[1])+1):
                     antToPlot.append(j)
             else:
-                print 'Error: Could not understand antenna list.'
+                print('Error: Could not understand antenna list.')
                 sys.exit(1)
         wideband = string2bool(wideband)
 

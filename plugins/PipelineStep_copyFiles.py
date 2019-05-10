@@ -2,6 +2,10 @@ import os
 import shutil
 from lofarpipe.support.data_map import DataMap, DataProduct
 from lofarpipe.support.utilities import delete_directory
+try:
+  basestring
+except NameError:
+  basestring = str
 
 
 def plugin_main(args, **kwargs):

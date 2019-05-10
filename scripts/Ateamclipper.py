@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ## changelog
 # W.Williams 2014/11/03  add - to give input/output statistics per channel
@@ -24,34 +24,33 @@ if freq[0] > 100e6:
 if freq[0] < 100e6:
  cliplevel = cliplevellba
 
-
-print '------------------------------'
-print 'SB Frequency [MHz]', freq[0]/1e6
+print('------------------------------')
+print('SB Frequency [MHz]', freq[0]/1e6)
 for chan in range(0,numpy.size(data[0,:,0])):
-  print 'chan %i : %.5f%% input XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) )
-  print 'chan %i : %.5f%% input YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) )
-print 'Total : %.5f%% input XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) )
-print 'Total : %.5f%% input YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) )
-print ''
-print 'Cliplevel used [Jy]', cliplevel
-print '\n\n'
+  print('chan %i : %.5f%% input XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) ))
+  print('chan %i : %.5f%% input YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) ))
+print('Total : %.5f%% input XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) ))
+print('Total : %.5f%% input YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) ))
+print('')
+print('Cliplevel used [Jy]', cliplevel)
+print('\n\n')
 
 for pol in range(0,numpy.size(data[0,0,:])):
  for chan in range(0,numpy.size(data[0,:,0])):
-  print 'Doing polarization,chan', pol, chan
+  print('Doing polarization,chan', pol, chan)
   idx = numpy.where(abs(data[:,chan,pol]) > cliplevel)
   flag[idx,chan,0] = True
   flag[idx,chan,1] = True
   flag[idx,chan,2] = True
-  flag[idx,chan,3] = True 
+  flag[idx,chan,3] = True
 
-print ''
+print('')
 for chan in range(0,numpy.size(data[0,:,0])):
-  print 'chan %i : %.5f%% output XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) )
-  print 'chan %i : %.5f%% output YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) )
-print 'Total : %.5f%% output XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) )
-print 'Total : %.5f%% output YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) )
-print ''
+  print('chan %i : %.5f%% output XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) ))
+  print('chan %i : %.5f%% output YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) ))
+print('Total : %.5f%% output XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) ))
+print('Total : %.5f%% output YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) ))
+print('')
 t.putcol('FLAG', flag)
 t.close()
 freq_tab.close()

@@ -1,21 +1,21 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import argparse
 import pickle
 import copy
 
 def main(statefile):
-    print 'Statefile Manipulator'
-    current_state = pickle.load(open(statefile, 'rb')) 
-    print 'Current states:\nSetup: ', current_state[0]
-    print 'List of finished steps for {0}:'.format(current_state[0]['job_name'])
+    print('Statefile Manipulator')
+    current_state = pickle.load(open(statefile, 'rb'))
+    print('Current states:\nSetup: ', current_state[0])
+    print('List of finished steps for {0}:'.format(current_state[0]['job_name']))
     for i, item in enumerate(current_state[1]):
         name = item[0]
         try:
             name = os.path.basename(item[1]['ok.mapfile'])[:-11]
         except:
-            print 'using task as name'
-        print 'Step Nr.: {0}  Task: {1}  Name: {2}'.format(i+1, item[0], name)
+            print('using task as name')
+        print('Step Nr.: {0}  Task: {1}  Name: {2}'.format(i+1, item[0], name))
 
     try:
         while(True):
@@ -23,9 +23,9 @@ def main(statefile):
             if int(del_number_raw) < len(current_state[1])+1:
                 break
             else:
-                print "Not a valid step number. Check range!"
+                print("Not a valid step number. Check range!")
     except KeyboardInterrupt:
-        print " got KeyboardInterrupt -> exiting"
+        print(" got KeyboardInterrupt -> exiting")
         return
 
     # delete all steps after the given step number

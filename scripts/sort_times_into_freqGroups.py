@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """
 Script to sort a list of MSs by into frequency groups by time-stamp
 """
@@ -10,13 +10,13 @@ from lofarpipe.support.data_map import DataProduct
 
 def _calc_edge_chans(inmap, numch, edgeFactor=32):
     """
-    Generates a map with strings that can be used as input for NDPPP to flag the edges 
+    Generates a map with strings that can be used as input for NDPPP to flag the edges
     of the input MSs during (or after) concatenation.
-    
+
     inmap      - MultiDataMap (not mapfilename!) with the files to be concatenated.
-    numch      - Number of channels per input file (All files are assumed to have the same number 
+    numch      - Number of channels per input file (All files are assumed to have the same number
                  of channels.)
-    edgeFactor - Divisor to compute how many channels are to be flagged at beginning and end. 
+    edgeFactor - Divisor to compute how many channels are to be flagged at beginning and end.
                  (numch=64 and edgeFactor=32 means "flag two channels at beginning and two at end")
     """
     outmap = DataMap([])
@@ -26,7 +26,7 @@ def _calc_edge_chans(inmap, numch, edgeFactor=32):
             flaglist.extend(range(i*numch,i*numch+numch/edgeFactor))
             flaglist.extend(range((i+1)*numch-numch/edgeFactor,(i+1)*numch))
         outmap.append(DataProduct(group.host,str(flaglist).replace(' ',''),group.skip))
-        print '_calc_edge_chans: flaglist:', str(flaglist).replace(' ','')
+        print('_calc_edge_chans: flaglist:', str(flaglist).replace(' ',''))
     return outmap
 
 def input2bool(invar):
@@ -45,7 +45,7 @@ def input2bool(invar):
         return bool(invar)
     else:
         raise TypeError('input2bool: Unsupported data type:'+str(type(invar)))
-  
+
 def input2int(invar):
     if invar == None:
         return None
@@ -62,7 +62,7 @@ def input2int(invar):
         raise TypeError('input2int: Unsupported data type:'+str(type(invar)))
 
 
-    
+
 def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPfill=True, target_path=None, stepname=None,
          mergeLastGroup=False, truncateLastSBs=True, firstSB=None):
     """
@@ -76,8 +76,8 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         Name of output mapfile
     mapfile_dir : str
         Directory for output mapfile
-    numSB : int, optional 
-        How many files should go into one frequency group. Values <= 0 mean put 
+    numSB : int, optional
+        How many files should go into one frequency group. Values <= 0 mean put
         all files of the same time-step into one group.
         default = -1
     hosts : list or str
@@ -87,7 +87,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         fill the data with flagged dummy data.
         default = True
     target_path : str, optional
-        Change the path of the "groups" files to this. (I.e. write output files 
+        Change the path of the "groups" files to this. (I.e. write output files
         into this directory with the subsequent NDPPP call.)
         default = keep path of input files
     stepname : str, optional
@@ -96,15 +96,15 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         mergeLastGroup = True, truncateLastSBs = True:
           not allowed
         mergeLastGroup = True, truncateLastSBs = False:
-          put the files from the last group that doesn't have SBperGroup subbands 
-          into the second last group (which will then have more than SBperGroup entries). 
+          put the files from the last group that doesn't have SBperGroup subbands
+          into the second last group (which will then have more than SBperGroup entries).
         mergeLastGroup = False, truncateLastSBs = True:
           ignore last files, that don't make for a full group (not all files are used).
         mergeLastGroup = False, truncateLastSBs = False:
           keep inclomplete last group, or - with NDPPPfill=True - fill
-          last group with dummies.      
+          last group with dummies.
     firstSB : int, optional
-        If set, then reference the grouping of files to this station-subband. As if a file 
+        If set, then reference the grouping of files to this station-subband. As if a file
         with this station-subband would be included in the input files.
         (For HBA-low, i.e. 0 -> 100MHz, 55 -> 110.74MHz, 512 -> 200MHz)
 
@@ -139,7 +139,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
                     for f in fname.strip('[]').split(','):
                         ms_list.append(f.strip(' \'\"'))
                 else:
-                    ms_list.append(fname.strip(' \'\"'))  
+                    ms_list.append(fname.strip(' \'\"'))
     elif type(ms_input) is list:
         ms_list = [str(f).strip(' \'\"') for f in ms_input]
     else:
@@ -150,7 +150,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
     if not hosts:
         hosts = ['localhost']
     numhosts = len(hosts)
-    print "sort_times_into_freqGroups: Working on",len(ms_list),"files (including flagged files)."
+    print("sort_times_into_freqGroups: Working on",len(ms_list),"files (including flagged files).")
 
     time_groups = {}
     # sort by time
@@ -167,7 +167,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
                 time_groups[timestamp]['files'].append(ms)
             else:
                 time_groups[timestamp] = {'files': [ ms ], 'basename' : os.path.splitext(ms)[0] }
-    print "sort_times_into_freqGroups: found",len(time_groups),"time-groups"
+    print("sort_times_into_freqGroups: found",len(time_groups),"time-groups")
 
     # sort time-groups by frequency
     timestamps = time_groups.keys()
@@ -179,7 +179,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         for ms in time_groups[time]['files']:
             # Get the frequency info
             sw = pt.table(ms+'::SPECTRAL_WINDOW', ack=False)
-            freq = sw.col('REF_FREQUENCY')[0]            
+            freq = sw.col('REF_FREQUENCY')[0]
             if first:
                 file_bandwidth = sw.col('TOTAL_BANDWIDTH')[0]
                 nchans = sw.col('CHAN_WIDTH')[0].shape[0]
@@ -197,7 +197,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         time_groups[time]['freq_names'].sort(key=lambda pair: pair[0])
         #time_groups[time]['files'] = [name for (freq,name) in freq_names]
         #time_groups[time]['freqs'] = [freq for (freq,name) in freq_names]
-    print "sort_times_into_freqGroups: Collected the frequencies for the time-groups"
+    print("sort_times_into_freqGroups: Collected the frequencies for the time-groups")
 
     freqliste = np.array(list(freqset))
     freqliste.sort()
@@ -222,14 +222,14 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
             # HBA-high
             minfreq = (float(firstSB)/512.*100e6)+200e6-freq_width/2.
         else:
-            raise ValueError('sort_times_into_freqGroups: Frequency of lowest input data is higher than 300MHz!')        
+            raise ValueError('sort_times_into_freqGroups: Frequency of lowest input data is higher than 300MHz!')
         if np.min(freqliste) < minfreq:
             raise ValueError('sort_times_into_freqGroups: Frequency of lowest input data is lower than reference frequency!')
     else:
         minfreq = np.min(freqliste)-freq_width/2.
     groupBW = freq_width*numSB
     if groupBW < 1e6 and groupBW > 0:
-        print 'sort_times_into_freqGroups: ***WARNING***: Bandwidth of concatenated MS is lower than 1 MHz. This may cause conflicts with the concatenated file names!'
+        print('sort_times_into_freqGroups: ***WARNING***: Bandwidth of concatenated MS is lower than 1 MHz. This may cause conflicts with the concatenated file names!')
     if groupBW < 0:
 	# this is the case for concatenating all subbands
 	groupBW = maxfreq-minfreq
@@ -249,8 +249,8 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
     ngroups = len(freqborders)-1
     if ngroups == 0:
         raise ValueError('sort_times_into_freqGroups: Not enough input subbands to create at least one full (frequency-)group!')
-    
-    print "sort_times_into_freqGroups: Will create",ngroups,"group(s) with",numSB,"file(s) each."
+
+    print("sort_times_into_freqGroups: Will create",ngroups,"group(s) with",numSB,"file(s) each.")
 
     hostID = 0
     for time in timestamps:
@@ -283,7 +283,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
         if freq < 1e12:
             orphan_files += 1
         if orphan_files > 0:
-            print "sort_times_into_freqGroups: Had %d unassigned files in time-group %xt."%(orphan_files, time)
+            print("sort_times_into_freqGroups: Had %d unassigned files in time-group %xt."%(orphan_files, time))
     filemapname = os.path.join(mapfile_dir, filename)
     filemap.save(filemapname)
     groupmapname = os.path.join(mapfile_dir, filename+'_groups')
@@ -330,13 +330,11 @@ class MultiDataProduct(DataProduct):
             raise DataProduct("No known method to set a filelist from %s" % str(file))
 
     def _from_dataproduct(self, prod):
-        print 'setting filelist from DataProduct'
         self.host = prod.host
         self.file = prod.file
         self.skip = prod.skip
 
     def _from_datamap(self, inmap):
-        print 'setting filelist from DataMap'
         filelist = {}
         for item in inmap:
             if not item.host in filelist:
@@ -414,9 +412,9 @@ if __name__ == '__main__':
 
     groupmap = DataMap.load(ergdict['groupmapfile'])
     filemap = MultiDataMap.load(ergdict['mapfile'])
-    print "len(groupmap) : %d , len(filemap) : %d " % (len(groupmap),len(filemap)) 
+    print("len(groupmap) : %d , len(filemap) : %d " % (len(groupmap),len(filemap)))
     if len(groupmap) != len(filemap):
-        print "groupmap and filemap have different length!"
+        print("groupmap and filemap have different length!")
         sys.exit(1)
     for i in xrange(len(groupmap)):
-        print "Group \"%s\" has %d entries."%(groupmap[i].file,len(filemap[i].file))
+        print("Group \"%s\" has %d entries."%(groupmap[i].file,len(filemap[i].file)))

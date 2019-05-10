@@ -1,7 +1,10 @@
 import os
 from lofarpipe.support.data_map import DataMap, DataProduct
 import casacore.tables as ct
-
+try:
+  basestring
+except NameError:
+  basestring = str
 
 def plugin_main(args, **kwargs):
     """

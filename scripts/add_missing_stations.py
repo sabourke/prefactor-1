@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -* coding: utf-8 -*-
 
 """
-Adds phases (=0) and amplitudes (=1) to any missing station if they appear in an h5parm, but not in a particular soltab. 
+Adds phases (=0) and amplitudes (=1) to any missing station if they appear in an h5parm, but not in a particular soltab.
 
 Created on Tue Mar 14 2019
 
@@ -21,19 +21,19 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
 
     if not os.path.exists(h5parmfile):
         logging.error("H5parm file %s doesn't exist!" % h5parmfile)
-        return(1)
+        return 1
 
     if soltab_in == soltab_out:
         logging.error("Output soltab has to be different from input soltab!")
-        return(1)
+        return 1
 
     ### Open up the h5parm, get an example value
     data       = h5parm(h5parmfile, readonly = False)
     solset     = data.getSolset(solset)
-    
+
     ### Get antenna information of the solset
     new_station_names = sorted(solset.getAnt().keys())
-    
+
     ### Load antenna list of input soltab
     logging.info('Processing solution table %s'%(soltab_in))
     soltab            = solset.getSoltab(soltab_in)
@@ -47,7 +47,6 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
     for vals, weights, coord, selection in soltab.getValuesIter(returnAxes=out_axes, weight=True):
         vals = reorderAxes( vals, soltab.getAxesNames(), out_axes)
         weights = reorderAxes( weights,  soltab.getAxesNames(), out_axes )
-        pass
 
     ### setting the proper soltab_axis
     for axis in out_axes:
@@ -63,13 +62,13 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
             out_axes_vals.append(soltab.dir)
         else:
             logging.error('Unknown axis in soltab: ' + str(axis))
-            return 1           
+            return 1
 
     ### just copy of number of antennas is the same
     if len(new_station_names) == len(old_station_names):
         logging.warning('Station list in soltab ' + str(soltab_in) + ' matches the station list in the selected solset. Data will just be copied.')
         new_soltab = solset.makeSoltab(soltype=soltab_type, soltabName=soltab_out, axesNames=out_axes, axesVals=out_axes_vals, vals=vals, weights=weights)
-    
+
     ### add missing stations with zero phase/uniform amplitudes and uniform weights
     elif len(new_station_names) > len(old_station_names):
 
@@ -77,26 +76,26 @@ def main(h5parmfile, solset='sol000', soltab_in='phase000', soltab_out='GSMphase
         logging.info('Adding missing antennas to the soltab: ' + str(soltab_out))
         dimension    = list(np.shape(vals))
         dimension[1] = len(new_station_names)
-        
+
         if soltab_type == 'amplitude':
             new_vals    = np.ones(tuple(dimension))
         else:
             new_vals    = np.zeros(tuple(dimension))
         new_weights     = np.ones(tuple(dimension))
-        
+
         for i, new_station in enumerate(new_station_names):
             if new_station in old_station_names:
                 ant_index        = list(soltab.ant).index(new_station)
                 new_vals[:,i]    = vals[:,ant_index]
                 new_weights[:,i] = weights[:,ant_index]
-            
+
         new_soltab = solset.makeSoltab(soltype=soltab_type, soltabName=soltab_out, axesNames=out_axes, axesVals=out_axes_vals, vals=new_vals, weights=new_weights)
-        
+
     else:
-        logging.error('There are less antennas in the solset than in the soltab ' + str(soltab_in))
-        return(1)
-    
-    return(0)
+        logging.error('There are fewer antennas in the solset than in the soltab ' + str(soltab_in))
+        return 1
+
+    return 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Adds phases and amplitudes to any missing station if they appear in an h5parm, but not in a particular soltab.')

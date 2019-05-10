@@ -1,8 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """
 Script to sort a list of MSs into frequency-bands, and compute additional values needed for initsubtract
 """
-import pyrap.tables as pt
+import casacore.tables as pt
 import sys, os
 import numpy as np
 from lofarpipe.support.data_map import DataMap
@@ -262,7 +262,7 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
             msdict[msfreq] = [ms]
     bands = []
     bandfreqs = []
-    print "InitSubtract_deep_sort_and_compute.py: Putting files into bands."
+    print("InitSubtract_deep_sort_and_compute.py: Putting files into bands.")
     for MSkey in msdict.keys():
         bands.append( Band(msdict[MSkey]) )
         bandfreqs.append( Band(msdict[MSkey]).freq )
@@ -305,7 +305,7 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
     nwavelengths_high = bands[0].get_nwavelengths(cellsize_highres_deg, int_time_sec)
     nwavelengths_low = bands[0].get_nwavelengths(cellsize_lowres_deg, int_time_sec)
 
-    print "InitSubtract_deep_sort_and_compute.py: analyzing data..."
+    print("InitSubtract_deep_sort_and_compute.py: analyzing data...")
     for band in bands:
         group_map.append(MultiDataProduct('localhost', band.files, False))
         numfiles += len(band.files)
@@ -436,13 +436,11 @@ class MultiDataProduct(DataProduct):
             raise DataProduct("No known method to set a filelist from %s" % str(file))
 
     def _from_dataproduct(self, prod):
-        print 'setting filelist from DataProduct'
         self.host = prod.host
         self.file = prod.file
         self.skip = prod.skip
 
     def _from_datamap(self, inmap):
-        print 'setting filelist from DataMap'
         filelist = {}
         for item in inmap:
             if not item.host in filelist:
@@ -486,25 +484,3 @@ class MultiDataMap(DataMap):
                 chunk = item.file[i:i+number]
                 mdplist.append(MultiDataProduct(item.host, chunk, item.skip))
         self._set_data(mdplist)
-
-
-
-#if __name__ == '__main__':
-
-    #descriptiontext = "sort bands and get numbers for imaging\n"
-
-    #parser = argparse.ArgumentParser(description=descriptiontext, formatter_class=RawTextHelpFormatter)
-    #parser.add_argument('ms_input', help='name of the full skymodel')
-    #parser.add_argument('--mapfile_dir', help='mapfile_dir', type=str, default=None)
-    #parser.add_argument('--outmapname', help='outmapname', type=str, default=None)
-    #parser.add_argument('--cellsize_highres_deg', help='cellsize_highres_deg', type=np.float, default=0.00208)
-    #parser.add_argument('--cellsize_lowres_deg', help='cellsize_lowres_deg', type=np.float, default=0.00694)
-    #parser.add_argument('--fieldsize_highres', help='fieldsize_highres', type=np.float, default=2.5)
-    #parser.add_argument('--fieldsize_lowres', help='fieldsize_lowres', type=np.float, default=6.5)
-    #parser.add_argument('--image_padding', help='image_padding', type=np.float, default=1.)
-    #parser.add_argument('--y_axis_stretch', help='y_axis_stretch', type=np.float, default=1.)
-    #args = parser.parse_args()
-
-
-    #main(args.ms_input, args.outmapname, args.mapfile_dir, np.float(args.cellsize_highres_deg), np.float(args.cellsize_lowres_deg),
-         #np.float(args.fieldsize_highres), np.float(args.fieldsize_lowres), np.float(args.image_padding), np.float(args.y_axis_stretch))

@@ -1,5 +1,9 @@
 import os
 from lofarpipe.support.data_map import DataMap
+try:
+  basestring
+except NameError:
+  basestring = str
 
 
 # mandatory arguments:

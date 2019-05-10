@@ -1,6 +1,10 @@
 import os
 from lofarpipe.support.data_map import DataMap
 from lofarpipe.support.data_map import DataProduct
+try:
+  basestring
+except NameError:
+  basestring = str
 
 
 def plugin_main(args, **kwargs):
@@ -61,7 +65,7 @@ def plugin_main(args, **kwargs):
                     raise ValueError('PipelineStep_reGroupMapfile: basenames {0} and {1} differ'.format(refbase,newbase))
             grouplist.append(inmap[inindex].file)
             if inmap[inindex].skip:
-                print 'PipelineStep_reGroupMapfile: Skipping full group for file:'+inmap[inindex].file
+                print('PipelineStep_reGroupMapfile: Skipping full group for file:'+inmap[inindex].file)
                 skip = True
             inindex += 1
         map_out.data.append(MultiDataProduct(group.host, grouplist, skip))
@@ -154,13 +158,13 @@ class MultiDataProduct(DataProduct):
             raise DataProduct("No known method to set a filelist from %s" % str(file))
 
     def _from_dataproduct(self, prod):
-        print 'setting filelist from DataProduct'
+        print('setting filelist from DataProduct')
         self.host = prod.host
         self.file = prod.file
         self.skip = prod.skip
 
     def _from_datamap(self, inmap):
-        print 'setting filelist from DataMap'
+        print('setting filelist from DataMap')
         filelist = {}
         for item in inmap:
             if not item.host in filelist:

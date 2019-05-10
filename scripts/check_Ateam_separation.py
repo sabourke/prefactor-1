@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 #
@@ -101,9 +101,9 @@ def main(ms_input, min_separation = 30, outputimage = None):
 
     separations = []
 
-    print 'SEPARATION from A-Team sources'
-    print '------------------------------'
-    print 'The minimal accepted distance to an A-Team source is: ' + str(min_separation) + ' deg.'
+    print('SEPARATION from A-Team sources')
+    print('------------------------------')
+    print('The minimal accepted distance to an A-Team source is: ' + str(min_separation) + ' deg.')
     for target in targets:
 
         t = qa.quantity(time[0], 's')
@@ -114,10 +114,8 @@ def main(ms_input, min_separation = 30, outputimage = None):
             ra_qa  = qa.quantity( target['ra'], 'rad' )
             dec_qa = qa.quantity( target['dec'], 'rad' )
             direction =  me.direction('j2000', ra_qa, dec_qa)
-            pass
         else :
             direction =  me.direction(target['name'])
-            pass
 
         separations.append(me.separation(pointing, direction))
 
@@ -130,7 +128,6 @@ def main(ms_input, min_separation = 30, outputimage = None):
             a = me.measure(direction, 'azel')
             elevation = a['m1']
             el.append(elevation['value']/pylab.pi*180)
-            pass
 
         el = numpy.array(el)
         pylab.plot(time1, el)
@@ -138,12 +135,9 @@ def main(ms_input, min_separation = 30, outputimage = None):
         if target['name'] != 'Pointing':
             print target['name'] + ': ' + str(me.separation(pointing, direction))
             if int(float(min_separation)) > int(float(str(me.separation(pointing, direction)).split(' deg')[0])):
-                print 'WARNING: The A-Team source ' + target['name'] + ' is closer than ' + str(min_separation) + ' deg to the phase reference center. Calibration might not perform as expected.'
-                pass
-            pass
+                print('WARNING: The A-Team source ' + target['name'] + ' is closer than ' + str(min_separation) + ' deg to the phase reference center. Calibration might not perform as expected.')
 
-        pass
-    print '------------------------------'
+    print('------------------------------')
     pylab.title('Pointing Elevation')
     pylab.title('Elevation')
     pylab.ylabel('Elevation (deg)');
@@ -154,16 +148,12 @@ def main(ms_input, min_separation = 30, outputimage = None):
         inspection_directory = os.path.dirname(outputimage)
         if not os.path.exists(inspection_directory):
             os.makedirs(inspection_directory)
-            print "Directory" , inspection_directory ,  "created."
-            pass
+            print("Directory" , inspection_directory ,  "created.")
         else:
             print("Directory", inspection_directory,  "already exists.")
-            pass
-        print 'Plotting A-Team elevation to: ' + outputimage
+        print('Plotting A-Team elevation to: ' + outputimage)
         pylab.savefig(outputimage)
-        pass
     return 0
-    pass
 
 
 ########################################################################

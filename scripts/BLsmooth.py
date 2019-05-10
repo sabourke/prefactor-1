@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2019 - Francesco de Gasperin
@@ -63,7 +63,7 @@ if not os.path.exists(msfile):
 
 # open input/output MS
 ms = pt.table(msfile, readonly=False, ack=False)
-        
+
 freqtab = pt.table(msfile + '/SPECTRAL_WINDOW', ack=False)
 freq = freqtab.getcol('REF_FREQUENCY')[0]
 freqtab.close()
@@ -99,39 +99,39 @@ for ms_ant1 in ms.iter(["ANTENNA1"]):
     a_data = ms_ant1.getcol(options.outcol)
     a_weights = ms_ant1.getcol('WEIGHT_SPECTRUM')
     a_flags = ms_ant1.getcol('FLAG')
- 
+
     for ant2 in set(a_ant2):
         if ant1 == ant2: continue # skip autocorr
         idx = np.where(a_ant2 == ant2)
-        
+
         uvw = a_uvw[idx]
         data = a_data[idx]
         weights = a_weights[idx]
         flags = a_flags[idx]
-   
+
         # compute the FWHM
         uvw_dist = np.sqrt(uvw[:, 0]**2 + uvw[:, 1]**2 + uvw[:, 2]**2)
         dist = np.mean(uvw_dist) / 1.e3
         if np.isnan(dist): continue # fix for missing anstennas
-    
+
         stddev = options.ionfactor * (25.e3 / dist)**options.bscalefactor * (freq / 60.e6) # in sec
         stddev = stddev/timepersample # in samples
         logging.debug("%s - %s: dist = %.1f km: sigma=%.2f samples." % (ant1, ant2, dist, stddev))
-    
+
         if stddev == 0: continue # fix for flagged antennas
         if stddev < 0.5: continue # avoid very small smoothing
-    
+
         flags[ np.isnan(data) ] = True # flag NaNs
         weights[flags] = 0 # set weight of flagged data to 0
         del flags
-        
+
         # Multiply every element of the data by the weights, convolve both the scaled data and the weights, and then
         # divide the convolved data by the convolved weights (translating flagged data into weight=0). That's basically the equivalent of a
         # running weighted average with a Gaussian window function.
-        
+
         # set bad data to 0 so nans do not propagate
         data = np.nan_to_num(data*weights)
-        
+
         # smear weighted data and weights
         if options.onlyamp:
             dataAMP = gfilter(np.abs(data), stddev, axis=0)
@@ -139,16 +139,16 @@ for ms_ant1 in ms.iter(["ANTENNA1"]):
         else:
             dataR = gfilter(np.real(data), stddev, axis=0)#, truncate=4.)
             dataI = gfilter(np.imag(data), stddev, axis=0)#, truncate=4.)
-    
+
         weights = gfilter(weights, stddev, axis=0)#, truncate=4.)
-    
+
         # re-create data
         if options.onlyamp:
             data = dataAMP * ( np.cos(dataPH) + 1j*np.sin(dataPH) )
         else:
             data = (dataR + 1j * dataI)
         data[(weights != 0)] /= weights[(weights != 0)] # avoid divbyzero
-    
+
         #print np.count_nonzero(data[~flags]), np.count_nonzero(data[flags]), 100*np.count_nonzero(data[flags])/np.count_nonzero(data)
         #print "NANs in flagged data: ", np.count_nonzero(np.isnan(data[flags]))
         #print "NANs in unflagged data: ", np.count_nonzero(np.isnan(data[~flags]))
@@ -156,7 +156,7 @@ for ms_ant1 in ms.iter(["ANTENNA1"]):
 
         a_data[idx] = data
         if options.weight: a_weights[idx] = weights
-    
+
     #logging.info('Writing %s column.' % options.outcol)
     ms_ant1.putcol(options.outcol, a_data)
 
