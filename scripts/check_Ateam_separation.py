@@ -133,7 +133,7 @@ def main(ms_input, min_separation = 30, outputimage = None):
         pylab.plot(time1, el)
 
         if target['name'] != 'Pointing':
-            print target['name'] + ': ' + str(me.separation(pointing, direction))
+            print(target['name'] + ': ' + str(me.separation(pointing, direction)))
             if int(float(min_separation)) > int(float(str(me.separation(pointing, direction)).split(' deg')[0])):
                 print('WARNING: The A-Team source ' + target['name'] + ' is closer than ' + str(min_separation) + ' deg to the phase reference center. Calibration might not perform as expected.')
 

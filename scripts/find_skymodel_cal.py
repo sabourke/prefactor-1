@@ -5,6 +5,8 @@ import pyrap.tables as pt
 import math
 import lsmtool
 import numpy
+from lofarpipe.support.data_map import DataMap, DataProduct
+
 
 def grab_pointing(MS):
     """
@@ -104,7 +106,7 @@ def input2strlist_nomapfile(invar):
    return str_list
 
 ########################################################################
-def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcmin = 1.0):
+def main(ms_input, DirSkymodelCal, mapfile_dir='', extensionSky=".skymodel", max_separation_arcmin = 1.0):
 
     """
     Find automatically the skymodel to use for the Calibrator
@@ -116,6 +118,8 @@ def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcm
         String from the list (map) of the calibrator MSs
     DirSkymodelCal : str
         Path to the skymodel file, or to the folder where the skymodels are stored
+    mapfile_dir : str
+        Path of directory in which to write output mapfiles
     [extensionSky] :  str
         Default: ".skymodel"
         extension of the skymodel files
@@ -134,6 +138,14 @@ def main(ms_input, DirSkymodelCal, extensionSky=".skymodel", max_separation_arcm
     elif os.path.isdir(DirSkymodelCal):
         ra, dec = grab_pointing(input2strlist_nomapfile(ms_input)[0])
         skymodelCal, skymodelName  = find_skymodel(ra, dec, DirSkymodelCal, extensionSky, max_separation_arcmin)
+        map_out = DataMap([])
+        map_out.data.append(DataProduct('localhost', skymodelCal, False))
+        fileid = os.path.join(mapfile_dir, 'SkymodelCal.mapfile')
+        map_out.save(fileid)
+        map_out = DataMap([])
+        map_out.data.append(DataProduct('localhost', skymodelName, False))
+        fileid = os.path.join(mapfile_dir, 'SkymodelName.mapfile')
+        map_out.save(fileid)
         return { 'SkymodelCal' : skymodelCal, 'SkymodelName': skymodelName}
     else:
         raise ValueError("find_skymodel_cal: The path \"%s\" is neither a file nor a directory!"%(DirSkymodelCal))

@@ -19,7 +19,7 @@ def main(statefile):
 
     try:
         while(True):
-            del_number_raw = raw_input('Delete last steps including number: ')
+            del_number_raw = input('Delete last steps including number: ')
             if int(del_number_raw) < len(current_state[1])+1:
                 break
             else:

@@ -100,16 +100,20 @@ def main(ms_input, ms_output, min_length, overhead = 0.8, filename=None, mapfile
     set_ranges     = list(numpy.arange(0, len(filelist) + 1, int(max_length)))
     set_ranges[-1] = len(filelist)
 
+    # Make the output mapfiles
     map_out = DataMap([])
     for i in numpy.arange(len(set_ranges) - 1):
         f = ms_output + '_' + str(i)
         pt.msconcat(filelist[set_ranges[i]:set_ranges[i + 1]], f)
         map_out.data.append(DataProduct('localhost', f, False))
-
     fileid = os.path.join(mapfile_dir, filename)
     map_out.save(fileid)
-    result = {'concatmapfile': fileid, 'memory': memory}
+    map_out = DataMap([])
+    map_out.data.append(DataProduct('localhost', memory, False))
+    fileid = os.path.join(mapfile_dir, 'memory.mapfile')
+    map_out.save(fileid)
 
+    result = {'concatmapfile': fileid, 'memory': memory}
     return result
 
 ########################################################################
