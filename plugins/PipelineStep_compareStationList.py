@@ -47,6 +47,7 @@ def plugin_main(args, **kwargs):
     data   = h5parm(h5parmdb, readonly = True)
     solset = data.getSolset(solset_name)
     station_names = solset.getAnt().keys()
+    station_names = [s.decode() for s in station_names]
 
     # check whether there are more stations in the target than in the calibrator solutions
     missing_stations = list(set(antennaNames) - set(station_names))

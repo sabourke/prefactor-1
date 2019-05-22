@@ -26,10 +26,11 @@ def makesolset(MS, data, solset_name):
     logging.info('Collecting information from the ANTENNA table.')
     antennaTable = pt.table(antennaFile, ack=False)
     antennaNames = antennaTable.getcol('NAME')
+    antennaNames = [a.decode() for a in antennaNames]
     antennaPositions = antennaTable.getcol('POSITION')
     antennaTable.close()
     antennaTable = solset.obj._f_get_child('antenna')
-    antennaTable.append(zip(*(antennaNames,antennaPositions)))
+    antennaTable.append(list(zip(*(antennaNames,antennaPositions))))
 
     fieldFile = MS + "/FIELD"
     logging.info('Collecting information from the FIELD table.')
@@ -157,7 +158,7 @@ def main(MSfiles, h5parmdb, solset_name = "sol000",timestepRM=300,
 
 
     logging.info('Adding rotation measure values to: ' + solset_name + ' of ' + h5parmdb)
-    rm_vals=np.array([rmdict["RM"][stat].flatten() for stat in station_names])
+    rm_vals=np.array([rmdict["RM"][stat.decode()].flatten() for stat in station_names])
     new_soltab = solset.makeSoltab(soltype='rotationmeasure', soltabName='RMextract',
                                    axesNames=['ant', 'time'], axesVals=[station_names, rmdict['times']],
                                    vals=rm_vals,
