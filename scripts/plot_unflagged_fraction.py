@@ -8,7 +8,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import casacore.tables as pt
 from matplotlib import cm
 
