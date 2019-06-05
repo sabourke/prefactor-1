@@ -260,15 +260,15 @@ ms_concat.argument.flags                                    =   [combine_data_ca
 # expand the memory flag mapfile so that there is one entry for concat file
 expand_memory_map.control.kind                              =   plugin
 expand_memory_map.control.type                              =   expandMapfile
-expand_memory_map.control.mapfile_in                        =   {{ job_directory }}/mapfiles/memory.mapfile
-expand_memory_map.control.mapfile_to_match                  =   {{ job_directory }}/mapfiles/concatmapfile.mapfile
+expand_memory_map.control.mapfile_in                        =   input.output.mapfile_dir/memory.mapfile
+expand_memory_map.control.mapfile_to_match                  =   input.output.mapfile_dir/concatmapfile.mapfile
 expand_memory_map.control.mapfile_dir                       =   input.output.mapfile_dir
 expand_memory_map.control.filename                          =   expand_memory_map.mapfile
 
 # run aoflagger on the concatenated data
 aoflag.control.type                                         =   aoflagger
 aoflag.control.error_tolerance                              =   {{ error_tolerance }}
-aoflag.control.mapfiles_in                                  =   [{{ job_directory }}/mapfiles/concatmapfile.mapfile,expand_memory_map.output.mapfile]
+aoflag.control.mapfiles_in                                  =   [input.output.mapfile_dir/concatmapfile.mapfile,expand_memory_map.output.mapfile]
 aoflag.control.inputkeys                                    =   [msin,memory]
 aoflag.control.args_format                                  =   wsclean
 aoflag.argument.strategy                                    =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
@@ -286,7 +286,7 @@ sky_cal.argument.DirSkymodelCal                             =   {{ calibrator_pa
 make_sourcedb.control.type                                  =   makesourcedb
 make_sourcedb.control.error_tolerance                       =   {{ error_tolerance }}
 make_sourcedb.control.outputkey                             =   out
-make_sourcedb.control.mapfile_in                            =   {{ job_directory }}/mapfiles/SkymodelCal.mapfile
+make_sourcedb.control.mapfile_in                            =   input.output.mapfile_dir/SkymodelCal.mapfile
 make_sourcedb.control.inputkey                              =   in
 make_sourcedb.argument.format                               =   <
 make_sourcedb.argument.outtype                              =   blob
@@ -302,7 +302,7 @@ expand_sourcedb.control.filename                            =   expand_sourcedb.
 # expand the sourcedb mapfile so that there is one entry for every file, length = nfiles
 expand_skymodel.control.kind                                =   plugin
 expand_skymodel.control.type                                =   expandMapfile
-expand_skymodel.control.mapfile_in                          =   {{ job_directory }}/mapfiles/SkymodelName.mapfile
+expand_skymodel.control.mapfile_in                          =   input.output.mapfile_dir/SkymodelName.mapfile
 expand_skymodel.control.mapfile_to_match                    =   ndppp_prep_cal.output.mapfile
 expand_skymodel.control.mapfile_dir                         =   input.output.mapfile_dir
 expand_skymodel.control.filename                            =   expand_skymodel.mapfile
@@ -816,7 +816,7 @@ split_h5_ion.control.inplace                                 =   True
 split_h5_ion.control.error_tolerance                         =   {{ error_tolerance }}
 split_h5_ion.control.mapfile_in                              =   h5imp_cal_ion1.output.mapfile
 split_h5_ion.control.inputkey                                =   h5parm
-split_h5_ion.argument.flags                                  =   [-c,h5parm,time,200]
+split_h5_ion.argument.flags                                  =   [-c,h5parm,time,900]
 split_h5_ion.argument.root                                   =   {{ job_directory }}/ion
 
 # create mapfile for chunks
@@ -1089,7 +1089,7 @@ apply_FR.argument.applyFR.parmdb                            =   {{ cal_solutions
 # set the pointing direction
 h5parm_name.control.type                                    =   pythonplugin
 h5parm_name.control.executable                              =   {{ scripts }}/h5parm_pointingname.py
-h5parm_name.control.mapfile_in                              =   {{ job_directory }}/mapfiles/SkymodelName.mapfile
+h5parm_name.control.mapfile_in                              =   input.output.mapfile_dir/SkymodelName.mapfile
 h5parm_name.control.inputkey                                =   name
 h5parm_name.control.error_tolerance                         =   {{ error_tolerance }}
 h5parm_name.argument.flags                                  =   [{{ cal_solutions }}]]

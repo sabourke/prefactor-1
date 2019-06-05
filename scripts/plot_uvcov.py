@@ -121,7 +121,7 @@ def main(input, output, title='uv coverage', limits=',,,', timeslots='0,10,0', a
             # Station names
             antList = tant.getcol('NAME')
             if len(antToPlot)==1 and antToPlot[0]==-1:
-                    antToPlot = range(len(antList))
+                    antToPlot = list(range(len(antList)))
 
             # select by time from the beginning, and only use specified antennas
             tsel = t.query('TIME >= %f AND TIME <= %f AND ANTENNA1 IN %s AND ANTENNA2 IN %s' % (firstTime+timeslots[0]*intTime,firstTime+timeslots[2]*intTime,str(antToPlot),str(antToPlot)), columns='ANTENNA1,ANTENNA2,UVW,FLAG_ROW')

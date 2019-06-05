@@ -22,9 +22,9 @@ def _calc_edge_chans(inmap, numch, edgeFactor=32):
     outmap = DataMap([])
     for group in inmap:
         flaglist = []
-        for i in xrange(len(group.file)):
-            flaglist.extend(range(i*numch,i*numch+numch/edgeFactor))
-            flaglist.extend(range((i+1)*numch-numch/edgeFactor,(i+1)*numch))
+        for i in range(len(group.file)):
+            flaglist.extend(range(i*numch,i*numch+numch//edgeFactor))
+            flaglist.extend(range((i+1)*numch-numch//edgeFactor,(i+1)*numch))
         outmap.append(DataProduct(group.host,str(flaglist).replace(' ',''),group.skip))
         print('_calc_edge_chans: flaglist:', str(flaglist).replace(' ',''))
     return outmap
@@ -170,7 +170,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
     print("sort_times_into_freqGroups: found",len(time_groups),"time-groups")
 
     # sort time-groups by frequency
-    timestamps = time_groups.keys()
+    timestamps = list(time_groups.keys())
     timestamps.sort()   # not needed now, but later
     first = True
     nchans = 0
@@ -193,7 +193,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
                 freqset.add(freq)
             freqs.append(freq)
             sw.close()
-        time_groups[time]['freq_names'] = zip(freqs,time_groups[time]['files'])
+        time_groups[time]['freq_names'] = list(zip(freqs,time_groups[time]['files']))
         time_groups[time]['freq_names'].sort(key=lambda pair: pair[0])
         #time_groups[time]['files'] = [name for (freq,name) in freq_names]
         #time_groups[time]['freqs'] = [freq for (freq,name) in freq_names]
@@ -231,8 +231,9 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
     if groupBW < 1e6 and groupBW > 0:
         print('sort_times_into_freqGroups: ***WARNING***: Bandwidth of concatenated MS is lower than 1 MHz. This may cause conflicts with the concatenated file names!')
     if groupBW < 0:
-    # this is the case for concatenating all subbands
-    groupBW = maxfreq-minfreq
+        # this is the case for concatenating all subbands
+        groupBW = maxfreq-minfreq
+
     truncateLastSBs = input2bool(False)
     NDPPPfill = input2bool(True)
     freqborders = np.arange(minfreq,maxfreq,groupBW)
@@ -255,7 +256,7 @@ def main(ms_input, filename=None, mapfile_dir=None, numSB=-1, hosts=None, NDPPPf
     hostID = 0
     for time in timestamps:
         (freq,fname) = time_groups[time]['freq_names'].pop(0)
-        for groupIdx in xrange(ngroups):
+        for groupIdx in range(ngroups):
             files = []
             skip_this = True
             filefreqs_low = np.arange(freqborders[groupIdx],freqborders[groupIdx+1],freq_width)
@@ -374,7 +375,7 @@ class MultiDataMap(DataMap):
     def split_list(self, number):
         mdplist = []
         for item in self.data:
-            for i in xrange(0, len(item.file), number):
+            for i in range(0, len(item.file), number):
                 chunk = item.file[i:i+number]
                 mdplist.append(MultiDataProduct(item.host, chunk, item.skip))
         self._set_data(mdplist)
@@ -416,5 +417,5 @@ if __name__ == '__main__':
     if len(groupmap) != len(filemap):
         print("groupmap and filemap have different length!")
         sys.exit(1)
-    for i in xrange(len(groupmap)):
+    for i in range(len(groupmap)):
         print("Group \"%s\" has %d entries."%(groupmap[i].file,len(filemap[i].file)))

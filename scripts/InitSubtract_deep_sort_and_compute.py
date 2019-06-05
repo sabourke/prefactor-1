@@ -57,7 +57,7 @@ class Band(object):
         if cellsize_lowres_deg:
             self.cellsize_lowres_deg = cellsize_lowres_deg
         if not hasattr(self, 'mean_el_rad'):
-            for MS_id in xrange(self.numMS):
+            for MS_id in range(self.numMS):
                 # calculate mean elevation
                 tab = pt.table(self.files[MS_id], ack=False)
                 el_values = pt.taql("SELECT mscal.azel1()[1] AS el from "
@@ -116,7 +116,7 @@ class Band(object):
                          break
                      c += 1
                  factors.append(c)
-                 lastresult /= c
+                 lastresult = lastresult // c
             if (factors==[]): factors=[n]
             return  numpy.unique(factors).tolist() if douniq else factors
 
@@ -347,7 +347,7 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
     nwavelengths_high_map        = DataMap([])
     nwavelengths_low_map         = DataMap([])
 
-    for index in xrange(numfiles):
+    for index in range(numfiles):
         freqstep_map.append(DataProduct('localhost', str(freqstep), False))
         timestep_map.append(DataProduct('localhost', str(timestep), False))
     nwavelengths_high_map.append(DataProduct('localhost', str(nwavelengths_high), False))
@@ -480,7 +480,7 @@ class MultiDataMap(DataMap):
     def split_list(self, number):
         mdplist = []
         for item in self.data:
-            for i in xrange(0, len(item.file), number):
+            for i in range(0, len(item.file), number):
                 chunk = item.file[i:i+number]
                 mdplist.append(MultiDataProduct(item.host, chunk, item.skip))
         self._set_data(mdplist)

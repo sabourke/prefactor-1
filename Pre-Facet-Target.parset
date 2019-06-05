@@ -103,8 +103,9 @@ pipeline.steps              =  [prep, {{ clipATeam_step }} concat, prep_gsmcal, 
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
-pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
-pipeline.steps.prep_gsmcal =  [check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
+pipeline.steps.concat      =  [combine_target_map, sortmap_target, dpppconcat, combine_concat_map, ms_concat_target, expand_memory_map, aoflag]
+# pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
+pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, combine_frac_map, plot_unflagged, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_phase, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_tec,   apply_tec]
 pipeline.steps.finalize    =  [h5parm_name]
@@ -369,7 +370,7 @@ ateamcliptar.control.inputkey                                  =   allms
 # combine all entries into one mapfile
 combine_concat_map.control.kind                                =   plugin
 combine_concat_map.control.type                                =   compressMapfile
-combine_concat_map.control.mapfile_in                          =   ndppp_prep_target.output.groupmap
+combine_concat_map.control.mapfile_in                          =   ndppp_prep_target.output.mapfile
 combine_concat_map.control.mapfile_dir                         =   input.output.mapfile_dir
 combine_concat_map.control.filename                            =   combine_concat_map.mapfile
 
@@ -384,22 +385,22 @@ ms_concat_target.argument.overhead                             =   {{ overhead }
 ms_concat_target.argument.flags                                =   [combine_concat_map.output.mapfile,outputkey]
 
 # convert the output of ms_concat_target into usable mapfiles
-ms_concat_target_map.control.kind                              =   plugin
-ms_concat_target_map.control.type                              =   mapfilenamesFromMapfiles
-ms_concat_target_map.control.mapfile_concatmap                 =   ms_concat_target.output.concatmapfile.mapfile
+# ms_concat_target_map.control.kind                              =   plugin
+# ms_concat_target_map.control.type                              =   mapfilenamesFromMapfiles
+# ms_concat_target_map.control.mapfile_concatmap                 =   ms_concat_target.output.concatmapfile.mapfile
 
 # expand the memory flag mapfile so that there is one entry for concat file
 expand_memory_map.control.kind                                 =   plugin
 expand_memory_map.control.type                                 =   expandMapfile
-expand_memory_map.control.mapfile_in                           =   ms_concat_target.output.memory.mapfile
-expand_memory_map.control.mapfile_to_match                     =   ms_concat_target_map.output.concatmap
+expand_memory_map.control.mapfile_in                           =   input.output.mapfile_dir/memory.mapfile
+expand_memory_map.control.mapfile_to_match                     =   input.output.mapfile_dir/concatmapfile.mapfile
 expand_memory_map.control.mapfile_dir                          =   input.output.mapfile_dir
 expand_memory_map.control.filename                             =   expand_memory_map.mapfile
 
 # run aoflagger on the concatenated data
 aoflag.control.type                                            =   aoflagger
 aoflag.control.error_tolerance                                 =   {{ error_tolerance }}
-aoflag.control.mapfiles_in                                     =   [ms_concat_target_map.output.concatmap,expand_memory_map.output.mapfile]
+aoflag.control.mapfiles_in                                     =   [input.output.mapfile_dir/concatmapfile.mapfile,expand_memory_map.output.mapfile]
 aoflag.control.inputkeys                                       =   [msin,memory]
 aoflag.control.args_format                                     =   wsclean
 aoflag.argument.strategy                                       =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
@@ -431,17 +432,17 @@ sortmap_target.argument.firstSB                                =   {{ reference_
 sortmap_target.argument.truncateLastSBs                        =   False
 
 # convert the output of sortmap_target into usable mapfiles
-do_sortmap_maps.control.kind                                   =   plugin
-do_sortmap_maps.control.type                                   =   mapfilenamesFromMapfiles
-do_sortmap_maps.control.mapfile_groupmap                       =   sortmap_target.output.groupmapfile.mapfile
-do_sortmap_maps.control.mapfile_datamap                        =   sortmap_target.output.mapfile.mapfile
+# do_sortmap_maps.control.kind                                   =   plugin
+# do_sortmap_maps.control.type                                   =   mapfilenamesFromMapfiles
+# do_sortmap_maps.control.mapfile_groupmap                       =   input.output.mapfile_dir/sortmap_target_groups
+# do_sortmap_maps.control.mapfile_datamap                        =   input.output.mapfile_dir/sortmap_target
 
 # run NDPPP to concatenate the target
 dpppconcat.control.type                                        =   dp3
 dpppconcat.control.error_tolerance                             =   {{ error_tolerance }}
-dpppconcat.control.mapfile_out                                 =   do_sortmap_maps.output.groupmap # tell the pipeline to give the output useful names
-dpppconcat.control.mapfiles_in                                 =   [do_sortmap_maps.output.datamap]
-dpppconcat.control.inputkeys                                   =   [msin]
+dpppconcat.control.mapfile_out                                 =   input.output.mapfile_dir/sortmap_target_groups # tell the pipeline to give the output useful names
+dpppconcat.control.mapfile_in                                  =   input.output.mapfile_dir/sortmap_target
+dpppconcat.control.inputkey                                    =   msin
 dpppconcat.argument.msin.datacolumn                            =   DATA
 dpppconcat.argument.msin.missingdata                           =   True    #\ these two lines will make NDPPP generate dummy data when
 dpppconcat.argument.msin.orderms                               =   False   #/ concatenating data
@@ -465,42 +466,46 @@ dpppconcat.argument.avg.freqresolution                         =   {{ avg_freqre
 #############################
 ##     phasecal target     ##
 #############################
+# combine all entries into one mapfile, for the check_unflagged script
+combine_concated_map.control.kind                              =   plugin
+combine_concated_map.control.type                              =   compressMapfile
+combine_concated_map.control.mapfile_in                        =   dpppconcat.output.mapfile
+combine_concated_map.control.mapfile_dir                       =   input.output.mapfile_dir
+combine_concated_map.control.filename                          =   combine_concated_map.mapfile
+
 #check all files for minimum unflagged fraction
 check_unflagged.control.type                                   =   pythonplugin
 check_unflagged.control.executable                             =   {{ scripts }}/check_unflagged_fraction.py
-check_unflagged.argument.flags                                 =   [dpppconcat.output.mapfile]
+check_unflagged.argument.flags                                 =   [combine_concated_map.output.mapfile]
+check_unflagged.argument.filename                              =   check_unflagged_files.mapfile
+check_unflagged.argument.mapfile_dir                           =   input.output.mapfile_dir
 check_unflagged.argument.min_fraction                          =   {{ min_unflagged_fraction }}
 
 # check potential station mismatch
 check_bad_antennas.control.kind                                =   plugin
 check_bad_antennas.control.type                                =   identifyBadAntennas
-check_bad_antennas.control.mapfile_in                          =   do_sortmap_maps.output.groupmap
+check_bad_antennas.control.mapfile_in                          =   input.output.mapfile_dir/sortmap_target_groups
 check_bad_antennas.control.filter                              =   {{ filter_baselines }}
 
 # prune flagged files from mapfile
 check_unflagged_map.control.kind                               =   plugin
 check_unflagged_map.control.type                               =   pruneMapfile
-check_unflagged_map.control.mapfile_in                         =   check_unflagged.output.flagged.mapfile
+check_unflagged_map.control.mapfile_in                         =   input.output.mapfile_dir/check_unflagged_files.mapfile
 check_unflagged_map.control.mapfile_dir                        =   input.output.mapfile_dir
 check_unflagged_map.control.filename                           =   check_unflagged_map.mapfile
 check_unflagged_map.control.prune_str                          =   None
 
-# compress mapfiles for plotting
-combine_concat_map.control.kind                                =   plugin
-combine_concat_map.control.type                                =   compressMapfile
-combine_concat_map.control.mapfile_in                          =   dpppconcat.output.mapfile
-combine_concat_map.control.mapfile_dir                         =   input.output.mapfile_dir
-combine_concat_map.control.filename                            =   combine_concat_map.mapfile
+# compress unflagged fraction mapfile for plotting
 combine_frac_map.control.kind                                  =   plugin
 combine_frac_map.control.type                                  =   compressMapfile
-combine_frac_map.control.mapfile_in                            =   check_unflagged_map.output.unflagged_fraction.mapfile
+combine_frac_map.control.mapfile_in                            =   input.output.mapfile_dir/unflagged_fraction.mapfile
 combine_frac_map.control.mapfile_dir                           =   input.output.mapfile_dir
 combine_frac_map.control.filename                              =   combine_frac_map.mapfile
 
 # plot the unflagged fraction
 plot_unflagged.control.type                                   =   pythonplugin
 plot_unflagged.control.executable                             =   {{ scripts }}/plot_unflagged_fraction.py
-plot_unflagged.control.mapfiles_in                            =   [combine_concat_map.output.mapfile,combine_frac_map.output.mapfile]
+plot_unflagged.control.mapfiles_in                            =   [combine_concated_map.output.mapfile,combine_frac_map.output.mapfile]
 plot_unflagged.control.inputkeys                              =   [msin,frac]
 plot_unflagged.argument.flags                                 =   [msin,frac]
 plot_unflagged.argument.outfile                               =   {{ inspection_directory }}/unflagged_fraction.png

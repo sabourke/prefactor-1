@@ -199,8 +199,10 @@ def main(fitsimage, outfilename, outdir=None):
     f.grid.set_linewidth(0.2)
     f.add_colorbar()
     f.colorbar.set_axis_label_text('Flux Density (Jy/beam)')
-    f.add_beam()
-    f.beam.set_frame(True)
+    # Note: there is some problem with plotting the beam in aplpy 2.0.3, so it is disabled
+    # for now
+#     f.add_beam()
+#     f.beam.set_frame(True)
     f.set_title('Mean rms = {0:1.2e} Jy/beam; Dynamic range = {1:1.2e}; \n '
                 'Restoring beam = ({2:3.1f} x {3:3.1f}) arcsec, PA = {4:3.1f} deg'.format(
                 imagenoise, dynamicrange, beammaj*3600.0, beammin*3600.0, beampa))
