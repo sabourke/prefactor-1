@@ -822,7 +822,7 @@ split_h5_ion.control.inplace                                 =   True
 split_h5_ion.control.error_tolerance                         =   {{ error_tolerance }}
 split_h5_ion.control.mapfile_in                              =   h5imp_cal_ion1.output.mapfile
 split_h5_ion.control.inputkey                                =   h5parm
-split_h5_ion.argument.flags                                  =   [-c,h5parm,time,200]
+split_h5_ion.argument.flags                                  =   [-c,h5parm,time,900]
 split_h5_ion.argument.root                                   =   {{ job_directory }}/ion
 
 # create mapfile for chunks
