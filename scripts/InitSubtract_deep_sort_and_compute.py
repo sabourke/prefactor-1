@@ -158,13 +158,10 @@ class Band(object):
                 tmp_divisors.append(step)
         freq_divisors = np.array(tmp_divisors)
 
-        # For initsubtract, average to 0.5 MHz per channel and 20 sec per time
-        # slot. Since each band is imaged separately and the smearing and image
-        # sizes both scale linearly with frequency, a single frequency and time
-        # step is valid for all bands
-        initsubtract_freqstep = max(1, min(int(round(0.5 * 1e6 / self.chan_width_hz)), self.nchan))
+        # Average to 0.2 MHz per channel and 16 sec per time slot
+        initsubtract_freqstep = max(1, min(int(round(0.2 * 1e6 / self.chan_width_hz)), self.nchan))
         initsubtract_freqstep = freq_divisors[np.argmin(np.abs(freq_divisors-initsubtract_freqstep))]
-        initsubtract_timestep = max(1, int(round(20.0 / self.timestep_sec)))
+        initsubtract_timestep = max(1, int(round(16.0 / self.timestep_sec)))
 
         return (initsubtract_freqstep, initsubtract_timestep)
 
@@ -348,8 +345,9 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
     nwavelengths_low_map         = DataMap([])
 
     for index in range(numfiles):
-        freqstep_map.append(DataProduct('localhost', str(freqstep), False))
-        timestep_map.append(DataProduct('localhost', str(timestep), False))
+        # set time and frequency averaging values (in sec and Hz)
+        freqstep_map.append(DataProduct('localhost', str(freqstep*bands[0].chan_width_hz), False))
+        timestep_map.append(DataProduct('localhost', str(timestep*bands[0].timestep_sec), False))
     nwavelengths_high_map.append(DataProduct('localhost', str(nwavelengths_high), False))
     nwavelengths_low_map.append(DataProduct('localhost', str(nwavelengths_low), False))
 

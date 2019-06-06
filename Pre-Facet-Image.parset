@@ -75,15 +75,6 @@ do_magic.argument.fieldsize_highres                  =  {{ fieldsize_highres }}
 do_magic.argument.image_padding                      =  {{ image_padding }}
 do_magic.argument.y_axis_stretch                     =  {{ axis_stretch }}
 
-# convert the output of do_magic into usable mapfiles,len = 1 / different
-do_magic_maps.control.kind                           =  plugin
-do_magic_maps.control.type                           =  mapfilenamesFromMapfiles
-do_magic_maps.control.mapfile_nbands_map             =  do_magic.output.nbands.mapfile
-do_magic_maps.control.mapfile_nchansout_clean1_map   =  do_magic.output.nchansout_clean1.mapfile
-do_magic_maps.control.mapfile_groupmap               =  do_magic.output.groupmap.mapfile
-do_magic_maps.control.mapfile_single_map             =  do_magic.output.single_mapfile.mapfile
-do_magic_maps.control.mapfile_deep_high_size_map     =  do_magic.output.deep_high_size_mapfile.mapfile
-
 # average the data
 average.control.type                                 =   dp3
 average.control.error_tolerance                      =   {{ error_tolerance }}
@@ -98,8 +89,8 @@ average.argument.msout.storagemanager                =   Dysco
 average.argument.msout.storagemanager.databitrate    =   0
 average.argument.steps                               =   [avg]
 average.argument.avg.type                            =   average
-average.argument.avg.timeresolution                  =   16.0
-average.argument.avg.freqresolution                  =   195.3125kHz
+average.argument.avg.timeresolution                  =   input.output.mapfile_dir/do_magic.datamap_timestep
+average.argument.avg.freqresolution                  =   input.output.mapfile_dir/do_magic.datamap_freqstep
 
 # generate a mapfile with all files in a single entry, length = 1
 combine_mapfile_deep.control.kind                    =   plugin
