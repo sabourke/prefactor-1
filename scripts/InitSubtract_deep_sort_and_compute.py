@@ -31,8 +31,6 @@ class Band(object):
         self.diam = float(ant.col('DISH_DIAMETER')[0])
         ant.close()
 
-
-
     def get_image_sizes(self, cellsize_highres_deg=None, cellsize_lowres_deg=None,
                         fieldsize_highres=2.5, fieldsize_lowres=6.5):
         """
@@ -165,7 +163,6 @@ class Band(object):
 
         return (initsubtract_freqstep, initsubtract_timestep)
 
-
     def get_nwavelengths(self, cellsize_deg, timestep_sec,):
         """
         Returns nwavelengths for WSClean BL-based averaging
@@ -186,6 +183,7 @@ class Band(object):
         wsclean_nwavelengths_time = int(max_baseline * 2*np.pi * timestep_sec /
             (24 * 60 * 60) / 4)
         return wsclean_nwavelengths_time
+
 
 def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.00208, cellsize_lowres_deg=0.00694,
          fieldsize_highres=2.5, fieldsize_lowres=6.5, image_padding=1., y_axis_stretch=1.):

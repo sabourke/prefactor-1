@@ -78,8 +78,8 @@ do_magic.argument.y_axis_stretch                     =  {{ axis_stretch }}
 # average the data
 average.control.type                                 =   dp3
 average.control.error_tolerance                      =   {{ error_tolerance }}
-average.control.mapfile_in                           =   input.output.mapfile_dir/do_magic.datamap_single
-average.control.inputkey                             =   msfile
+average.control.mapfiles_in                          =   [input.output.mapfile_dir/do_magic.datamap_single,input.output.mapfile_dir/do_magic.datamap_timestep,input.output.mapfile_dir/do_magic.datamap_freqstep]
+average.control.inputkeys                            =   [msfile,timeres,freqres]
 average.argument.numthreads                          =   2
 average.argument.msin                                =   msfile
 average.argument.msin.datacolumn                     =   DATA
@@ -89,8 +89,8 @@ average.argument.msout.storagemanager                =   Dysco
 average.argument.msout.storagemanager.databitrate    =   0
 average.argument.steps                               =   [avg]
 average.argument.avg.type                            =   average
-average.argument.avg.timeresolution                  =   input.output.mapfile_dir/do_magic.datamap_timestep
-average.argument.avg.freqresolution                  =   input.output.mapfile_dir/do_magic.datamap_freqstep
+average.argument.avg.timeresolution                  =   timeres
+average.argument.avg.freqresolution                  =   freqres
 
 # generate a mapfile with all files in a single entry, length = 1
 combine_mapfile_deep.control.kind                    =   plugin
