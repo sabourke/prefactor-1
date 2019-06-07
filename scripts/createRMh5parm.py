@@ -26,7 +26,6 @@ def makesolset(MS, data, solset_name):
     logging.info('Collecting information from the ANTENNA table.')
     antennaTable = pt.table(antennaFile, ack=False)
     antennaNames = antennaTable.getcol('NAME')
-    antennaNames = [a.decode() for a in antennaNames]
     antennaPositions = antennaTable.getcol('POSITION')
     antennaTable.close()
     antennaTable = solset.obj._f_get_child('antenna')
