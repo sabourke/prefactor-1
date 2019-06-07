@@ -103,9 +103,8 @@ pipeline.steps              =  [prep, {{ clipATeam_step }} concat, prep_gsmcal, 
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
 pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
-pipeline.steps.concat      =  [combine_target_map, sortmap_target, dpppconcat, combine_concat_map, ms_concat_target, expand_memory_map, aoflag]
-# pipeline.steps.concat      =  [combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, combine_concat_map, ms_concat_target, ms_concat_target_map, expand_memory_map, aoflag]
-pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, combine_frac_map, plot_unflagged, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
+pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memory_map, aoflag, check_unflagged_subbands, combine_frac_map, plot_unflagged, combine_target_map, sortmap_target, dpppconcat]
+pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_phase, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_tec,   apply_tec]
 pipeline.steps.finalize    =  [h5parm_name]
@@ -384,11 +383,6 @@ ms_concat_target.argument.min_length                           =   {{ min_length
 ms_concat_target.argument.overhead                             =   {{ overhead }}
 ms_concat_target.argument.flags                                =   [combine_concat_map.output.mapfile,outputkey]
 
-# convert the output of ms_concat_target into usable mapfiles
-# ms_concat_target_map.control.kind                              =   plugin
-# ms_concat_target_map.control.type                              =   mapfilenamesFromMapfiles
-# ms_concat_target_map.control.mapfile_concatmap                 =   ms_concat_target.output.concatmapfile.mapfile
-
 # expand the memory flag mapfile so that there is one entry for concat file
 expand_memory_map.control.kind                                 =   plugin
 expand_memory_map.control.type                                 =   expandMapfile
@@ -406,6 +400,29 @@ aoflag.control.args_format                                     =   wsclean
 aoflag.argument.strategy                                       =   {{ prefactor_directory }}/rfistrategies/{{ rfistrategy }}
 aoflag.argument.flags                                          =   [-v,memory,-combine-spws,msin]
 aoflag.argument.j                                              =   24
+
+# check all subbands for minimum unflagged fraction
+check_unflagged_subbands.control.type                          =   pythonplugin
+check_unflagged_subbands.control.executable                    =   {{ scripts }}/check_unflagged_fraction.py
+check_unflagged_subbands.argument.flags                        =   [combine_concat_map.output.mapfile]
+check_unflagged_subbands.argument.filename                     =   check_unflagged_subbands.mapfile
+check_unflagged_subbands.argument.mapfile_dir                  =   input.output.mapfile_dir
+check_unflagged_subbands.argument.min_fraction                 =   {{ min_unflagged_fraction }}
+
+# compress unflagged fraction mapfile for plotting
+combine_frac_map.control.kind                                  =   plugin
+combine_frac_map.control.type                                  =   compressMapfile
+combine_frac_map.control.mapfile_in                            =   input.output.mapfile_dir/unflagged_fraction.mapfile
+combine_frac_map.control.mapfile_dir                           =   input.output.mapfile_dir
+combine_frac_map.control.filename                              =   combine_frac_map.mapfile
+
+# plot the unflagged fraction
+plot_unflagged.control.type                                   =   pythonplugin
+plot_unflagged.control.executable                             =   {{ scripts }}/plot_unflagged_fraction.py
+plot_unflagged.control.mapfiles_in                            =   [combine_concat_map.output.mapfile,combine_frac_map.output.mapfile]
+plot_unflagged.control.inputkeys                              =   [msin,frac]
+plot_unflagged.argument.flags                                 =   [msin,frac]
+plot_unflagged.argument.outfile                               =   {{ inspection_directory }}/unflagged_fraction.png
 
 
 #############################
@@ -430,12 +447,6 @@ sortmap_target.argument.NDPPPfill                              =   True
 sortmap_target.argument.stepname                               =   dpppconcat
 sortmap_target.argument.firstSB                                =   {{ reference_stationSB }}
 sortmap_target.argument.truncateLastSBs                        =   False
-
-# convert the output of sortmap_target into usable mapfiles
-# do_sortmap_maps.control.kind                                   =   plugin
-# do_sortmap_maps.control.type                                   =   mapfilenamesFromMapfiles
-# do_sortmap_maps.control.mapfile_groupmap                       =   input.output.mapfile_dir/sortmap_target_groups
-# do_sortmap_maps.control.mapfile_datamap                        =   input.output.mapfile_dir/sortmap_target
 
 # run NDPPP to concatenate the target
 dpppconcat.control.type                                        =   dp3
@@ -473,7 +484,7 @@ combine_concated_map.control.mapfile_in                        =   dpppconcat.ou
 combine_concated_map.control.mapfile_dir                       =   input.output.mapfile_dir
 combine_concated_map.control.filename                          =   combine_concated_map.mapfile
 
-#check all files for minimum unflagged fraction
+#check all concatenated files for minimum unflagged fraction
 check_unflagged.control.type                                   =   pythonplugin
 check_unflagged.control.executable                             =   {{ scripts }}/check_unflagged_fraction.py
 check_unflagged.argument.flags                                 =   [combine_concated_map.output.mapfile]
@@ -494,21 +505,6 @@ check_unflagged_map.control.mapfile_in                         =   input.output.
 check_unflagged_map.control.mapfile_dir                        =   input.output.mapfile_dir
 check_unflagged_map.control.filename                           =   check_unflagged_map.mapfile
 check_unflagged_map.control.prune_str                          =   None
-
-# compress unflagged fraction mapfile for plotting
-combine_frac_map.control.kind                                  =   plugin
-combine_frac_map.control.type                                  =   compressMapfile
-combine_frac_map.control.mapfile_in                            =   input.output.mapfile_dir/unflagged_fraction.mapfile
-combine_frac_map.control.mapfile_dir                           =   input.output.mapfile_dir
-combine_frac_map.control.filename                              =   combine_frac_map.mapfile
-
-# plot the unflagged fraction
-plot_unflagged.control.type                                   =   pythonplugin
-plot_unflagged.control.executable                             =   {{ scripts }}/plot_unflagged_fraction.py
-plot_unflagged.control.mapfiles_in                            =   [combine_concated_map.output.mapfile,combine_frac_map.output.mapfile]
-plot_unflagged.control.inputkeys                              =   [msin,frac]
-plot_unflagged.argument.flags                                 =   [msin,frac]
-plot_unflagged.argument.outfile                               =   {{ inspection_directory }}/unflagged_fraction.png
 
 # if wished, download the tgss skymodel for the target
 sky_tar.control.type                                           =   pythonplugin
