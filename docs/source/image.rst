@@ -127,7 +127,7 @@ User-defined parameter configuration
 
         On CEP-4, this is set automatically as specified by MoM.
 - ``image_rootname``
-    Output image root name (default: ``{{ job_directory }}/fullband``). The image will be named ``image_rootname-MFS-image.fits``.
+    Output image root name (default: ``{{ job_directory }}/fullband``). The image will be named ``image_rootname-MFS-I-image.fits``.
 
     .. note::
 

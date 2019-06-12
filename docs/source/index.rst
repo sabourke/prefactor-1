@@ -7,7 +7,7 @@ Prefactor: Preprocessing for Facet Calibration for LOFAR (Production Version)
 =============================================================================
 
 **prefactor** is a pipeline to correct for various instrumental and ionospheric effects in both **LOFAR HBA** and **LOFAR LBA** observations,
-as detailed in de Gasperin, F.; Dijkema, T. J.; Drabent, A.; Mevius, M.; Rafferty, D. A.; van Weeren, R., et al. 2018, arXiv:1811.07954.
+as detailed in de Gasperin, F.; Dijkema, T. J.; Drabent, A.; Mevius, M.; Rafferty, D. A.; van Weeren, R., et al. 2019, A&A, 622.
 
 It includes:
 
