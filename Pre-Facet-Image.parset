@@ -20,9 +20,8 @@
 ! cellsize_highres_deg     =  0.00208                             ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
 ! fieldsize_highres        =  1.5                                 ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
 ! maxlambda_highres        =  7000                                ## maximum uv-distance in lambda that will be used for imaging
-! image_padding            =  1.4                                 ## how much padding shall we add during the imaging?
-! axis_stretch             =  1.0                                 ## how much shall the y-axis be stretched or compressed?
-! idg_mode                 =  hybrid                              ## IDG mode to use: cpu or hybrid (= CPU + GPU)
+! image_padding            =  1.2                                 ## how much padding shall we add during the imaging?
+! idg_mode                 =  cpu                                 ## IDG mode to use: cpu or hybrid (= CPU + GPU)
 
 ## pipeline performance
 ! error_tolerance          =  False                               ## set this to True if you want the pipeline run to continue if single bands fail
@@ -73,7 +72,7 @@ do_magic.argument.mapfile_dir                        =  input.output.mapfile_dir
 do_magic.argument.cellsize_highres_deg               =  {{ cellsize_highres_deg }}
 do_magic.argument.fieldsize_highres                  =  {{ fieldsize_highres }}
 do_magic.argument.image_padding                      =  {{ image_padding }}
-do_magic.argument.y_axis_stretch                     =  {{ axis_stretch }}
+do_magic.argument.y_axis_stretch                     =  1.0
 
 # average the data
 average.control.type                                 =   dp3
