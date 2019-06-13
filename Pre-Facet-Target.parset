@@ -366,6 +366,10 @@ ateamcliptar.control.mapfile_in                                =   ndppp_prep_ta
 ateamcliptar.control.arguments                                 =   [allms]
 ateamcliptar.control.inputkey                                  =   allms
 
+
+#############################
+##     concatenate         ##
+#############################
 # combine all entries into one mapfile
 combine_concat_map.control.kind                                =   plugin
 combine_concat_map.control.type                                =   compressMapfile
@@ -424,10 +428,6 @@ plot_unflagged.control.inputkeys                              =   [msin,frac]
 plot_unflagged.argument.flags                                 =   [msin,frac]
 plot_unflagged.argument.outfile                               =   {{ inspection_directory }}/unflagged_fraction.png
 
-
-#############################
-##     concatenate         ##
-#############################
 # combine all entries into one mapfile, for the sortmap script
 combine_target_map.control.kind                                =   plugin
 combine_target_map.control.type                                =   compressMapfile
