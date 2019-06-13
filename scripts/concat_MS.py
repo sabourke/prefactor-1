@@ -28,14 +28,14 @@ def input2strlist_nomapfile(invar):
 
 ########################################################################
 def getsystemmemory():
-   
+
    memory = int(os.popen('cat /proc/meminfo | grep MemAvailable').readlines()[0].split(':')[-1].split()[0])
    return memory
    pass
 
 ########################################################################
 def getfilesize(MS):
-   
+
    size = int(os.popen('du -cks ' + MS).readlines()[0].split()[0])
    return size
 
@@ -68,14 +68,14 @@ def main(ms_input, ms_output, min_length, overhead = 0.8, filename=None, mapfile
     file_size     = getfilesize(filelist[0])
     overhead      = float(overhead)
 
-    print "Detected available system memory is: " + str(int(((system_memory / 1024. / 1024.) + 0.5))) + " GB" 
-    #print "Detected file size is: " + str(int(((file_size / 1024. / 1024.) + 0.5))) + " GB" 
+    print "Detected available system memory is: " + str(int(((system_memory / 1024. / 1024.) + 0.5))) + " GB"
+    #print "Detected file size is: " + str(int(((file_size / 1024. / 1024.) + 0.5))) + " GB"
     if overhead * system_memory > global_limit:
         system_memory = global_limit
         overhead      = 1.0
-        print "Number of files to concat will be limited to the global limit of: " + str(int(((global_limit / 1024. / 1024.) + 0.5))) + " GB" 
-        pass    
-    
+        print "Number of files to concat will be limited to the global limit of: " + str(int(((global_limit / 1024. / 1024.) + 0.5))) + " GB"
+        pass
+
     #i = 1
     max_space     = overhead * system_memory / file_size
     max_length    = len(filelist) / int((len(filelist) / max_space) + 1.)
@@ -84,7 +84,7 @@ def main(ms_input, ms_output, min_length, overhead = 0.8, filename=None, mapfile
         #i += 1
         #max_length = len(filelist) / ((len(filelist) / max_space) + i)
         #pass
-    
+
     if max_length >= int(min_length):
         memory = '-memory-read'
         pass
@@ -94,24 +94,29 @@ def main(ms_input, ms_output, min_length, overhead = 0.8, filename=None, mapfile
         if max_length * file_size > global_limit:
             max_space  = global_limit / file_size
             max_length = len(filelist) / int((len(filelist) / max_space) + 1.)
-            print "Number of files to concat was limited to the global limit of: " + str(int(((global_limit / 1024. / 1024.) + 0.5))) + " GB" 
+            print "Number of files to concat was limited to the global limit of: " + str(int(((global_limit / 1024. / 1024.) + 0.5))) + " GB"
             print "WARNING: The number of concatenated files will thus be lower than the min_length of: "  + str(min_length)
             pass
         pass
-    
+
     print "Applying an overhead of: " + str(overhead)
     print "The max_length value is: " + str(max_length)
     set_ranges     = list(numpy.arange(0, len(filelist) + 1, int(max_length)))
     set_ranges[-1] = len(filelist)
 
+    # Make the output mapfiles
     map_out = DataMap([])
     for i in numpy.arange(len(set_ranges) - 1):
         f = ms_output + '_' + str(i)
         pt.msconcat(filelist[set_ranges[i]:set_ranges[i + 1]], f)
         map_out.data.append(DataProduct('localhost', f, False))
-
     fileid = os.path.join(mapfile_dir, filename)
     map_out.save(fileid)
+    map_out = DataMap([])
+    map_out.data.append(DataProduct('localhost', memory, False))
+    fileid = os.path.join(mapfile_dir, 'memory.mapfile')
+    map_out.save(fileid)
+
     result = {'concatmapfile': fileid, 'memory': memory}
 
     return result
