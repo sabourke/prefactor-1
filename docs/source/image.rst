@@ -147,4 +147,11 @@ Parameters for **HBA** and **LBA** observations
 Differences between production and user versions
 ------------------------------------------------
 
-The imaging pipeline is only available on the production branch.
+The production version has the following primary differences relative to the user version:
+
+    - input data must be specified as a list of filenames (instead of a directory+wildcard).
+    - cluster-specific parameters (e.g., ``max_per_node`` or the paths to various executables such as the aoflagger) must be specified in the tasks.
+      configuration file (see the ``tasks.cfg`` file in the prefactor GitHub repository for a minimal example).
+    - the ``PREFACTOR_PATH`` environment variable must be set to the prefactor installation directory.
+    - feedback steps are done to generate and feed back metadata for the output data products (for
+      ingest into the LTA).
