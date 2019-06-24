@@ -93,29 +93,32 @@ User-defined parameter configuration
 *Imaging parameters*
 
 - ``cellsize_highres_deg``
-    Cellsize in degrees (default: 0.00208).
+    Cellsize in degrees (default: ``0.00208``).
 
     .. note::
 
-        On CEP-4, this is set automatically to 0.00208 for HBA data and 0.00324 for LBA data to ensure proper sampling of the restoring beam.
+        On CEP-4, this is set automatically to ``0.00208`` for HBA data and ``0.00324`` for LBA data to ensure proper sampling of the restoring beam.
+
 - ``fieldsize_highres``
     Size of the image is this value times the FWHM of mean semi-major axis of
-    the station beam at the lowest observed frequency (default: 1.5).
+    the station beam at the lowest observed frequency (default: ``1.5``).
 - ``maxlambda_highres``
     Maximum uv-distance in lambda that will be used for imaging. A minimum uv-distance
-    of 80 lambda is used in all cases (default: 7000).
+    of 80 lambda is used in all cases (default: ``7000``).
 
     .. note::
 
-        On CEP-4, this is set automatically to 7000 for HBA data and 4000 for LBA data to exclude longer baselines that are poorly calibrated (e.g., due to ionospheric effects).
+        On CEP-4, this is set automatically to ``7000`` for HBA data and ``4000`` for LBA data to exclude longer baselines that are poorly calibrated (e.g., due to ionospheric effects).
+
 - ``image_padding``
-    Amount of padding to add during the imaging (default: 1.2).
+    Amount of padding to add during the imaging (default: ``1.2``).
 - ``idg_mode``
-    IDG mode to use: cpu or hybrid (default: cpu).
+    IDG mode to use: ``cpu`` or ``hybrid`` (default: ``cpu``).
 
     .. note::
 
         On CEP-4, this is set automatically depending on whether the pipeline is running on a CPU or GPU node.
+
 - ``local_scratch_dir``
     Scratch directory for WSClean (default: ``{{ job_directory }}``).
 - ``images_metadata_file``
@@ -126,6 +129,7 @@ User-defined parameter configuration
     .. note::
 
         On CEP-4, this is set automatically as specified by MoM.
+
 - ``image_rootname``
     Output image root name (default: ``{{ job_directory }}/fullband``). The image will be named ``image_rootname-MFS-I-image.fits``.
 
@@ -136,12 +140,12 @@ User-defined parameter configuration
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
-======================== ======= =======
-**parameter**            **HBA** **LBA**
------------------------- ------- -------
-``cellsize_highres_deg`` 0.00208 0.00324
-``maxlambda_highres``    7000    4000
-======================== ======= =======
+======================== =========== ===========
+**parameter**            **HBA**     **LBA**
+------------------------ ----------- -----------
+``cellsize_highres_deg`` ``0.00208`` ``0.00324``
+``maxlambda_highres``    ``7000``    ``4000``
+======================== =========== ===========
 
 
 Differences between production and user versions

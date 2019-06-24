@@ -146,7 +146,7 @@ Lastly, metadata for the averaged, uncalibrated data and the final solutions are
 
 User-defined parameter configuration
 ------------------------------------
-**Parameters adjusted when specifying (via xmlgen.py or in MoM) the pipeline in the system**
+**Parameters adjusted when specifying (via ``xmlgen.py`` or in MoM) the pipeline in the system**
 
 *Information about the input data*
 
@@ -183,7 +183,7 @@ User-defined parameter configuration
 
     .. note::
 
-        On CEP-4, this is set automatically to False for HBA data and True for LBA data.
+        On CEP-4, this is set automatically to ``False`` for HBA data and ``True`` for LBA data.
 
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``.
 
@@ -191,15 +191,15 @@ User-defined parameter configuration
 
         On CEP-4, this is set automatically depending on the array type.
 
-- ``max2interpolate``: amount of channels in which interpolation should be performed for deriving the bandpass (default: 30).
-- ``interp_windowsize``: size of the window over which a value is interpolated (default: 15). Should be odd.
-- ``raw_data``: use autoweight, set to True in case you are using raw data (default: False).
+- ``max2interpolate``: amount of channels in which interpolation should be performed for deriving the bandpass (default: ``30``).
+- ``interp_windowsize``: size of the window over which a value is interpolated (default: ``15)``. Should be odd.
+- ``raw_data``: use autoweight, set to ``True`` in case you are using raw data (default: ``False``).
 - ``ampRange``: range of median amplitudes accepted per station (default: ``[50,200]``).
-- ``skip_international``: skip fitting the bandpass for international stations to avoid flagging them (default: True).
-- ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot if they converged (default: True).
-- ``flagunconverged``: flag solutions for solves that did not converge if they were also detected to diverge (default: True).
-- ``raw_data``: use autoweight, set to True in case you are using raw data (default: False).
-- ``maxStddev``: maximum allowable standard deviation when outlier clipping is done (default: -1). For phases, this should value should be in radians, for amplitudes in log(amp). If None (or negative), a value of 0.1 rad is used for phases and 0.01 for amplitudes.
+- ``skip_international``: skip fitting the bandpass for international stations to avoid flagging them (default: ``True``).
+- ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot if they converged (default: ``True``).
+- ``flagunconverged``: flag solutions for solves that did not converge if they were also detected to diverge (default: ``True``).
+- ``raw_data``: use autoweight, set to True in case you are using raw data (default: ``False``).
+- ``maxStddev``: maximum allowable standard deviation when outlier clipping is done (default: ``-1``). For phases, this should value should be in radians, for amplitudes in log(amp). If None (or negative), a value of 0.1 rad is used for phases and 0.01 for amplitudes.
 
 A comprehensive explanation of the baseline selection syntax can be found `here`_.
 
@@ -208,8 +208,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``demix_sources``: choose sources to demix (provided as list), e.g., ``[CasA,CygA]``.
 - ``demix_target``: if given, the target source model (its patch in the SourceDB) is taken into account when solving (default: ``""``).
-- ``demix_freqstep``: number of channels to average when demixing (default: 16).
-- ``demix_timestep`` : number of time slots to average when demixing (default: 10).
+- ``demix_freqstep``: number of channels to average when demixing (default: ``16``).
+- ``demix_timestep`` : number of time slots to average when demixing (default: ``10``).
 
 *Definition of pipeline options*
 
@@ -222,8 +222,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data (default: ``{{ default_flagging }}``).
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix (default: ``{{ none }}``).
-- ``uvlambdamin``: minimum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: 100).
-- ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: 20000).
+- ``uvlambdamin``: minimum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: ``100``).
+- ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: ``20000``).
 - ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``) (default: ``clock``).
 
     .. note::
@@ -233,10 +233,10 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 **Parameters for pipeline performance**
 
-- ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: False).
-- ``memoryperc``: maximum of memory used for aoflagger in ``raw_flagging`` mode in percent (default: 20).
-- ``min_length``: minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. If the data are too big aoflag will use indirect-read (default: 50).
-- ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (default: 30). If one or more A-team sources is closer than this distance, a warning will be raised.
+- ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: ``False``).
+- ``memoryperc``: maximum of memory used for aoflagger in ``raw_flagging`` mode in percent (default: ``20``).
+- ``min_length``: minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM. If the data are too big aoflag will use indirect-read (default: ``50``).
+- ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (default: ``30``). If one or more A-team sources is closer than this distance, a warning will be raised.
 
 **Parameters you may want to adjust**
 
@@ -269,13 +269,13 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 *Averaging for the calibrator data*
 
-- ``avg_timeresolution``: final time resolution of the data in seconds after averaging (default: 4).
+- ``avg_timeresolution``: final time resolution of the data in seconds after averaging (default: ``4``).
 
     .. note::
 
-        On CEP-4, this is set automatically to 4 for HBA data and 1 for LBA data.
+        On CEP-4, this is set automatically to ``4`` for HBA data and ``1`` for LBA data.
 
-- ``avg_freqresolution`` : final frequency resolution of the data after averaging (default: 48.82kHz, which translates to 4 channels per subband).
+- ``avg_freqresolution`` : final frequency resolution of the data after averaging (default: ``48.82kHz``, which translates to 4 channels per subband for the 200 MHz sampling clock).
 
     .. note::
 
@@ -284,7 +284,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
         before averaging (per subband). On CEP-4, the value of ``avg_freqresolution`` is automatically adjusted to the closest
         valid value, depending on the sampling clock used in the observation.
 
-- ``bandpass_freqresolution``: frequency resolution of the bandpass solution table (default: 195.3125kHz, which translates to 1 channel per subband).
+- ``bandpass_freqresolution``: frequency resolution of the bandpass solution table (default: ``195.3125kHz``, which translates to 1 channel per subband for the 200 MHz sampling clock).
 
     .. note::
 

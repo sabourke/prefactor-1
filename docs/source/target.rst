@@ -114,11 +114,11 @@ User-defined parameter configuration
 
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (default: ``[]``).
 - ``filter_baselines``: selects only this set of baselines to be processed (default: ``[CR]S*&``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
-- ``do_smooth``: enable or disable baseline-based smoothing (default: False). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
+- ``do_smooth``: enable or disable baseline-based smoothing (default: ``False``). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
 
     .. note::
 
-        On CEP-4, this is set automatically to False for HBA data and True for LBA data.
+        On CEP-4, this is set automatically to ``False`` for HBA data and ``True`` for LBA data.
 
 - ``rfistrategy``: strategy to be applied with the statistical flagger (AOFlagger), default: ``HBAdefault.rfis``.
 
@@ -126,11 +126,11 @@ User-defined parameter configuration
 
         On CEP-4, this is set automatically depending on the array type.
 
-- ``interp_windowsize``: size of the window over which a value is interpolated. Should be odd. (default: 15).
-- ``raw_data``: use autoweight, set to True in case you are using raw data (default: False).
-- ``min_unflagged_fraction``: minimal fraction of unflagged data to be accepted for further processing of the data chunk (default: 0).
-- ``compression_bitrate``: defines the bitrate of Dysco compression of the data after the final step, choose 0 if you do NOT want to compress the data (default: 16).
-- ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot (default: True).
+- ``interp_windowsize``: size of the window over which a value is interpolated. Should be odd. (default: ``15``).
+- ``raw_data``: use autoweight, set to True in case you are using raw data (default: ``False``).
+- ``min_unflagged_fraction``: minimal fraction of unflagged data to be accepted for further processing of the data chunk (default: ``0``).
+- ``compression_bitrate``: defines the bitrate of Dysco compression of the data after the final step, choose ``0`` if you do NOT want to compress the data (default: ``16``).
+- ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot (default: ``True``).
 
 A comprehensive explanation of the baseline selection syntax can be found `here`_.
 
@@ -138,8 +138,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``demix_sources``: choose sources to demix (provided as list), e.g., ``[CasA,CygA]``
 - ``demix_target``: if given, the target source model (its patch in the SourceDB) is taken into account when solving (default: ``""``)
-- ``demix_freqstep``: number of channels to average when demixing (default: 16)
-- ``demix_timestep`` : number of time slots to average when demixing (default: 10)
+- ``demix_freqstep``: number of channels to average when demixing (default: ``16``)
+- ``demix_timestep`` : number of time slots to average when demixing (default: ``10``)
 
 *Definitions for pipeline options*
 
@@ -163,9 +163,9 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 **Parameters for pipeline performance**
 
-- ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: False).
-- ``min_length``: defines the minimum amount of chunks to concatenate in frequency necessary to perform the wide-band flagging in the RAM (default: 5). If the data are too large, aoflagger will use indirect read.
-- ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (default: 30). If one or more A-team sources is closer than this distance, a warning will be raised.
+- ``error_tolerance``: defines whether pipeline run will continue if single bands fail (default: ``False``).
+- ``min_length``: defines the minimum amount of subbands to concatenate in frequency necessary to perform the wide-band flagging in the RAM (default: ``50``). If the data are too large, aoflagger will use indirect read.
+- ``min_separation``: minimal accepted distance to an A-team source on the sky in degrees (default: ``30``). If one or more A-team sources is closer than this distance, a warning will be raised.
 
 **Parameters you may want to adjust**
 
@@ -182,11 +182,11 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``target_skymodel``: location of the target sky model or filename in which it will be stored (default: ``{{ job_directory }}/target.skymodel``), use False for ``use_tgss_target`` in case ``target_skymodel`` is already a pre-existing user-supplied skymodel.
 - ``use_tgss_target``: download the phase-only calibration sky model from TGSS or GSM (``Force`` : always download , ``True`` download if ``{{ target_skymodel }}`` does not exist , ``False`` : never download).
-- ``skymodel_source``: Source of the sky model used for calibration of the field: TGSS or GSM (default: TGSS).
+- ``skymodel_source``: Source of the sky model used for calibration of the field: ``TGSS`` or ``GSM`` (default: ``TGSS``).
 
     .. note::
 
-        On CEP-4, this is set automatically to TGSS for HBA data and to GSM for LBA data.
+        On CEP-4, this is set automatically to ``TGSS`` for HBA data and to ``GSM`` for LBA data.
 
 - ``calibrator_path_skymodel``: location of the sky models (default: ``{{ prefactor_directory }}/skymodels``).
 - ``A-team_skymodel``: location of the A-team sky models (default: ``{{ calibrator_path_skymodel }}/Ateam_LBA_CC.skymodel``).
@@ -208,8 +208,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 *Averaging for the target data*
 
-- ``avg_timeresolution``: intermediate time resolution of the data in seconds after averaging (default: 4).
-- ``avg_freqresolution`` : intermediate frequency resolution of the data after averaging (default: 48.82kHz, which translates to 4 channels per subband).
+- ``avg_timeresolution``: intermediate time resolution of the data in seconds after averaging (default: ``4``).
+- ``avg_freqresolution`` : intermediate frequency resolution of the data after averaging (default: ``48.82kHz``, which translates to 4 channels per subband for the 200 MHz sampling clock).
 
     .. note::
 
@@ -218,8 +218,8 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
         before averaging (per subband). On CEP-4, the value of ``avg_freqresolution`` is automatically adjusted to the closest
         valid value, depending on the sampling clock used in the observation.
 
-- ``avg_timeresolution_concat``: final time resolution of the data in seconds after averaging and concatenation (default: 8).
-- ``avg_freqresolution_concat``: final frequency resolution of the data after averaging and concatenation (default: 97.64kHz, which translates to 2 channels per subband).
+- ``avg_timeresolution_concat``: final time resolution of the data in seconds after averaging and concatenation (default: ``8``).
+- ``avg_freqresolution_concat``: final frequency resolution of the data after averaging and concatenation (default: ``97.64kHz``, which translates to 2 channels per subband for the 200 MHz sampling clock).
 
     .. note::
 
@@ -231,13 +231,13 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 *Concatenating of the target data*
 
-- ``num_SBs_per_group``: make concatenated measurement-sets with that many subbands (default: 10).
+- ``num_SBs_per_group``: make concatenated measurement-sets with that many subbands (default: ``10``). Set to a negative value to concatenate all subbands.
 - ``reference_stationSB``: station-subband number to use as reference for grouping, (default: ``None`` -> use lowest frequency input data as reference).
 
 *RMextract settings*
 
 - ``ionex_server``: URL of the *IONEX* server (default: "ftp://ftp.aiub.unibe.ch/CODE/").
-- ``ionex_prefix``: the prefix of the *IONEX* files (default: CODG).
+- ``ionex_prefix``: the prefix of the *IONEX* files (default: ``CODG``).
 - ``ionex_path``: location of the *IONEX* files after downloading (default: ``{{ job_directory }}/IONEX/``).
 
 Parameters for **HBA** and **LBA** observations
