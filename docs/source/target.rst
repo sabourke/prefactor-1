@@ -42,7 +42,7 @@ The basic steps are:
     - applying LOFAR beam and Rotation Measure correction from `RMextract`_ (``applybeam``, ``applyRM``).
     - interpolation of flagged data (``interp``).
     - averaging of the data to 4 seconds and 4 channels per subband (``avg``).
-- write A-Team skymodel into the MODEL_DATA column (``predict_ateam``).
+- write A-Team sky model into the MODEL_DATA column (``predict_ateam``).
 - clipping potentially A-Team affected data (``ateamcliptar``).
 - interpolate, average (to 8 seconds and 2 channels per subband), and concatenate target data into chunks of ten subbands (``dpppconcat``). These chunks are enforced to be equidistant in frequency. Missing data will be filled back and flagged.
 - wide-band statistical flagging (``aoflag``).
@@ -151,7 +151,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
         On CEP-4, this is set automatically to ``applyclock,applybeam,applyRM`` for HBA data and ``applyphase`` for LBA data.
 
-- ``clipAteam_step``:  choose ``{{ none }}`` if you want to skip A-team-clipping (default: ``{{ clipATeam }}``).
+- ``clipAteam_step``:  choose ``{{ none }}`` if you want to skip A-team-clipping, e.g. when demixing has been done (default: ``{{ clipATeam }}``).
 - ``gsmcal_step``:  choose ``tec`` if you want to fit dTEC instead of self-calibrating for phases (default: ``phase``).
 
     .. note::
@@ -210,8 +210,24 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 - ``avg_timeresolution``: intermediate time resolution of the data in seconds after averaging (default: 4).
 - ``avg_freqresolution`` : intermediate frequency resolution of the data after averaging (default: 48.82kHz, which translates to 4 channels per subband).
+
+    .. note::
+
+        The frequency resolution that can be used depends on the sampling clock frequency of the observation (160 or 200 MHz), as the
+        number of channels after averaging must be a divisor of the total number of channels
+        before averaging (per subband). On CEP-4, the value of ``avg_freqresolution`` is automatically adjusted to the closest
+        valid value, depending on the sampling clock used in the observation.
+
 - ``avg_timeresolution_concat``: final time resolution of the data in seconds after averaging and concatenation (default: 8).
-- ``avg_freqresolution_concat``: final frequency resolution of the data after avaerginag and concatenation (default: 97.64kHz, which translates to 2 channels per subband).
+- ``avg_freqresolution_concat``: final frequency resolution of the data after averaging and concatenation (default: 97.64kHz, which translates to 2 channels per subband).
+
+    .. note::
+
+        The frequency resolution that can be used depends on the sampling clock frequency of the observation (160 or 200 MHz), as the
+        number of channels after averaging must be a divisor of the total number of channels
+        before averaging (per subband). On CEP-4, the value of ``avg_freqresolution_concat`` is automatically adjusted to the closest
+        valid value, depending on the sampling clock used in the observation.
+
 
 *Concatenating of the target data*
 
@@ -226,16 +242,25 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
-====================== ====================== ===========================
-**parameter**          **HBA**                **LBA**
----------------------- ---------------------- ---------------------------
-``do_smooth``          ``False``              ``True``
-``rfistrategy``        ``HBAdefault.rfis``    ``LBAdefaultwideband.rfis``
-``apply_steps``        ``applyclock,applyRM`` ``applyphase``
-``gsmcal_step``        ``phase``              ``tec``
-====================== ====================== ===========================
+================================ ====================== ===========================
+**parameter**                    **HBA**                **LBA**
+-------------------------------- ---------------------- ---------------------------
+``do_smooth``                    ``False``              ``True``
+``rfistrategy``                  ``HBAdefault.rfis``    ``LBAdefaultwideband.rfis``
+``apply_steps``                  ``applyclock,applyRM`` ``applyphase``
+``gsmcal_step``                  ``phase``              ``tec``
+``skymodel_source``              ``TGSS``               ``GSM``
+``clipATeam_step``               ``{{ clipATeam }}``    ``{{ none }}``
+``avg_timeresolution``           ``4.0``                ``1.0``
+``avg_freqresolution``           ``48.82kHz``           ``48.82kHz``
+``avg_timeresolution_concat``    ``8.0``                ``4.0``
+``avg_freqresolution_concat``    ``97.64kHz``           ``48.82kHz``
+``num_SBs_per_group``            ``10``                 ``-1``
+================================ ====================== ===========================
 
 In the case of **LBA** observations, by default the full phase solutions from the calibrator are applied, as it is assumed that the calibrator is observed simultaneously with the target.
+If your **LBA** data has **not** been demixed before you may still want to keep the A-Team-clipping.
+
 
 Differences between production and user versions
 ------------------------------------------------

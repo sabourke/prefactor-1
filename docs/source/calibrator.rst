@@ -37,8 +37,8 @@ The basic steps are:
     - interpolation of flagged data (``interp``).
     - averaging of the data to 4 sec and 4 channels per subband (``avg``).
 - wide-band statistical flagging (``aoflag``).
-- find needed skymodel of calibrator automatically (``sky_cal``).
-- write the calibrator skymodel into the MODEL_DATA column (``predict_cal``).
+- find needed sky model of calibrator automatically (``sky_cal``).
+- write the calibrator sky model into the MODEL_DATA column (``predict_cal``).
 - interpolate flagged data from the wide-band statistical flagging step (``interp_cal``).
 - baseline-dependent smoothing of the data (``smooth_data``).
 - perform direction-independent phase-only calibration. In the first two calibrations, both diagonal terms and a common rotation angle are solved for (``calib_cal``). In the third and forth calibrations, after correction for Faraday rotation, only the diagonal terms are solved for (``calib_cal2``).
@@ -102,9 +102,9 @@ The following diagnostic plots are created:
     .. image:: ampAFlag_polXX.png
 - ``bandpass_pol??``: the derived bandpass of all stations in the XX and YY polarization.
     .. image:: bandpass_polXX.png
-- ``bandpass_time??``: matrix plot of the derived bandpass, where both polarizations are colorcoded.
+- ``bandpass_time??``: matrix plot of the derived bandpass, where both polarizations are color coded.
     .. image:: bandpass.png
-- ``bandpass_time??_pol??``: plot of the derived bandpass of the XX and YY polarization, where all stations are colorcoded.
+- ``bandpass_time??_pol??``: plot of the derived bandpass of the XX and YY polarization, where all stations are color coded.
     .. image:: bandpass_polXX.png
 
 The solutions are then stored in the final calibrator solution set ``cal_solutions`` and applied, together with the polarization alignment, the LOFAR beam correction and the Faraday rotation corrections to the interpolated data in the correct order (``apply_PA`` + ``apply_bandpass`` + ``apply_beam`` + ``apply_FR`` ).
@@ -112,7 +112,7 @@ The calibration (``calib_cal2``) is then continued on the bandpass-corrected and
 
 Calibration of the instrumental (clock) and ionospheric delays (dTEC)
 ---------------------------------------------------------------------
-The outcome of the re-calibration **after** correcting for the polarization alignment, the bandpass and the Faraday rotation is loaded into **LoSoTo** in order to derive corrections for the instrumental and ionospheric delays (ion). A robust flagging on the amplitude solutions is applied in order to reject bad solutions. These flags are applied to the phase solutions. These phase solutions should be mainly affected by instrumental (clock) and ionospheric (dTEC) delays. This **LoSoTo** step will aim for seperating both effects (clock-dTEC separation).
+The outcome of the re-calibration **after** correcting for the polarization alignment, the bandpass and the Faraday rotation is loaded into **LoSoTo** in order to derive corrections for the instrumental and ionospheric delays (ion). A robust flagging on the amplitude solutions is applied in order to reject bad solutions. These flags are applied to the phase solutions. These phase solutions should be mainly affected by instrumental (clock) and ionospheric (dTEC) delays. This **LoSoTo** step will aim for separating both effects (clock-dTEC separation).
 The following diagnostic plots are created:
 
 - ``ion_ampBFlag_pol??``: matrix plot of the amplitude solutions for the XX and YY polarization **before** flagging.
@@ -163,7 +163,7 @@ User-defined parameter configuration
 
     .. note::
 
-        On CEP-4, the ``PREFACTOR_PATH`` environment variable must be set to the prefactor installation directory (which is inside the Docker container).
+        On CEP-4, the ``PREFACTOR_PATH`` environment variable is set to the correct path when the Docker container is built.
 
 
 **Parameters you may need to adjust**
@@ -276,7 +276,23 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
         On CEP-4, this is set automatically to 4 for HBA data and 1 for LBA data.
 
 - ``avg_freqresolution`` : final frequency resolution of the data after averaging (default: 48.82kHz, which translates to 4 channels per subband).
+
+    .. note::
+
+        The frequency resolution that can be used depends on the sampling clock frequency of the observation (160 or 200 MHz), as the
+        number of channels after averaging must be a divisor of the total number of channels
+        before averaging (per subband). On CEP-4, the value of ``avg_freqresolution`` is automatically adjusted to the closest
+        valid value, depending on the sampling clock used in the observation.
+
 - ``bandpass_freqresolution``: frequency resolution of the bandpass solution table (default: 195.3125kHz, which translates to 1 channel per subband).
+
+    .. note::
+
+        The frequency resolution that can be used depends on the sampling clock frequency of the observation (160 or 200 MHz), as the
+        number of channels after averaging must be a divisor of the total number of channels
+        before averaging (per subband). On CEP-4, the value of ``bandpass_freqresolution`` is automatically adjusted to the closest
+        valid value, depending on the sampling clock used in the observation.
+
 
 Parameters for **HBA** and **LBA** observations
 -----------------------------------------------
@@ -288,7 +304,8 @@ Parameters for **HBA** and **LBA** observations
 ``cal_clocktec``       ``ct,residuals``           ``ct,residuals`` or ``ct3,residuals3``
 ``cal_ion``            ``{{ 1st_order }},smooth`` ``{{ 1st_order }}`` or ``{{ 3rd_order }}``
 ``tables2export``      ``clock``                  ``phaseOrig``
-``avg_timeresolution`` 4                          1
+``avg_timeresolution`` ``4``                      ``1``
+``avg_freqresolution`` ``48.82kHz``               ``24.41kHz``
 ====================== ========================== ==========================================
 
 In the case of **LBA** observations with frequencies below 30 MHz, you may want to use the 3rd-order dTEC fitting options above for ``cal_clocktec`` and ``cal_ion``. Otherwise, the default first-order fitting options should work well.

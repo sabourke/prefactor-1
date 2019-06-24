@@ -240,7 +240,7 @@ ndppp_prep_cal.argument.demix.freqstep                      =   1
 ndppp_prep_cal.argument.demix.timestep                      =   1
 ndppp_prep_cal.argument.demix.instrumentmodel               =   createmap_instcal.output.mapfile
 
-# combine all entries into one mapfile (just for the find_skymodel_cal_auto script)
+# combine all entries into one mapfile
 combine_data_cal_map.control.kind                           =   plugin
 combine_data_cal_map.control.type                           =   compressMapfile
 combine_data_cal_map.control.mapfile_in                     =   ndppp_prep_cal.output.mapfile
