@@ -106,7 +106,7 @@ User-defined parameter configuration
 
 *Data selection and calibration options*
 
-- ``refant``: name of the station that will be used as a reference for the phase plotting.
+- ``refant``: name of the station that will be used as a reference for the phase plotting (default: ``CS001HBA0``).
 
     .. note::
 
@@ -158,7 +158,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 
         On CEP-4, this is set automatically to ``phase`` for HBA data and ``tec`` for LBA data.
 
-- ``updateweights``:  update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations (default: True).
+- ``updateweights``:  update the weights column, in a way consistent with the weights being inverse proportional to the autocorrelations (default: ``True``).
 
 
 **Parameters for pipeline performance**

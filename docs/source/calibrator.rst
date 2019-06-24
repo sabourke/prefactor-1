@@ -170,7 +170,7 @@ User-defined parameter configuration
 
 *Data selection and calibration options*
 
-- ``refant``: name of the station that will be used as a reference for the phase plotting, polarization alignment, Faraday rotation fitting, and clock/dTEC fitting steps.
+- ``refant``: name of the station that will be used as a reference for the phase plotting, polarization alignment, Faraday rotation fitting, and clock/dTEC fitting steps (default: ``CS001HBA0``).
 
     .. note::
 
