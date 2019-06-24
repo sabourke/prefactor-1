@@ -96,9 +96,9 @@ Calibration of the Bandpass (bandpass)
 The outcome of the re-calibration **after** correcting for the polarization alignment and Faraday rotation is loaded into **LoSoTo** in order to derive corrections for the bandpass. A robust flagging on the amplitude solutions as well as a Savitzky-Golay filter is applied in order to reject bad solutions and smooth the outcome. Frequency ranges up to a certain maximum width (``maxFlaggedWidth``) will be interpolated if flagged.
 The following diagnostic plots are created:
 
-- ``ampBFlag__??``: matrix plot of the amplitude solutions for the XX and YY polarization ``before`` flagging.
+- ``ampBFlag__??``: matrix plot of the amplitude solutions for the XX and YY polarization **before** flagging.
     .. image:: ampBFlag_polXX.png
-- ``ampAFlag__??``: matrix plot of the amplitude solutions for the XX and YY polarization ``after`` flagging.
+- ``ampAFlag__??``: matrix plot of the amplitude solutions for the XX and YY polarization **after** flagging.
     .. image:: ampAFlag_polXX.png
 - ``bandpass_pol??``: the derived bandpass of all stations in the XX and YY polarization.
     .. image:: bandpass_polXX.png
@@ -199,7 +199,7 @@ User-defined parameter configuration
 - ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot if they converged (default: ``True``).
 - ``flagunconverged``: flag solutions for solves that did not converge if they were also detected to diverge (default: ``True``).
 - ``raw_data``: use autoweight, set to True in case you are using raw data (default: ``False``).
-- ``maxStddev``: maximum allowable standard deviation when outlier clipping is done (default: ``-1``). For phases, this should value should be in radians, for amplitudes in log(amp). If None (or negative), a value of 0.1 rad is used for phases and 0.01 for amplitudes.
+- ``maxStddev``: maximum allowable standard deviation when outlier clipping is done (default: ``-1``). For phases, this should value should be in radians, for amplitudes in log(amp). If negative, a value of 0.1 rad is used for phases and 0.01 for amplitudes.
 
 A comprehensive explanation of the baseline selection syntax can be found `here`_.
 

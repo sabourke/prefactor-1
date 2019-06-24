@@ -191,7 +191,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``calibrator_path_skymodel``: location of the sky models (default: ``{{ prefactor_directory }}/skymodels``).
 - ``A-team_skymodel``: location of the A-team sky models (default: ``{{ calibrator_path_skymodel }}/Ateam_LBA_CC.skymodel``).
 - ``target_skymodel``:  path to the sky model for the phase-only calibration of the target (default: ``{{ job_directory }}/target.skymodel``). Note: all sources should be in a single patch.
-- ``use_target``:  download the phase-only calibration sky model from TGSS, "Force" : always download , "True" download if ``{{ target_skymodel }}`` does not exist , "False" : never download (default: True).
+- ``use_target``:  download the phase-only calibration sky model from TGSS, ``Force``: always download , ``True``: download if ``{{ target_skymodel }}`` does not exist , ``False``: never download (default: ``True``).
 
 *Result directories*
 
@@ -259,7 +259,7 @@ Parameters for **HBA** and **LBA** observations
 ================================ ====================== ===========================
 
 In the case of **LBA** observations, by default the full phase solutions from the calibrator are applied, as it is assumed that the calibrator is observed simultaneously with the target.
-If your **LBA** data has **not** been demixed before you may still want to keep the A-Team-clipping.
+Additionally, if your **LBA** data have **not** been demixed you may still want to keep the A-Team-clipping.
 
 
 Differences between production and user versions
