@@ -194,7 +194,7 @@ User-defined parameter configuration
 - ``max2interpolate``: amount of channels in which interpolation should be performed for deriving the bandpass (default: ``30``).
 - ``interp_windowsize``: size of the window over which a value is interpolated (default: ``15)``. Should be odd.
 - ``raw_data``: use autoweight, set to ``True`` in case you are using raw data (default: ``False``).
-- ``ampRange``: range of median amplitudes accepted per station (default: ``[50,200]``).
+- ``ampRange``: range of median amplitudes accepted per station (default: ``[0, 0]``).  Use ``[0, 0]`` to use typical ranges of [50, 225] for the current correlator or [0.0004, 0.0018] for the old one.
 - ``skip_international``: skip fitting the bandpass for international stations to avoid flagging them (default: ``True``).
 - ``propagatesolutions``: use already derived solutions as initial guess for the upcoming time slot if they converged (default: ``True``).
 - ``flagunconverged``: flag solutions for solves that did not converge if they were also detected to diverge (default: ``True``).
