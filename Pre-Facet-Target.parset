@@ -107,7 +107,7 @@ pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, ms_concat_t
 pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_phase, apply_phase]
 pipeline.steps.tec         =  [gsmcal_tec,   h5imp_gsmcal, prepare_losoto_tec,   process_losoto_gsmcal, add_missing_stations, h5exp_tec,   apply_tec]
-pipeline.steps.finalize    =  [h5parm_name]
+pipeline.steps.finalize    =  [h5parm_name, structure_function]
 pipeline.steps.feedback    =  [make_msfiles_metadata]
 
 
@@ -603,6 +603,7 @@ gsmcal_phase.argument.filter.type                              =   filter
 gsmcal_phase.argument.filter.blrange                           =   [150, 999999]
 gsmcal_phase.argument.gaincal.type                             =   gaincal
 gsmcal_phase.argument.gaincal.caltype                          =   phaseonly
+gsmcal_phase.argument.gaincal.uvlambdamin                      =   150
 gsmcal_phase.argument.gaincal.maxiter                          =   150
 gsmcal_phase.argument.gaincal.tolerance                        =   1e-3
 gsmcal_phase.argument.gaincal.solint                           =   1
@@ -613,6 +614,7 @@ gsmcal_phase.argument.gaincal.propagatesolutions               =   {{ propagates
 gsmcal_phase.argument.gaincal.usebeammodel                     =   True
 gsmcal_phase.argument.gaincal.usechannelfreq                   =   True
 gsmcal_phase.argument.gaincal.beammode                         =   array_factor
+gsmcal_phase.argument.ddecal.onebeamperpatch                   =   False
 
 # solve for direction-independent TEC
 gsmcal_tec.control.type                                        =   dp3_band
@@ -643,6 +645,7 @@ gsmcal_tec.argument.ddecal.propagatesolutions                  =   {{ propagates
 gsmcal_tec.argument.ddecal.usebeammodel                        =   True
 gsmcal_tec.argument.ddecal.usechannelfreq                      =   True
 gsmcal_tec.argument.ddecal.beammode                            =   array_factor
+gsmcal_tec.argument.ddecal.onebeamperpatch                     =   False
 
 
 ###########################
@@ -826,9 +829,21 @@ h5parm_name.control.executable                              =   {{ scripts }}/h5
 h5parm_name.control.error_tolerance                         =   {{ error_tolerance }}
 h5parm_name.control.skip_infile                             =   True
 h5parm_name.control.mapfile_in                              =   combine_data_target_map.output.mapfile
-h5parm_name.argument.flags                                  =   [{{ cal_solutions }}]]
+h5parm_name.argument.flags                                  =   [{{ cal_solutions }}]
 h5parm_name.argument.solsetName                             =   target
 h5parm_name.argument.pointing                               =   get_targetname.output.targetName
+
+# calculate the structure function
+structure_function.control.type                             =   pythonplugin
+structure_function.control.executable                       =   {{ scripts }}/getStructure_from_phases.py
+structure_function.control.error_tolerance                  =   {{ error_tolerance }}
+structure_function.control.skip_infile                      =   True
+structure_function.control.mapfile_in                       =   combine_data_target_map.output.mapfile
+structure_function.argument.flags                           =   [{{ cal_solutions }}]
+structure_function.argument.solset                          =   target
+structure_function.argument.soltab                          =   {{ skymodel_source }}{{ gsmcal_step }}
+structure_function.argument.outbasename                     =   get_targetname.output.targetName
+structure_function.argument.output_dir                      =   {{ inspection_directory }}
 
 
 ################################
