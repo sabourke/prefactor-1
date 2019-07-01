@@ -251,11 +251,13 @@ combine_data_cal_map.control.filename                       =   combine_data_cal
 ms_concat.control.type                                      =   pythonplugin
 ms_concat.control.executable                                =   {{ scripts }}/concat_MS.py
 ms_concat.control.error_tolerance                           =   {{ error_tolerance }}
+ms_concat.control.mapfile_in                                =   combine_data_cal_map.output.mapfile
+ms_concat.control.inputkey                                  =   msfile
 ms_concat.argument.filename                                 =   concatmapfile.mapfile
 ms_concat.argument.mapfile_dir                              =   input.output.mapfile_dir
 ms_concat.argument.min_length                               =   {{ min_length }}
 ms_concat.argument.overhead                                 =   {{ overhead }}
-ms_concat.argument.flags                                    =   [combine_data_cal_map.output.mapfile,outputkey]
+ms_concat.argument.flags                                    =   [msfile,outputkey]
 
 # expand the memory flag mapfile so that there is one entry for concat file
 expand_memory_map.control.kind                              =   plugin
@@ -278,7 +280,9 @@ aoflag.argument.flags                                       =   [-v,memory,-comb
 sky_cal.control.type                                        =   pythonplugin
 sky_cal.control.executable                                  =   {{ scripts }}/find_skymodel_cal.py
 sky_cal.control.error_tolerance                             =   {{ error_tolerance }}
-sky_cal.argument.flags                                      =   [combine_data_cal_map.output.mapfile]
+sky_cal.control.mapfile_in                                  =   combine_data_cal_map.output.mapfile
+sky_cal.control.inputkey                                    =   msfile
+sky_cal.argument.flags                                      =   [msfile]
 sky_cal.argument.mapfile_dir                                =   input.output.mapfile_dir
 sky_cal.argument.DirSkymodelCal                             =   {{ calibrator_path_skymodel }}
 
@@ -887,10 +891,10 @@ prepare_losoto_ion1.control.residuals3.soltab                =   sol000/phase000
 prepare_losoto_ion1.control.residuals3.soltabsToSub          =   [tec,clock,tec3rd,phase_offset] # only for very low-freq dataset
 
 # do the processing on the LoSoTo file
-process_losoto_ion1.control.type                        =   losoto
-process_losoto_ion1.control.mapfile_in                  =   createmap_chunks2.output.mapfile
-process_losoto_ion1.control.inputkey                    =   h5in
-process_losoto_ion1.argument.flags                      =   [h5in,{{ job_directory }}/losoto_ion1.parset]
+process_losoto_ion1.control.type                             =   losoto
+process_losoto_ion1.control.mapfile_in                       =   createmap_chunks2.output.mapfile
+process_losoto_ion1.control.inputkey                         =   h5in
+process_losoto_ion1.argument.flags                           =   [h5in,{{ job_directory }}/losoto_ion1.parset]
 
 # generate a mapfile with all files in a single entry
 h5imp_cal_map3.control.kind                                  =   plugin
@@ -900,13 +904,13 @@ h5imp_cal_map3.control.mapfile_dir                           =   input.output.ma
 h5imp_cal_map3.control.filename                              =   h5imp_cal_map3.mapfile
 
 # collect all instrument tables into one h5parm
-h5imp_cal_ion2.control.type                             =   h5parm_collector
-h5imp_cal_ion2.control.error_tolerance                  =   {{ error_tolerance }}
-h5imp_cal_ion2.control.mapfile_in                       =   h5imp_cal_map3.output.mapfile
-h5imp_cal_ion2.control.inputkey                         =   h5parm
-h5imp_cal_ion2.control.outputkey                        =   outh5parm
-h5imp_cal_ion2.argument.flags                           =   [-q,-v,-c,h5parm]
-h5imp_cal_ion2.argument.outh5parm                       =   outh5parm
+h5imp_cal_ion2.control.type                                  =   h5parm_collector
+h5imp_cal_ion2.control.error_tolerance                       =   {{ error_tolerance }}
+h5imp_cal_ion2.control.mapfile_in                            =   h5imp_cal_map3.output.mapfile
+h5imp_cal_ion2.control.inputkey                              =   h5parm
+h5imp_cal_ion2.control.outputkey                             =   outh5parm
+h5imp_cal_ion2.argument.flags                                =   [-q,-v,-c,h5parm]
+h5imp_cal_ion2.argument.outh5parm                            =   outh5parm
 
 # create losoto v2 parset file
 prepare_losoto_ion2.control.kind                             =   plugin
