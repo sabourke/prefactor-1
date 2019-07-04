@@ -61,9 +61,9 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
         if "CS" not in station_name:
             continue
         phx.append(valx[i,:,0].flatten())
-        allposx.append(stations[station_name])
+        allposx.append(stations[station_name.encode()])
         phy.append(valy[i,:,0].flatten())
-        allposy.append(stations[station_name])
+        allposy.append(stations[station_name.encode()])
 
     phx=np.array(phx)
     phy=np.array(phy)
