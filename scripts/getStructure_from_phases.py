@@ -153,7 +153,7 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
             x0 = [0.1,1.0,1.0]
             xfit, flag = scipy.optimize.leastsq(residuals, x0, args=(binys,binxs))
             flagselect = np.where(y > model(x,xfit))
-            print xfit,'fitting'
+            print(xfit,'fitting')
         if doplot:
             x=D2y[myselect]
             y=dvary[myselect]
