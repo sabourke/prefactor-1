@@ -75,7 +75,7 @@ def main(h5parmfile,solset='sol000',soltab='phase000',nr_grid=1,doplot=True,outb
     D2y=np.sqrt(np.sum(Dy**2,axis=-1))
     S0s=[]
     betas=[]
-    for itime in xrange(nr_grid+1):
+    for itime in range(nr_grid+1):
         tm=[0,1000000000]
         if itime<nr_grid:
             tm[0]=int(itime*timestep)
