@@ -52,7 +52,7 @@
 
 ## pipeline performance
 ! error_tolerance          =  False                                  ## set this to True if you want the pipeline run to continue if single bands fail
-! min_length               =  5                                      ## minimum amount of chunks to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
+! min_length               =  50                                     ## minimum amount of chunks to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
 ! overhead                 =  0.7                                    ## only use this fraction of the available memory for deriving the amount of data to be concatenated.
 ! min_separation           =  30                                     ## minimal accepted distance to an A-team source on the sky in degrees (will raise a WARNING)
 
@@ -381,11 +381,13 @@ combine_concat_map.control.filename                            =   combine_conca
 ms_concat_target.control.type                                  =   pythonplugin
 ms_concat_target.control.executable                            =   {{ scripts }}/concat_MS.py
 ms_concat_target.control.error_tolerance                       =   {{ error_tolerance }}
+ms_concat_target.control.mapfile_in                            =   combine_concat_map.output.mapfile
+ms_concat_target.control.inputkey                              =   msfile
 ms_concat_target.argument.filename                             =   concatmapfile.mapfile
 ms_concat_target.argument.mapfile_dir                          =   input.output.mapfile_dir
 ms_concat_target.argument.min_length                           =   {{ min_length }}
 ms_concat_target.argument.overhead                             =   {{ overhead }}
-ms_concat_target.argument.flags                                =   [combine_concat_map.output.mapfile,outputkey]
+ms_concat_target.argument.flags                                =   [msfile,outputkey]
 
 # expand the memory flag mapfile so that there is one entry for concat file
 expand_memory_map.control.kind                                 =   plugin
