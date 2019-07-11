@@ -178,7 +178,7 @@ User-defined parameter configuration
 
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (default: ``[]``).
 - ``process_baselines_cal``: performs A-Team-clipping/demixing only on these baselines (default: ``[CR]S*&``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
-- ``filter_baselines``: selects only this set of baselines to be processed (default: ``*``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
+- ``filter_baselines``: selects only this set of baselines to be processed (default: ``{{ process_baselines_cal }}``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
 - ``do_smooth``: enable or disable baseline-based smoothing (default: False). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
 
     .. note::
@@ -223,7 +223,7 @@ A comprehensive explanation of the baseline selection syntax can be found `here`
 - ``initial_flagging``: choose ``{{ raw_flagging }}`` if you process raw data (default: ``{{ default_flagging }}``).
 - ``demix_step``: choose ``{{ demix }}`` if you want to demix (default: ``{{ none }}``).
 - ``uvlambdamin``: minimum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: ``100``).
-- ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: ``20000``).
+- ``uvlambdamax``: maximum baseline length (in lambda) to include in solve. Stations with no valid baselines will be flagged in subsequent steps (default: ``50000``).
 - ``tables2export``: comma-separated list of tables to export from the ionospheric calibration step (``cal_ion``) (default: ``clock``).
 
     .. note::

@@ -113,7 +113,8 @@ User-defined parameter configuration
         On CEP-4, this is set automatically to the first station in the first valid MS file that is not fully flagged.
 
 - ``flag_baselines``: NDPPP-compatible pattern for baselines or stations to be flagged (default: ``[]``).
-- ``filter_baselines``: selects only this set of baselines to be processed (default: ``[CR]S*&``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
+- ``process_baselines_target``: performs A-Team-clipping/demixing only on these baselines (default: ``[CR]S*&``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
+- ``filter_baselines``: selects only this set of baselines to be processed (default: ``{{ process_baselines_target }}``). Choose ``[CR]S*&`` if you want to process only cross-correlations and remove international stations.
 - ``do_smooth``: enable or disable baseline-based smoothing (default: ``False``). Enabling smoothing may enhance the SNR for LBA data but is not necessary for HBA data where the SNR is generally high.
 
     .. note::
