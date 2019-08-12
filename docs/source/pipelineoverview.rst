@@ -18,7 +18,7 @@ CEP-4-Specific Information
 
 The following information applies to production runs done on the CEP-4 cluster. In the following, the SAS ID of the pipeline (e.g., 698995) is designated with "XXXXXX".
 
-**Docker Containers**
+**Docker containers**
     All processing is done within Docker containers. Two containers are used: one for the CPU nodes that is built without the CUDA libraries, and one for the GPU nodes that includes the CUDA libraries. The reason for building two versions is that the CUDA libraries are needed only for GPU support and are quite large (the CPU container is ~3 GB whereas the GPU one is ~12 GB).
 
 **Data flow**
