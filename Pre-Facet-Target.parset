@@ -102,7 +102,7 @@ pipeline.steps              =  [prep, {{ clipATeam_step }} concat, prep_gsmcal, 
 
 # pipeline substeps
 pipeline.steps.prep        =  [mk_targ_values_dir, createmap_target, create_output_msfiles_map, get_targetname, combine_data_target_map, check_Ateam_separation, copy_input_h5parmfile, check_station_mismatch, createmap_preptarg, createmap_insttarg, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, h5imp_RMextract, prepare_losoto_RMextract, process_losoto_RMextract, ndppp_prep_target]
-pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar]
+pipeline.steps.clipATeam   =  [predict_ateam, ateamcliptar, plotateamclip]
 pipeline.steps.concat      =  [combine_concat_map, ms_concat_target, expand_memory_map, aoflag, check_unflagged_subbands, combine_frac_map, plot_unflagged, combine_target_map, sortmap_target, dpppconcat]
 pipeline.steps.prep_gsmcal =  [combine_concated_map, check_unflagged, check_bad_antennas, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, h5_gsmsol_map, interp_target, smooth_data]
 pipeline.steps.phase       =  [gsmcal_phase, h5imp_gsmcal, prepare_losoto_phase, process_losoto_gsmcal, add_missing_stations, h5exp_phase, apply_phase]
@@ -365,6 +365,15 @@ ateamcliptar.control.error_tolerance                           =   {{ error_tole
 ateamcliptar.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
 ateamcliptar.control.arguments                                 =   [allms]
 ateamcliptar.control.inputkey                                  =   allms
+
+# run the a-team clipper to flag data affected by the a-team
+plotateamclip.control.type                                     =   pythonplugin
+plotateamclip.control.executable                               =   {{ scripts }}/plot_Ateamclipper.py
+plotateamclip.control.error_tolerance                          =   {{ error_tolerance }}
+plotateamclip.control.skip_infile                              =   True
+plotateamclip.control.mapfile_in                               =   combine_data_target_map.output.mapfile
+plotateamclip.argument.txtfile                                 =   {{ job_directory }}/Ateamclipper.txt
+plotateamclip.argument.outfile                                 =   {{ inspection_directory }}/Ateamclipper.png
 
 
 #############################

@@ -3,9 +3,11 @@
 ## changelog
 # W.Williams 2014/11/03  add - to give input/output statistics per channel
 # W.Williams 2014/11/03  fix - statistics per correlation
+# A.Drabent 2019/07/24   write fraction of flagged data into output file (for prefactor3)
 
 import numpy
 import pyrap.tables as pt
+import os
 import sys
 
 msname = str(sys.argv[1])
@@ -29,8 +31,10 @@ print('SB Frequency [MHz]', freq[0]/1e6)
 for chan in range(0,numpy.size(data[0,:,0])):
   print('chan %i : %.5f%% input XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) ))
   print('chan %i : %.5f%% input YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) ))
-print('Total : %.5f%% input XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) ))
-print('Total : %.5f%% input YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) ))
+input_flags_xx = 100. * numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0])
+input_flags_yy = 100. * numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3])
+print('Total : %.5f%% input XX flagged' %(   input_flags_xx ))
+print('Total : %.5f%% input YY flagged' %(   input_flags_yy ))
 print('')
 print('Cliplevel used [Jy]', cliplevel)
 print('\n\n')
@@ -48,9 +52,13 @@ print('')
 for chan in range(0,numpy.size(data[0,:,0])):
   print('chan %i : %.5f%% output XX flagged' %( chan, 100.*numpy.sum(flag[:,chan,0] == True)/numpy.size(flag[:,chan,0]) ))
   print('chan %i : %.5f%% output YY flagged' %( chan, 100.*numpy.sum(flag[:,chan,3] == True)/numpy.size(flag[:,chan,3]) ))
-print('Total : %.5f%% output XX flagged' %(  100.*numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0]) ))
-print('Total : %.5f%% output YY flagged' %(  100.*numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3]) ))
+output_flags_xx = 100. * numpy.sum(flag[:,:,0] == True)/numpy.size(flag[:,:,0])
+output_flags_yy = 100. * numpy.sum(flag[:,:,3] == True)/numpy.size(flag[:,:,3])
+print('Total : %.5f%% input XX flagged' %(   output_flags_xx ))
+print('Total : %.5f%% input YY flagged' %(   output_flags_yy ))
 print('')
 t.putcol('FLAG', flag)
 t.close()
 freq_tab.close()
+
+os.system('echo ' + str(freq[0]) + ' ' + str(output_flags_xx - input_flags_xx) + ' ' + str(output_flags_yy - input_flags_yy) + ' >> Ateamclipper.txt')
