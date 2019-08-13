@@ -28,12 +28,14 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     if len(calibrator) > 1:
         logging.error('There is more than one calibrator used in the target solution set: ' + str(calibrator) + '. No solutions will be transferred.')
         return(1)
-    if calibrator[0].upper() in trusted_sources:
-        logging.info(calibrator[0] + ' is a trusted calibrator source. No solutions from a reference solution set will be transferred!')
+    calibrator = calibrator[0]
+    if type(calibrator) is bytes or type(calibrator) is numpy.bytes_:
+        calibrator = calibrator.decode()
+    if calibrator.upper() in trusted_sources:
+        logging.info(calibrator + ' is a trusted calibrator source. No solutions from a reference solution set will be transferred!')
         return(0)
     else:
-        logging.info(calibrator[0] + ' is not a trusted calibrator source. Solutions from a reference solution set will be transferred!')
-
+        logging.info(calibrator + ' is not a trusted calibrator source. Solutions from a reference solution set will be transferred!')
 
     ### check for matching antennas
     station_names      = outsoltab.ant
@@ -59,13 +61,11 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
     for outvals, outweights, coord, selection in outsoltab.getValuesIter(returnAxes=out_axes, weight=True):
         outvals = reorderAxes( outvals, outsoltab.getAxesNames(), out_axes)
         outweights = reorderAxes( outweights,  outsoltab.getAxesNames(), out_axes )
-        pass
 
     ### resort the val and weights array according to the new axes order
     for invals, inweights, coord, selection in insoltab.getValuesIter(returnAxes=in_axes, weight=True):
         invals = reorderAxes( invals, insoltab.getAxesNames(), in_axes)
         inweights = reorderAxes( inweights,  insoltab.getAxesNames(), in_axes )
-        pass
 
     ### check for equistance in frequency
     freq_resolution = numpy.unique(numpy.diff(outsoltab.freq))
@@ -106,7 +106,6 @@ def main(h5parmdb, refh5parm, insolset='sol000', outsolset='sol000', insoltab='a
                     outvals[i,j,ant_index] = invals[nearest_freq[j], ref_ant_index, 0]
                 else:
                     outvals[i,j,ant_index] = invals[nearest_freq[j], ref_ant_index]
-
 
     ### writing to the soltab
     outsoltab.setValues(outvals, selection)
