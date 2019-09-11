@@ -17,9 +17,9 @@
 ! cal_input_pattern        =  L228161*.MS                                                         ## regular expression pattern of all your calibrator files
 
 ## location of the software
-! prefactor_directory      =  /home/drabent/prefactor/                                            ## path to your prefactor copy
-! losoto_directory         =  /home/drabent/losoto                                                ## path to your local LoSoTo installation
-! aoflagger                =  /home/drabent/aoflagger/bin/aoflagger                               ## path to your aoflagger executable
+! prefactor_directory      =  /opt/prefactor/                                             ## path to your prefactor copy
+! losoto_directory         =  /usr/local/                                                         ## path to your local LoSoTo installation
+! aoflagger                =  /usr/bin/aoflagger                                                  ## path to your aoflagger executable
 
 ##########################################
 ### parameters you may need to adjust   ##

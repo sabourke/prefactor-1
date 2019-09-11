@@ -18,9 +18,9 @@
 ! target_input_pattern      =  L228163*.MS                                                        ## regular expression pattern of all your target files
 
 ## location of the software
-! prefactor_directory       =  /home/drabent/prefactor                                            ## path to your prefactor copy
-! losoto_directory          =  /home/drabent/losoto                                               ## path to your local LoSoTo installation
-! aoflagger                 =  /home/drabent/aoflagger/bin/aoflagger                              ## path to your aoflagger executable
+! prefactor_directory       =  /opt/prefactor                                                     ## path to your prefactor copy
+! losoto_directory          =  /usr/local                                                         ## path to your local LoSoTo installation
+! aoflagger                 =  /usr/bin/aoflagger                                                 ## path to your aoflagger executable
 
 ## location of the calibrator solutions
 ! cal_solutions             =  input.output.job_directory/../Pre-Facet-Calibrator/results/cal_values/cal_solutions.h5
@@ -68,6 +68,7 @@
 
 ! num_proc_per_node         =  input.output.max_per_node                                          ## number of processes to use per step per node (usually max_per_node from pipeline.cfg)
 ! num_proc_per_node_limit   =  4                                                                  ## number of processes to use per step per node for tasks with high i/o (dppp or cp) or memory (eg calibration)
+! ateamclipper_num_proc_per_node =  2                                                             ## ateamclipper uses a lot of RAM (reads in MODEL_DATA column) so may wish to limit
 ! max_dppp_threads          =  10                                                                 ## number of threads per process for NDPPP
 ! min_length                =  5                                                                  ## minimum amount of chunks to concatenate in frequency necessary to perform the wide-band flagging in the RAM. It data is too big aoflag will use indirect-read.
 ! overhead                  =  0.7                                                                ## Only use this fraction of the available memory for deriving the amount of data to be concatenated.
@@ -404,7 +405,7 @@ predict_ateam.argument.predict.onebeamperpatch                 =   True
 # run the a-team clipper to flag data affected by the a-team
 ateamcliptar.control.kind                                      =   recipe
 ateamcliptar.control.type                                      =   executable_args
-ateamcliptar.control.max_per_node                              =   {{ num_proc_per_node }}
+ateamcliptar.control.max_per_node                              =   {{ ateamclipper_num_proc_per_node }}
 ateamcliptar.control.executable                                =   {{ scripts }}/Ateamclipper.py
 ateamcliptar.control.error_tolerance                           =   {{ error_tolerance }}
 ateamcliptar.control.mapfile_in                                =   ndppp_prep_target.output.mapfile
