@@ -14,7 +14,7 @@
 ##########################################
 
 ## information about the input data
-! target_input_path         =  /data/scratch/drabent/ ## specify the directory where the output data from the target pipeline is stored
+! target_input_path         =  input.output.job_directory/../Pre-Facet-Target/results
 ! target_input_pattern      =  L228163*.MS            ## regular expression pattern of all your target files
 
 ## location of the software
