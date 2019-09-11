@@ -18,8 +18,8 @@
 ! target_input_pattern      =  L228163*.MS            ## regular expression pattern of all your target files
 
 ## location of the software
-! prefactor_directory      =  /home/drabent/prefactor  ## path to your prefactor copy
-! wsclean_executable       =  /home/drabent/wsclean    ## path to your local WSClean executable
+! prefactor_directory      =  /opt/prefactor          ## path to your prefactor copy
+! wsclean_executable       =  /opt/wsclean-2.7/bin/wsclean   ## path to your local WSClean executable
 
 ##########################################
 ### parameters you may want to adjust   ##
