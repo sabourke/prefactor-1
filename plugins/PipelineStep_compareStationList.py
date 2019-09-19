@@ -43,7 +43,7 @@ def plugin_main(args, **kwargs):
         pass
     
     ## reading ANTENNA table of MS
-    antennaFile  = MS + "/ANTENNA"
+    antennaFile  = MS + "::ANTENNA"
     logging.info('Collecting information from the ANTENNA table.')
     antennaTable = pt.table(antennaFile, ack = False)
     antennaNames = antennaTable.getcol('NAME')
