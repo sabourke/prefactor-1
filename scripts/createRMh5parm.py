@@ -22,7 +22,7 @@ import logging
 def makesolset(MS, data, solset_name):
     solset = data.makeSolset(solset_name)    
 
-    antennaFile = MS+"/ANTENNA"
+    antennaFile = MS+"::ANTENNA"
     logging.info('Collecting information from the ANTENNA table.')
     antennaTable = pt.table(antennaFile, ack=False)
     antennaNames = antennaTable.getcol('NAME')
@@ -31,7 +31,7 @@ def makesolset(MS, data, solset_name):
     antennaTable = solset.obj._f_get_child('antenna')
     antennaTable.append(zip(*(antennaNames,antennaPositions)))
     
-    fieldFile = MS + "/FIELD"
+    fieldFile = MS + "::FIELD"
     logging.info('Collecting information from the FIELD table.')
     fieldTable = pt.table(fieldFile, ack=False)
     phaseDir = fieldTable.getcol('PHASE_DIR')
